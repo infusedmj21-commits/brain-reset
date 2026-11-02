@@ -508,3 +508,25 @@ details.manual summary::-webkit-details-marker { display: none; }
   .op-range { padding-left: 0; }
 }
 .op-range .grp { white-space: nowrap; }
+
+/* Difficulty picker */
+.level-chips { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.level-chip {
+  display: grid; justify-items: center; gap: 2px; padding: 10px 4px 8px;
+  border: var(--border); border-radius: 18px; background: var(--card); color: var(--ink);
+}
+.level-chip .lv-emoji { font-size: 22px; line-height: 1; }
+.level-chip .lv-num { font: 600 13px var(--display); color: var(--ink-2); }
+.level-chip .lv-name { font: 500 14px var(--display); }
+.level-chip[aria-pressed="true"] { background: var(--tomato); color: #fff; box-shadow: var(--shadow); }
+.level-chip[aria-pressed="true"] .lv-num { color: #fff; opacity: 0.85; }
+.level-chip:hover:not([aria-pressed="true"]) { background: var(--field); }
+.standard-note.level { background: var(--sky-soft); }
+table.bests { margin-top: 8px; }
+table.bests td:last-child { text-align: right; }
+@media (max-width: 420px) {
+  .level-chips { gap: 5px; }
+  .level-chip { padding: 8px 2px 6px; border-radius: 14px; }
+  .level-chip .lv-name { font-size: 11px; }
+  .level-chip .lv-emoji { font-size: 18px; }
+}

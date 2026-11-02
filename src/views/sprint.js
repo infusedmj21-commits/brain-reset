@@ -1,11 +1,36 @@
 import { getMeta, getRow, live, logRound, setMeta } from '../db.js';
 import { prettyDate, today } from '../logic/dates.js';
-import { DEFAULT_SETTINGS, DURATIONS, OPS, cleanSettings, describeSettings, isStandard, makeProblem, roundStats } from '../logic/arithmetic.js';
+import {
+  DEFAULT_SETTINGS,
+  DIFFICULTIES,
+  DURATIONS,
+  OPS,
+  applyDifficulty,
+  cleanSettings,
+  compareKey,
+  describeSettings,
+  isStandard,
+  levelOf,
+  makeProblem,
+  roundStats
+} from '../logic/arithmetic.js';
 import { chime, esc, toast, unlockAudio } from '../ui.js';
 
 const SETTINGS_KEY = 'sprint_settings';
 const durationLabel = (s) => (s >= 60 ? `${s / 60} min` : `${s} s`);
 const secs = (ms) => (ms == null ? '–' : `${(ms / 1000).toFixed(1)} s`);
+const levelName = (settings) => {
+  const d = DIFFICULTIES.find((x) => x.level === levelOf(settings));
+  return d ? `${d.emoji} ${d.name}` : '✏️ Custom';
+};
+/** Best earlier score for rounds comparable with this one (same level and duration). */
+function bestFor(key, rounds, excludeId, before = null) {
+  if (!key) return null;
+  const scores = rounds
+    .filter((r) => r.id !== excludeId && (!before || (r.finished_at ?? '') < before) && compareKey(r.settings) === key)
+    .map((r) => r.score);
+  return scores.length ? Math.max(...scores) : null;
+}
 
 export async function renderSprint(el, rerender, ctx) {
   const [section, id] = ctx.params;
@@ -29,7 +54,7 @@ async function context(date) {
 async function renderSetup(el, rerender, ctx) {
   const date = today();
   const { settings } = cleanSettings((await getMeta(SETTINGS_KEY)) ?? {});
-  const { todayRounds, sprints } = await context(date);
+  const { rounds, todayRounds, sprints } = await context(date);
   const standardToday = todayRounds.filter((r) => r.standard);
   const bestToday = standardToday.length ? Math.max(...standardToday.map((r) => r.score)) : null;
   const allTimeBest = sprints.length ? Math.max(...sprints.map((s) => s.best)) : null;
@@ -55,6 +80,14 @@ async function renderSetup(el, rerender, ctx) {
       <section>
         <div class="sec" style="--dot:var(--tomato)"><span class="dot"></span><h2>Settings</h2></div>
         <form class="card top-tomato stack" id="settings-form" autocomplete="off" novalidate>
+          <div class="label">Difficulty</div>
+          <div class="level-chips" role="group" aria-label="Difficulty">
+            ${DIFFICULTIES.map(
+              (d) => `<button type="button" class="level-chip" data-level="${d.level}" title="${esc(d.hint)}">
+                <span class="lv-emoji" aria-hidden="true">${d.emoji}</span><span class="lv-num num">${d.level}</span><span class="lv-name">${esc(d.name)}</span></button>`
+            ).join('')}
+          </div>
+          <p class="muted small" data-level-hint></p>
           <div class="op-row">
             <label class="op-check"><input type="checkbox" name="add" ${settings.add ? 'checked' : ''}><span>Addition</span></label>
             <div class="op-range" data-for="add">Range: <span class="grp">( ${range('addA', 0)} to ${range('addA', 1)} )</span> + <span class="grp">( ${range('addB', 0)} to ${range('addB', 1)} )</span></div>
@@ -88,18 +121,22 @@ async function renderSetup(el, rerender, ctx) {
                 .reverse()
                 .map(
                   (r, i) => `<li><a class="card list-card" href="#/sprint/result/${r.id}"><div class="stat-row">
-                    <div><h3>Round ${todayRounds.length - i}</h3><p class="muted small" style="margin:2px 0 0">${r.standard ? 'Standard settings' : 'Custom · practice only'} · ${secs(r.stats?.avgMs)} per answer</p></div>
+                    <div><h3>Round ${todayRounds.length - i}</h3><p class="muted small" style="margin:2px 0 0">${levelName(r.settings)} · ${durationLabel(r.duration)} · ${secs(r.stats?.avgMs)} per answer</p></div>
                     <span class="big num" style="font-size:34px">${r.score}</span></div></a></li>`
                 )
                 .join('')}</ul>`
             : '<div class="empty-hint">No rounds yet today. Two rounds on the standard settings is the daily goal.</div>'
         }
+        <div class="card top-sun">
+          <h3>🏆 Your bests <span class="muted small" data-bests-dur></span></h3>
+          <table class="bests"><tbody data-bests></tbody></table>
+        </div>
         <div class="card top-grape">
           <h3>⌨️ Tips</h3>
           <ul class="tips">
             <li>On a computer, just type. On a phone the number pad opens by itself.</li>
             <li>Wrong answers don’t cost anything; fix the digits and keep going.</li>
-            <li>Only standard-settings rounds count towards your sprint score, so scores stay comparable over time.</li>
+            <li>Your daily sprint score uses Standard at 2 minutes, so it stays comparable over time. Other levels keep their own bests.</li>
           </ul>
         </div>
       </aside>
@@ -126,26 +163,73 @@ async function renderSetup(el, rerender, ctx) {
     return cleanSettings(raw);
   };
 
+  const levelHint = el.querySelector('[data-level-hint]');
+  const bestsBody = el.querySelector('[data-bests]');
+  const bestsDur = el.querySelector('[data-bests-dur]');
+
   const refresh = () => {
     const { settings: s, errors } = read();
     current = s;
     form.querySelector('[data-for="add"]').classList.toggle('off', !s.add && !s.sub);
     form.querySelector('[data-for="mul"]').classList.toggle('off', !s.mul && !s.div);
     const std = isStandard(s);
-    note.className = `standard-note ${std ? 'ok' : 'custom'}`;
-    note.innerHTML = errors.length
+    const level = levelOf(s);
+    const preset = DIFFICULTIES.find((d) => d.level === level);
+    form.querySelectorAll('[data-level]').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.level) === level)));
+    levelHint.textContent = preset ? preset.hint : 'Custom ranges. Pick a level above to go back to a preset.';
+
+    note.className = `standard-note ${errors.length ? 'custom' : std ? 'ok' : preset ? 'level' : 'custom'}`;
+    const noteHTML = errors.length
       ? `⚠️ ${esc(errors[0])}`
       : std
-        ? `✓ Zetamac defaults: this counts towards your sprint score.`
-        : `✏️ Custom settings: practice only, won’t change your sprint score. <button type="button" class="link-inline" id="reset">Reset to defaults</button>`;
-    note.querySelector('#reset')?.addEventListener('click', async () => {
-      await setMeta(SETTINGS_KEY, { ...DEFAULT_SETTINGS });
-      rerender();
-    });
+        ? `✓ Standard at 2 minutes: this counts towards your daily sprint score.`
+        : preset
+          ? `${preset.emoji} ${esc(preset.name)} · ${durationLabel(s.duration)}: tracked as its own best. Your daily sprint score uses Standard at 2 minutes.`
+          : `✏️ Custom settings: practice only, no best is tracked. <button type="button" class="link-inline" id="reset">Reset to Standard</button>`;
+    // Only redraw when the text changes: leaving a field fires another refresh, and
+    // replacing the note then would remove the Reset button just as it's tapped.
+    if (note.dataset.html !== noteHTML) {
+      note.dataset.html = noteHTML;
+      note.innerHTML = noteHTML;
+      note.querySelector('#reset')?.addEventListener('click', async () => {
+        await setMeta(SETTINGS_KEY, { ...DEFAULT_SETTINGS });
+        rerender();
+      });
+    }
     startBtn.disabled = errors.length > 0;
-    startBtn.textContent = std ? `Start round ${nextRound} · ${durationLabel(s.duration)}` : `Start practice · ${durationLabel(s.duration)}`;
+    startBtn.textContent = std
+      ? `Start round ${nextRound} · ${durationLabel(s.duration)}`
+      : preset
+        ? `Start ${preset.name} · ${durationLabel(s.duration)}`
+        : `Start practice · ${durationLabel(s.duration)}`;
+
+    // Bests per level at the chosen duration.
+    bestsDur.textContent = `· ${durationLabel(s.duration)}`;
+    bestsBody.innerHTML = DIFFICULTIES.map((d) => {
+      let best = bestFor(`${d.level}:${s.duration}`, rounds, null);
+      // Zetamac scores logged by hand count as Standard, 2 min.
+      if (d.level === 3 && s.duration === 120 && sprints.length) best = Math.max(best ?? 0, ...sprints.map((x) => x.best));
+      return `<tr class="${d.level === level ? 'current' : ''}"><td>${d.emoji} ${esc(d.name)}</td><td class="num"><strong>${best ?? '–'}</strong></td></tr>`;
+    }).join('');
+
     if (!errors.length) setMeta(SETTINGS_KEY, s);
   };
+
+  // Picking a level fills in the form; editing any range afterwards makes it Custom.
+  const fill = (s) => {
+    const f = form.elements;
+    for (const k of ['add', 'sub', 'mul', 'div']) f[k].checked = s[k];
+    for (const k of ['addA', 'addB', 'mulA', 'mulB']) {
+      f[`${k}0`].value = s[k][0];
+      f[`${k}1`].value = s[k][1];
+    }
+  };
+  form.querySelectorAll('[data-level]').forEach((b) =>
+    b.addEventListener('click', () => {
+      fill(applyDifficulty(Number(b.dataset.level), current));
+      refresh();
+    })
+  );
 
   form.addEventListener('input', refresh);
   form.addEventListener('change', refresh);
@@ -238,6 +322,7 @@ function playRound(el, rerender, ctx, settings) {
     const round = await logRound(date, {
       score: solved.length,
       standard,
+      level: levelOf(settings),
       settings,
       duration: settings.duration,
       problems: solved,
@@ -267,13 +352,15 @@ function playRound(el, rerender, ctx, settings) {
 function renderResults(el, rerender, ctx, round, before, { saved }) {
   const stats = round.stats ?? roundStats(round.problems ?? []);
   const date = round.date;
-  const earlierStandard = before.rounds.filter((r) => r.standard && r.id !== round.id && (r.finished_at ?? '') < (round.finished_at ?? ''));
-  const prevBest = Math.max(
-    -Infinity,
-    ...earlierStandard.map((r) => r.score),
-    ...before.sprints.filter((s) => s.date < date).map((s) => s.best)
-  );
-  const isNewBest = round.standard && round.score > 0 && round.score > prevBest && prevBest !== -Infinity;
+  const key = compareKey(round.settings);
+  let prevBest = bestFor(key, before.rounds, round.id, round.finished_at);
+  // Hand-logged Zetamac scores from earlier days count as Standard, 2 min.
+  if (round.standard) {
+    const manual = before.sprints.filter((x) => x.date < date).map((x) => x.best);
+    if (manual.length) prevBest = Math.max(prevBest ?? 0, ...manual);
+  }
+  const isNewBest = key && round.score > 0 && prevBest != null && round.score > prevBest;
+  const level = DIFFICULTIES.find((d) => d.level === levelOf(round.settings));
   const todayStandard = before.rounds.filter((r) => r.standard && r.date === date && r.id !== round.id).length + (round.standard ? 1 : 0);
   const roundNo = before.todayRounds.filter((r) => r.id !== round.id && (r.finished_at ?? '') < (round.finished_at ?? '')).length + 1;
 
@@ -288,17 +375,18 @@ function renderResults(el, rerender, ctx, round, before, { saved }) {
 
   el.innerHTML = `
     ${saved ? '<a class="back" href="#/sprint">← Sprint</a>' : ''}
-    <div class="eyebrow">${esc(prettyDate(date))} · ${round.standard ? `Round ${roundNo}` : 'Practice round'} · ${esc(describeSettings(round.settings))}</div>
+    <div class="eyebrow">${esc(prettyDate(date))} · ${round.standard ? `Round ${roundNo} · ` : ''}${level ? `${level.emoji} ${esc(level.name)}` : '✏️ Custom'} · ${durationLabel(round.duration ?? round.settings.duration)}</div>
     <h1 class="page-title result-score num">${round.score}</h1>
     <p class="page-sub">${
-      isNewBest
-        ? 'New best ever! 🎉'
-        : round.standard
-          ? prevBest !== -Infinity
-            ? `Your best is ${prevBest}.`
-            : 'First score logged. This is your baseline.'
-          : 'Custom settings, so this one is practice only.'
+      !key
+        ? 'Custom settings, so this one is practice only.'
+        : isNewBest
+          ? `New best for ${esc(level.name)} · ${durationLabel(round.settings.duration)}! 🎉 Previous: ${prevBest}.`
+          : prevBest != null
+            ? `Your best on ${esc(level.name)} · ${durationLabel(round.settings.duration)} is ${prevBest}.`
+            : `First ${esc(level.name)} · ${durationLabel(round.settings.duration)} score. This is your baseline.`
     } ${stats.avgMs != null ? `${secs(stats.avgMs)} per answer on average.` : ''}</p>
+    <p class="muted small">${esc(describeSettings(round.settings))}</p>
 
     <div class="result-actions">
       ${saved ? '' : `<button class="btn" id="again">${primary}</button>`}

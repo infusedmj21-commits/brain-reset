@@ -101,3 +101,41 @@ describe('roundStats', () => {
     expect(roundStats([])).toMatchObject({ score: 0, avgMs: null, slowest: [] });
   });
 });
+
+import { DIFFICULTIES, applyDifficulty, compareKey, levelOf } from '../src/logic/arithmetic.js';
+
+describe('difficulty presets', () => {
+  it('has five levels and level 3 is the Zetamac default', () => {
+    expect(DIFFICULTIES.map((d) => d.level)).toEqual([1, 2, 3, 4, 5]);
+    expect(isStandard({ ...applyDifficulty(3, DEFAULT_SETTINGS), duration: 120 })).toBe(true);
+    expect(levelOf(DEFAULT_SETTINGS)).toBe(3);
+  });
+  it('every preset is valid and recognised as itself', () => {
+    for (const d of DIFFICULTIES) {
+      const s = applyDifficulty(d.level, DEFAULT_SETTINGS);
+      expect(cleanSettings(s).errors).toEqual([]);
+      expect(levelOf(s)).toBe(d.level);
+    }
+  });
+  it('gets harder level by level', () => {
+    const maxAdd = DIFFICULTIES.map((d) => d.settings.addA[1]);
+    const maxMul = DIFFICULTIES.map((d) => d.settings.mulA[1] * d.settings.mulB[1]);
+    expect([...maxAdd].sort((a, b) => a - b)).toEqual(maxAdd);
+    expect([...maxMul].sort((a, b) => a - b)).toEqual(maxMul);
+  });
+  it('keeps the chosen duration and detects custom tweaks', () => {
+    const s = applyDifficulty(4, { ...DEFAULT_SETTINGS, duration: 60 });
+    expect(s.duration).toBe(60);
+    expect(compareKey(s)).toBe('4:60');
+    expect(levelOf({ ...s, mulB: [10, 99] })).toBeNull();
+    expect(compareKey({ ...s, mulB: [10, 99] })).toBeNull();
+  });
+  it('expert problems stay solvable whole numbers', () => {
+    const s = applyDifficulty(5, DEFAULT_SETTINGS);
+    for (let i = 0; i < 500; i++) {
+      const p = makeProblem(s);
+      expect(Number.isInteger(p.answer)).toBe(true);
+      expect(p.answer).toBeGreaterThanOrEqual(0);
+    }
+  });
+});

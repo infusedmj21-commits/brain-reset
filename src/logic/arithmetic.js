@@ -113,3 +113,51 @@ export function describeSettings(s) {
   const d = s.duration >= 60 ? `${s.duration / 60} min` : `${s.duration} s`;
   return `${parts.join(' · ')} · ${d}`;
 }
+
+// Five difficulty presets. Level 3 is exactly Zetamac's defaults.
+// A preset sets the operations and ranges; duration stays your choice.
+export const DIFFICULTIES = [
+  {
+    level: 1, name: 'Warm-up', emoji: '🌱', hint: 'Small numbers, times tables to 5',
+    settings: { add: true, addA: [2, 20], addB: [2, 20], sub: true, mul: true, mulA: [2, 5], mulB: [2, 10], div: true }
+  },
+  {
+    level: 2, name: 'Easy', emoji: '🙂', hint: 'Sums to 100, times tables to 9 × 12',
+    settings: { add: true, addA: [2, 50], addB: [2, 50], sub: true, mul: true, mulA: [2, 9], mulB: [2, 12], div: true }
+  },
+  {
+    level: 3, name: 'Standard', emoji: '⭐', hint: 'Zetamac defaults: 2–100, and 2–12 × 2–100',
+    settings: { add: true, addA: [2, 100], addB: [2, 100], sub: true, mul: true, mulA: [2, 12], mulB: [2, 100], div: true }
+  },
+  {
+    level: 4, name: 'Hard', emoji: '🔥', hint: 'Three-digit sums, 3–20 × 10–100',
+    settings: { add: true, addA: [20, 300], addB: [20, 300], sub: true, mul: true, mulA: [3, 20], mulB: [10, 100], div: true }
+  },
+  {
+    level: 5, name: 'Expert', emoji: '🧠', hint: '100–999 sums, 6–30 × 20–200',
+    settings: { add: true, addA: [100, 999], addB: [100, 999], sub: true, mul: true, mulA: [6, 30], mulB: [20, 200], div: true }
+  }
+];
+
+/** The preset these settings match (ignoring duration), or null for custom. */
+export function levelOf(settings) {
+  const s = cleanSettings(settings).settings;
+  const same = (a, b) => a[0] === b[0] && a[1] === b[1];
+  const match = DIFFICULTIES.find(({ settings: p }) =>
+    ['add', 'sub', 'mul', 'div'].every((k) => s[k] === p[k]) &&
+    same(s.addA, p.addA) && same(s.addB, p.addB) && same(s.mulA, p.mulA) && same(s.mulB, p.mulB)
+  );
+  return match?.level ?? null;
+}
+
+/** Apply a preset, keeping the chosen duration. */
+export function applyDifficulty(level, settings) {
+  const preset = DIFFICULTIES.find((d) => d.level === level);
+  return cleanSettings({ ...settings, ...preset.settings }).settings;
+}
+
+/** Rounds are comparable when level and duration match. Custom rounds have no key. */
+export function compareKey(settings) {
+  const level = levelOf(settings);
+  return level ? `${level}:${cleanSettings(settings).settings.duration}` : null;
+}
