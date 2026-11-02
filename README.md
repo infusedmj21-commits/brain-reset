@@ -9,9 +9,9 @@ It installs to the iPhone home screen and the computer taskbar from one codebase
 | Phase | What | State |
 | --- | --- | --- |
 | 1 | Installable shell, Today screen, sprint log, JSON export, light and dark look | Done |
-| 2 | Memory palace trainer | Next |
-| 3 | Unprompted sessions with recording | |
-| 4 | Sync between devices (Supabase) | |
+| 2 | Memory palace trainer | Done |
+| 3 | Unprompted sessions (recording in the app comes later) | Done |
+| 4 | Sync between devices (Supabase) | Next |
 | 5 | Weekly review and charts | |
 | 6 | AI review of recorded talks | |
 
@@ -49,6 +49,9 @@ src/
   db.js              Dexie schema, sync-ready save/remove, export/import
   logic/dates.js     local-date helpers (Monday-start weeks, DST-safe)
   logic/routine.js   day templates, unprompted-day rule, streaks, TikTok schedule
+  logic/palace.js    word picking, lenient recall scoring, weekly test history
+  logic/unprompted.js session steps, timestamp-based countdowns, next-day recall
+  logic/words.js     bundled list of easy-to-picture words
   views/             one file per screen; look.js holds colours, shapes and emoji per habit
 tests/               Vitest unit tests
 ```

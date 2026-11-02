@@ -27,6 +27,11 @@ export function createDB(name = 'brain-reset') {
     outbox: '++seq, table, row_id',
     meta: 'key'
   });
+  // v2: blobs holds files such as notes photos. Kept out of JSON export (too big);
+  // phase 4 uploads them to Supabase Storage.
+  db.version(2).stores({
+    blobs: 'id, updated_at'
+  });
   return db;
 }
 
@@ -159,4 +164,22 @@ export async function getMeta(key, database = db) {
 
 export async function setMeta(key, value, database = db) {
   await database.meta.put({ key, value });
+}
+
+// ---- Generic helpers used by the palace and unprompted screens ----
+
+export async function getRow(table, id, database = db) {
+  const row = await database.table(table).get(id);
+  return row && !row.deleted ? row : null;
+}
+
+/** Store an image or other file. Returns the blob row id. */
+export async function saveBlob(blob, database = db) {
+  const row = await save('blobs', { data: blob, type: blob.type, size: blob.size }, database);
+  return row.id;
+}
+
+export async function getBlob(id, database = db) {
+  const row = id ? await getRow('blobs', id, database) : null;
+  return row?.data ?? null;
 }

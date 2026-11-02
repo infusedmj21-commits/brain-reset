@@ -339,3 +339,122 @@ tr.current td { font-weight: 800; color: var(--ink); background: var(--sky-soft)
   .side { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
   .hero { grid-template-columns: 1fr; }
 }
+
+/* ---------- Phases 2 and 3 ---------- */
+.back { display: inline-block; margin-bottom: 14px; font-weight: 800; color: var(--ink-2); text-decoration: none; }
+.back:hover { color: var(--ink); }
+.label { display: grid; gap: 6px; font-size: 13px; font-weight: 800; color: var(--ink-2); }
+textarea.field { resize: vertical; line-height: 1.45; font-size: 16px; }
+select.field { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--ink) 50%), linear-gradient(135deg, var(--ink) 50%, transparent 50%); background-position: calc(100% - 20px) 50%, calc(100% - 14px) 50%; background-size: 6px 6px; background-repeat: no-repeat; padding-right: 36px; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+a.btn { text-decoration: none; display: inline-block; }
+.btn.block { display: block; }
+.plain-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.list-card { padding: 14px 16px; display: block; text-decoration: none; color: inherit; }
+.list-card h3 { font-size: 17px; }
+.lib-item:hover { transform: translateY(-1px); }
+.ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stack-lg { display: grid; gap: 16px; }
+.tips { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 6px; font-size: 14px; }
+.steps-list { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 14px; color: var(--ink-2); }
+tr.clickable { cursor: pointer; }
+tr.clickable:hover td { background: var(--field); }
+.badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.badge {
+  display: inline-block; border: var(--border); border-radius: 999px; padding: 2px 10px;
+  font-size: 12px; font-weight: 800; background: var(--card); white-space: nowrap;
+}
+.badge.ok { background: var(--mint-soft); }
+
+/* Timer ring */
+.timer-ring {
+  --p: 0; --ring: var(--grape); --ring-soft: var(--grape-soft);
+  width: 220px; height: 220px; border-radius: 50%; border: var(--border); box-shadow: var(--shadow);
+  background: conic-gradient(var(--ring) calc(var(--p) * 1%), var(--ring-soft) 0);
+  display: grid; place-items: center; margin: 0 auto;
+}
+.timer-face {
+  width: 168px; height: 168px; border-radius: 50%; background: var(--card); border: var(--border);
+  display: grid; place-content: center; text-align: center;
+}
+.timer-time { font: 600 46px/1 var(--display); }
+.timer-label { font-size: 13px; font-weight: 800; color: var(--ink-2); margin-top: 6px; }
+.timer-ring.over .timer-time { color: var(--tomato); }
+.center-stack { display: grid; gap: 14px; justify-items: center; text-align: center; margin-top: 18px; }
+.center-stack .btn { min-width: 240px; }
+
+/* Palace study and recall */
+.session-head { margin-bottom: 18px; }
+.study-layout { display: grid; gap: 20px; }
+.pairs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.pairs li, .recall-row {
+  display: grid; grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1.2fr); align-items: center; gap: 10px;
+  background: var(--card); border: var(--border); border-radius: 16px; padding: 8px 12px;
+}
+.pair-n {
+  width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--mint-soft); border: var(--border); font: 600 13px var(--display);
+}
+.pair-locus { color: var(--ink-2); font-weight: 700; font-size: 14px; }
+.pair-word { font: 600 19px var(--display); }
+.pair-word small { display: block; font: 700 12px Nunito, sans-serif; color: var(--ink-2); }
+.results li { grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1.2fr) 28px; }
+.results li.ok { background: var(--mint-soft); }
+.results li.half { background: var(--sun-soft); }
+.results li.miss { background: var(--tomato-soft); }
+.pair-mark { font: 600 20px var(--display); text-align: center; }
+.recall-grid { display: grid; gap: 8px; }
+.recall-row .field { padding: 8px 10px; }
+.recall-actions { display: flex; gap: 12px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+.sticky { align-content: start; }
+
+/* Unprompted */
+.topic-title { font-size: 30px; line-height: 1.15; }
+.step-pills { list-style: none; margin: 16px 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.step-pills li {
+  display: flex; align-items: center; gap: 6px; border: var(--border); border-radius: 999px;
+  padding: 4px 12px 4px 4px; font: 500 14px var(--display); background: var(--card); color: var(--ink-2);
+}
+.step-pills li span { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--field); border: var(--border); font-size: 12px; }
+.step-pills li.current { background: var(--grape); color: #fff; }
+.step-pills li.current span { background: #fff; color: var(--on-accent); }
+.step-pills li.done { color: var(--ink); }
+.step-pills li.done span { background: var(--mint); color: var(--on-accent); }
+.session-card { padding: 22px; }
+.session-title { font-size: 26px; }
+.session-body { color: var(--ink-2); font-size: 16px; margin-top: 6px; max-width: 640px; }
+.recall-topic { font: 600 24px/1.2 var(--display); margin: 2px 0 0; }
+.recall-timer { display: grid; gap: 16px; justify-items: center; }
+.recall-timer .timer-ring { width: 170px; height: 170px; }
+.recall-timer .timer-face { width: 128px; height: 128px; }
+.recall-timer .timer-time { font-size: 36px; }
+.photo-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; }
+.photo-row img { max-width: 100%; max-height: 320px; border-radius: 16px; border: var(--border); }
+
+@media (min-width: 900px) {
+  .study-layout { grid-template-columns: minmax(0, 1fr) 280px; align-items: start; }
+  .sticky { position: sticky; top: 24px; }
+  .recall-grid { grid-template-columns: 1fr 1fr; column-gap: 14px; }
+  .recall-actions { grid-column: 1 / -1; }
+  .recall-timer { grid-template-columns: auto 1fr; justify-items: start; align-items: center; }
+  .topic-title { font-size: 40px; }
+}
+
+/* Grid children must be allowed to shrink, or long unbroken text pushes columns off-screen. */
+.layout > *, .cols > *, .side, .side > * { min-width: 0; }
+
+/* Phone: put the study timer above the word list as a compact bar. */
+@media (max-width: 899px) {
+  .study-layout aside {
+    order: -1; grid-template-columns: auto 1fr; align-items: center; column-gap: 14px;
+    background: var(--card); border: var(--border); border-radius: var(--r); padding: 12px;
+    position: sticky; top: calc(env(safe-area-inset-top) + 8px); z-index: 2; box-shadow: var(--shadow);
+  }
+  .study-layout aside .timer-ring { grid-row: span 2; width: 104px; height: 104px; box-shadow: none; }
+  .study-layout aside .timer-face { width: 78px; height: 78px; }
+  .study-layout aside .timer-time { font-size: 24px; }
+  .study-layout aside .timer-label { font-size: 11px; margin-top: 2px; }
+  .study-layout aside .btn-mini { justify-self: start; }
+}
+.plain-list, .missions, .stack, .stack-lg, .side { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .missions { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

@@ -44,7 +44,11 @@ function dayChips(selected, attr, small = false) {
 function missionHTML(item, done, suggestion, rotating) {
   const look = HABIT_LOOK[item.habit];
   const links = (HABIT_LINKS[item.habit] ?? [])
-    .map((l) => `<a class="btn-mini" href="${l.href}" target="_blank" rel="noopener">${esc(l.label)}</a>`)
+    .map((l) =>
+      l.href.startsWith('#')
+        ? `<a class="btn-mini" href="${l.href}">${esc(l.label)}</a>`
+        : `<a class="btn-mini" href="${l.href}" target="_blank" rel="noopener">${esc(l.label)}</a>`
+    )
     .join('');
   const other = rotating === 'unprompted' ? 'palace' : 'unprompted';
   const swap = item.rotating

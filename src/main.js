@@ -9,51 +9,44 @@ import { registerSW } from 'virtual:pwa-register';
 import { renderToday } from './views/today.js';
 import { renderSettings } from './views/settings.js';
 import { renderProgress } from './views/progress.js';
-import { renderComingSoon } from './views/coming-soon.js';
+import { renderPalace } from './views/palace.js';
+import { renderUnprompted } from './views/unprompted.js';
 
 const routes = {
   today: renderToday,
-  palace: (el) =>
-    renderComingSoon(el, {
-      title: 'Memory palace',
-      phase: 2,
-      habit: 'palace',
-      body: 'For now, tick “Memory palace” on Today after a session.',
-      features: [
-        'Build palaces from routes you know, spot by spot',
-        'Practice with random 10 or 20 word lists and a study timer',
-        'Weekly test: 20 words, 5 minutes, recall after 20 minutes',
-        'Your own lists, like Spanish vocab or uni definitions'
-      ]
-    }),
-  unprompted: (el) =>
-    renderComingSoon(el, {
-      title: 'Unprompted',
-      phase: 3,
-      habit: 'unprompted',
-      body: 'For now, tick “Unprompted session” on Today when you finish one.',
-      features: [
-        'Paste the topic, then 15 + 5 minute timers',
-        'Photo of your handwritten notes',
-        'Record your 60-second take in the app',
-        'Next-day recall and a library of every topic'
-      ]
-    }),
+  palace: renderPalace,
+  unprompted: renderUnprompted,
   progress: renderProgress,
   settings: renderSettings
 };
 
 const view = document.getElementById('view');
 
+// Views can register cleanups (timers, object URLs) that run before the next render.
+let cleanups = [];
+function runCleanups() {
+  for (const fn of cleanups) {
+    try {
+      fn();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  cleanups = [];
+}
+
 async function render() {
-  const name = location.hash.replace(/^#\/?/, '') || 'today';
+  runCleanups();
+  // Routes look like #/palace or #/unprompted/session/<id>.
+  const [name = 'today', ...params] = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
   const route = routes[name] ? name : 'today';
+  const ctx = { params, onCleanup: (fn) => cleanups.push(fn) };
   document.querySelectorAll('.tabbar a').forEach((a) => {
     if (a.dataset.tab === route) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');
   });
   try {
-    await routes[route](view, render);
+    await routes[route](view, render, ctx);
   } catch (err) {
     console.error(err);
     view.innerHTML = `<div class="card"><p><strong>Something went wrong.</strong></p><p class="muted small">${String(err.message ?? err)}</p></div>`;

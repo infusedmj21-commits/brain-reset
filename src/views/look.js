@@ -23,5 +23,7 @@ export const HABIT_LINKS = {
     { label: 'Anki ↗', href: 'https://ankiweb.net/' },
     { label: 'Language Transfer ↗', href: 'https://www.languagetransfer.org/' }
   ],
-  unprompted: [{ label: 'Get a topic ↗', href: 'https://unprompted.cool/' }]
+  unprompted: [{ label: 'Start session →', href: '#/unprompted' }],
+  palace: [{ label: 'Practise →', href: '#/palace' }],
+  recall: [{ label: 'Open →', href: '#/unprompted' }]
 };

@@ -36,8 +36,8 @@ export async function renderSettings(el, rerender) {
 
         <div class="sec" style="--dot:var(--sun)"><span class="dot"></span><h2>About</h2></div>
         <div class="card top-sun">
-          <p><strong>Brain Reset</strong> · phase 1</p>
-          <p class="muted small">Next up: memory palace trainer, unprompted sessions with recording, sync between devices, charts.</p>
+          <p><strong>Brain Reset</strong> · phases 1–3</p>
+          <p class="muted small">Next up: sync between devices, weekly review and charts, then recording and AI feedback for unprompted talks.</p>
         </div>
       </section>
 
