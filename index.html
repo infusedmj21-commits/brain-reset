@@ -5,34 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Brain Reset</title>
     <meta name="description" content="Daily routine for focus, memory and Spanish." />
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0e0f0d" media="(prefers-color-scheme: dark)" />
-    <script>
-      // Set the theme before first paint so there's no flash of the wrong colours.
-      try {
-        var p = localStorage.getItem('brain-reset-theme') || 'auto';
-        document.documentElement.dataset.theme =
-          p === 'auto' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'sport') : p;
-      } catch (e) {
-        document.documentElement.dataset.theme = 'sport';
-      }
-    </script>
+    <meta name="theme-color" content="#fbf8f2" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1b1726" media="(prefers-color-scheme: dark)" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Brain Reset" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link rel="icon" type="image/png" href="/icons/favicon.png" />
+    <script>
+      // Set the theme before first paint so there's no flash of the wrong colours.
+      try {
+        var p = localStorage.getItem('brain-reset-theme');
+        if (p !== 'light' && p !== 'dark') p = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.dataset.theme = p;
+      } catch (e) {
+        document.documentElement.dataset.theme = 'light';
+      }
+    </script>
   </head>
   <body>
-    <main id="view" class="view" tabindex="-1"></main>
+    <div class="bg-shape" aria-hidden="true"></div>
     <nav class="tabbar" aria-label="Sections">
-      <a href="#/today" data-tab="today"><span class="tab-icon" aria-hidden="true">◐</span>Today</a>
-      <a href="#/palace" data-tab="palace"><span class="tab-icon" aria-hidden="true">⌂</span>Palace</a>
-      <a href="#/unprompted" data-tab="unprompted"><span class="tab-icon" aria-hidden="true">◉</span>Unprompted</a>
-      <a href="#/progress" data-tab="progress"><span class="tab-icon" aria-hidden="true">↗</span>Progress</a>
-      <a href="#/settings" data-tab="settings"><span class="tab-icon" aria-hidden="true">≡</span>Settings</a>
+      <div class="brand"><i aria-hidden="true"></i>Brain Reset</div>
+      <a href="#/today" data-tab="today"><span class="ti" aria-hidden="true">☀️</span>Today</a>
+      <a href="#/palace" data-tab="palace"><span class="ti" aria-hidden="true">🏰</span>Palace</a>
+      <a href="#/unprompted" data-tab="unprompted"><span class="ti" aria-hidden="true">🎙️</span>Unprompted</a>
+      <a href="#/progress" data-tab="progress"><span class="ti" aria-hidden="true">📈</span>Progress</a>
+      <a href="#/settings" data-tab="settings"><span class="ti" aria-hidden="true">⚙️</span>Settings</a>
+      <div class="tip"><b>Never miss twice</b>Missed a day? Do the minimum today and the streak lives on.</div>
     </nav>
+    <main id="view" class="view" tabindex="-1"></main>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

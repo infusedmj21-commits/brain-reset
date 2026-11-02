@@ -8,7 +8,7 @@ It installs to the iPhone home screen and the computer taskbar from one codebase
 
 | Phase | What | State |
 | --- | --- | --- |
-| 1 | Installable shell, Today screen, sprint log, JSON export, themes | Done |
+| 1 | Installable shell, Today screen, sprint log, JSON export, light and dark look | Done |
 | 2 | Memory palace trainer | Next |
 | 3 | Unprompted sessions with recording | |
 | 4 | Sync between devices (Supabase) | |
@@ -45,11 +45,11 @@ npm run build    # production build into dist/
 ```
 src/
   main.js            router, tab bar, service worker registration
-  theme.js           Auto / Night / Sport theme preference
+  theme.js           Auto / Light / Dark preference and greeting name
   db.js              Dexie schema, sync-ready save/remove, export/import
   logic/dates.js     local-date helpers (Monday-start weeks, DST-safe)
   logic/routine.js   day templates, unprompted-day rule, streaks, TikTok schedule
-  views/             one file per screen
+  views/             one file per screen; look.js holds colours, shapes and emoji per habit
 tests/               Vitest unit tests
 ```
 

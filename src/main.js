@@ -1,3 +1,8 @@
+import '@fontsource/fredoka/latin-500.css';
+import '@fontsource/fredoka/latin-600.css';
+import '@fontsource/nunito/latin-600.css';
+import '@fontsource/nunito/latin-700.css';
+import '@fontsource/nunito/latin-800.css';
 import './styles.css';
 import { applyTheme } from './theme.js';
 import { registerSW } from 'virtual:pwa-register';
@@ -12,13 +17,27 @@ const routes = {
     renderComingSoon(el, {
       title: 'Memory palace',
       phase: 2,
-      body: 'Build palaces, practise with random word lists, run the weekly 20-word test, and track your score. For now, tick “Memory palace” on Today after a session.'
+      habit: 'palace',
+      body: 'For now, tick “Memory palace” on Today after a session.',
+      features: [
+        'Build palaces from routes you know, spot by spot',
+        'Practice with random 10 or 20 word lists and a study timer',
+        'Weekly test: 20 words, 5 minutes, recall after 20 minutes',
+        'Your own lists, like Spanish vocab or uni definitions'
+      ]
     }),
   unprompted: (el) =>
     renderComingSoon(el, {
-      title: 'Unprompted sessions',
+      title: 'Unprompted',
       phase: 3,
-      body: 'Paste the topic, run the 15 + 5 minute timers, photograph your notes, record your 60-second take and keep a library of topics. For now, tick “Unprompted session” on Today when you finish one.'
+      habit: 'unprompted',
+      body: 'For now, tick “Unprompted session” on Today when you finish one.',
+      features: [
+        'Paste the topic, then 15 + 5 minute timers',
+        'Photo of your handwritten notes',
+        'Record your 60-second take in the app',
+        'Next-day recall and a library of every topic'
+      ]
     }),
   progress: renderProgress,
   settings: renderSettings

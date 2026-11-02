@@ -162,3 +162,36 @@ export function bestSprint(r1, r2) {
     .filter((n) => Number.isFinite(n) && n >= 0);
   return vals.length ? Math.max(...vals) : null;
 }
+
+const DAILY_CORE = ['sprint', 'spanish', 'reading'];
+
+/** 'full' (sprint, Spanish and reading), 'min' (just the minimum) or 'none'. */
+export function dayStatus(done) {
+  if (!dayCounts(done)) return 'none';
+  return DAILY_CORE.every((h) => done.has(h)) ? 'full' : 'min';
+}
+
+/**
+ * Sprint scoreboard numbers: the last 7 logged days (oldest first),
+ * this week's and last week's best, and the change between them.
+ */
+export function sprintSummary(sprints, date, weekStartOf) {
+  const sorted = [...sprints].filter((s) => s.date <= date).sort((a, b) => a.date.localeCompare(b.date));
+  const recent = sorted.slice(-7);
+  const thisWeek = weekStartOf(date);
+  const lastWeek = weekStartOf(addDays(thisWeek, -1));
+  const bestIn = (start) => {
+    const vals = sorted.filter((s) => weekStartOf(s.date) === start).map((s) => s.best);
+    return vals.length ? Math.max(...vals) : null;
+  };
+  const weekBest = bestIn(thisWeek);
+  const lastWeekBest = bestIn(lastWeek);
+  return {
+    recent,
+    latest: sorted.at(-1) ?? null,
+    allTimeBest: sorted.length ? Math.max(...sorted.map((s) => s.best)) : null,
+    weekBest,
+    lastWeekBest,
+    delta: weekBest != null && lastWeekBest != null ? weekBest - lastWeekBest : null
+  };
+}

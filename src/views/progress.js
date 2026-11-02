@@ -1,69 +1,75 @@
 import { doneByDate, live } from '../db.js';
-import { addDays, today, weekStart } from '../logic/dates.js';
-import { TIKTOK_SCHEDULE, dayCounts, formatMinutes, tiktokLimit } from '../logic/routine.js';
-
-const ALL_DAILY = ['sprint', 'spanish', 'reading'];
+import { addDays, prettyDate, today, weekStart } from '../logic/dates.js';
+import { TIKTOK_SCHEDULE, dayStatus, formatMinutes, sprintSummary, tiktokLimit } from '../logic/routine.js';
 
 export async function renderProgress(el) {
   const date = today();
   const [doneMap, sprints] = await Promise.all([doneByDate(), live('sprint_scores')]);
   const start = addDays(weekStart(date), -21);
   const days = Array.from({ length: 28 }, (_, i) => addDays(start, i));
+  const counted = days.filter((d) => d <= date && dayStatus(doneMap[d]) !== 'none').length;
+  const elapsed = days.filter((d) => d <= date).length;
 
   const cells = days
     .map((d) => {
-      const done = doneMap[d];
-      let cls = 'cell';
-      if (d > date) cls += ' future';
-      else if (dayCounts(done) && ALL_DAILY.every((h) => done.has(h))) cls += ' full';
-      else if (dayCounts(done)) cls += ' min';
-      if (d === date) cls += ' today';
+      const cls = ['cell', d > date ? 'future' : dayStatus(doneMap[d]), d === date ? 'today' : ''].join(' ');
       return `<div class="${cls}" title="${d}"></div>`;
     })
     .join('');
 
-  const recent = sprints.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 7);
-  const best = sprints.reduce((m, s) => Math.max(m, s.best), 0);
+  const sprint = sprintSummary(sprints, date, weekStart);
+  const history = [...sprints].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 7);
   const current = tiktokLimit(date);
 
   el.innerHTML = `
-    <div class="eyebrow">Charts and weekly review arrive in phase 5</div>
-    <h1>Progress</h1>
+    <div class="eyebrow">Charts and the weekly review arrive in phase 5</div>
+    <h1 class="page-title">Progress</h1>
 
-    <h2>Last 4 weeks</h2>
-    <div class="card">
-      <div class="grid28">
-        ${['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d) => `<div class="dow">${d}</div>`).join('')}
-        ${cells}
-      </div>
-      <div class="legend">
-        <span><i style="background:var(--accent)"></i>Sprint, Spanish, reading</span>
-        <span><i style="background:var(--min-cell)"></i>Minimum</span>
-      </div>
-    </div>
+    <div class="cols">
+      <section>
+        <div class="sec" style="--dot:var(--mint)"><span class="dot"></span><h2>Last 4 weeks</h2>
+          <span class="aside num">${counted} of ${elapsed} days</span></div>
+        <div class="card top-mint">
+          <div class="grid28">
+            ${['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d) => `<div class="dow">${d}</div>`).join('')}
+            ${cells}
+          </div>
+          <div class="legend">
+            <span><i style="background:var(--mint)"></i>Sprint, Spanish, reading</span>
+            <span><i style="background:var(--sun)"></i>Minimum</span>
+          </div>
+        </div>
 
-    <h2>Arithmetic sprint</h2>
-    <div class="card">
-      ${
-        recent.length
-          ? `<div class="stat"><span class="muted">All-time best</span><span class="stat-value num">${best}</span></div>
-             <table class="num" style="margin-top:8px"><thead><tr><th>Date</th><th>Best</th></tr></thead><tbody>
-             ${recent.map((s) => `<tr><td>${s.date}</td><td>${s.best}</td></tr>`).join('')}
-             </tbody></table>`
-          : '<p class="muted">No scores yet. Log your first sprint on Today.</p>'
-      }
-    </div>
+        <div class="sec" style="--dot:var(--tomato)"><span class="dot"></span><h2>Arithmetic sprint</h2></div>
+        <div class="card top-sun">
+          ${
+            history.length
+              ? `<div class="stat-row"><div><div class="stat-label">Best ever</div><div class="big num">${sprint.allTimeBest}</div></div>
+                 ${sprint.delta != null ? `<span class="delta">${sprint.delta >= 0 ? '+' : ''}${sprint.delta} vs last week</span>` : ''}</div>
+                 <table class="num" style="margin-top:12px"><thead><tr><th>Day</th><th>Best</th><th>Rounds</th></tr></thead><tbody>
+                 ${history
+                   .map((s) => `<tr><td>${prettyDate(s.date)}</td><td><strong>${s.best}</strong></td><td class="muted">${(s.rounds ?? []).join(', ')}</td></tr>`)
+                   .join('')}
+                 </tbody></table>`
+              : '<p class="muted">No scores yet. Log your first sprint on Today.</p>'
+          }
+        </div>
+      </section>
 
-    <h2>TikTok limit schedule</h2>
-    <div class="card">
-      <table class="num">
-        <thead><tr><th>Week</th><th>From</th><th>Daily limit</th></tr></thead>
-        <tbody>
-          ${TIKTOK_SCHEDULE.map(
-            (s) =>
-              `<tr class="${current?.week === s.week ? 'current' : ''}"><td>${s.week}</td><td>${s.start}</td><td>${formatMinutes(s.minutes)}</td></tr>`
-          ).join('')}
-        </tbody>
-      </table>
+      <section>
+        <div class="sec" style="--dot:var(--sky)"><span class="dot"></span><h2>TikTok limit plan</h2></div>
+        <div class="card top-sky">
+          <table class="num">
+            <thead><tr><th>Week</th><th>From</th><th>Daily limit</th></tr></thead>
+            <tbody>
+              ${TIKTOK_SCHEDULE.map(
+                (s) =>
+                  `<tr class="${current?.week === s.week ? 'current' : ''}"><td>${s.week}</td><td>${prettyDate(s.start).replace(/^\w+ /, '')}</td><td>${formatMinutes(s.minutes)}</td></tr>`
+              ).join('')}
+            </tbody>
+          </table>
+          <p class="note">If X goes over 9 hours a week two weeks running, add it to the limit.</p>
+        </div>
+      </section>
     </div>`;
 }

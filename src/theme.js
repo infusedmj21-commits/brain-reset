@@ -1,26 +1,27 @@
 // Theme preference is per device (stored in localStorage), not synced.
-// 'auto' follows the system: Sport in light mode, Night in dark mode.
+// One look with a light and a dark version; 'auto' follows the device.
 
 export const THEMES = {
-  auto: 'Auto (follow my device)',
-  night: 'Night',
-  sport: 'Sport'
+  auto: 'Auto',
+  light: 'Light',
+  dark: 'Dark'
 };
 
 const KEY = 'brain-reset-theme';
-const dark = window.matchMedia('(prefers-color-scheme: dark)');
+const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
 export function getThemePref() {
   try {
-    return localStorage.getItem(KEY) || 'auto';
+    const v = localStorage.getItem(KEY);
+    return v in THEMES ? v : 'auto';
   } catch {
     return 'auto';
   }
 }
 
 export function resolveTheme(pref = getThemePref()) {
-  if (pref === 'night' || pref === 'sport') return pref;
-  return dark.matches ? 'night' : 'sport';
+  if (pref === 'light' || pref === 'dark') return pref;
+  return darkQuery.matches ? 'dark' : 'light';
 }
 
 export function applyTheme() {
@@ -29,7 +30,7 @@ export function applyTheme() {
   const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
   document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
     m.removeAttribute('media');
-    m.setAttribute('content', bg || (theme === 'night' ? '#0e0f0d' : '#ffffff'));
+    m.setAttribute('content', bg || (theme === 'dark' ? '#1b1726' : '#fbf8f2'));
   });
 }
 
@@ -37,11 +38,29 @@ export function setThemePref(pref) {
   try {
     localStorage.setItem(KEY, pref);
   } catch {
-    /* storage blocked: theme still applies for this session */
+    /* storage blocked: the theme still applies for this session */
   }
   applyTheme();
 }
 
-dark.addEventListener('change', () => {
+darkQuery.addEventListener('change', () => {
   if (getThemePref() === 'auto') applyTheme();
 });
+
+// Greeting name, also per device.
+const NAME_KEY = 'brain-reset-name';
+export function getName() {
+  try {
+    const v = localStorage.getItem(NAME_KEY);
+    return v == null ? 'Michael' : v;
+  } catch {
+    return 'Michael';
+  }
+}
+export function setName(name) {
+  try {
+    localStorage.setItem(NAME_KEY, name.trim());
+  } catch {
+    /* ignore */
+  }
+}

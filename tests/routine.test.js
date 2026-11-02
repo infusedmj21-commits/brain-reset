@@ -123,3 +123,33 @@ describe('tiktok limit and formatting', () => {
     expect(bestSprint('', '')).toBeNull();
   });
 });
+
+import { dayStatus, sprintSummary } from '../src/logic/routine.js';
+
+describe('dayStatus', () => {
+  it('grades a day', () => {
+    expect(dayStatus(undefined)).toBe('none');
+    expect(dayStatus(new Set(['sprint']))).toBe('none');
+    expect(dayStatus(new Set(['sprint', 'spanish']))).toBe('min');
+    expect(dayStatus(new Set(['sprint', 'spanish', 'reading', 'palace']))).toBe('full');
+  });
+});
+
+describe('sprintSummary', () => {
+  const s = (date, best) => ({ date, best });
+  it('compares this week with last week and keeps the last 7 days', () => {
+    const rows = [s('2026-10-27', 40), s('2026-10-29', 44), s('2026-11-02', 47), s('2026-11-03', 45)];
+    const r = sprintSummary(rows, '2026-11-03', weekStart);
+    expect(r.weekBest).toBe(47);
+    expect(r.lastWeekBest).toBe(44);
+    expect(r.delta).toBe(3);
+    expect(r.latest.best).toBe(45);
+    expect(r.allTimeBest).toBe(47);
+    expect(r.recent.map((x) => x.best)).toEqual([40, 44, 47, 45]);
+  });
+  it('has no delta without last week, and ignores future rows', () => {
+    const r = sprintSummary([s('2026-11-02', 47), s('2026-11-09', 60)], '2026-11-02', weekStart);
+    expect(r.delta).toBeNull();
+    expect(r.allTimeBest).toBe(47);
+  });
+});

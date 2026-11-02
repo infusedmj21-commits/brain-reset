@@ -13,8 +13,8 @@ export default defineConfig({
         start_url: '/',
         scope: '/',
         display: 'standalone',
-        background_color: '#0e0f0d',
-        theme_color: '#0e0f0d',
+        background_color: '#fbf8f2',
+        theme_color: '#fbf8f2',
         icons: [
           { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
@@ -22,7 +22,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,png,svg,json}'],
+        globPatterns: ['**/*.{js,css,html,png,svg,json,woff2}'],
         navigateFallback: 'index.html'
       }
     })
