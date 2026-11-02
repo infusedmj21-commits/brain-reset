@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Brain Reset</title>
+    <meta name="description" content="Daily routine for focus, memory and Spanish." />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0e0f0d" media="(prefers-color-scheme: dark)" />
+    <script>
+      // Set the theme before first paint so there's no flash of the wrong colours.
+      try {
+        var p = localStorage.getItem('brain-reset-theme') || 'auto';
+        document.documentElement.dataset.theme =
+          p === 'auto' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'sport') : p;
+      } catch (e) {
+        document.documentElement.dataset.theme = 'sport';
+      }
+    </script>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Brain Reset" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" href="/icons/favicon.png" />
+  </head>
+  <body>
+    <main id="view" class="view" tabindex="-1"></main>
+    <nav class="tabbar" aria-label="Sections">
+      <a href="#/today" data-tab="today"><span class="tab-icon" aria-hidden="true">◐</span>Today</a>
+      <a href="#/palace" data-tab="palace"><span class="tab-icon" aria-hidden="true">⌂</span>Palace</a>
+      <a href="#/unprompted" data-tab="unprompted"><span class="tab-icon" aria-hidden="true">◉</span>Unprompted</a>
+      <a href="#/progress" data-tab="progress"><span class="tab-icon" aria-hidden="true">↗</span>Progress</a>
+      <a href="#/settings" data-tab="settings"><span class="tab-icon" aria-hidden="true">≡</span>Settings</a>
+    </nav>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
