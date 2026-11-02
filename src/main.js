@@ -11,11 +11,13 @@ import { renderSettings } from './views/settings.js';
 import { renderProgress } from './views/progress.js';
 import { renderPalace } from './views/palace.js';
 import { renderUnprompted } from './views/unprompted.js';
+import { renderSprint } from './views/sprint.js';
 
 const routes = {
   today: renderToday,
   palace: renderPalace,
   unprompted: renderUnprompted,
+  sprint: renderSprint,
   progress: renderProgress,
   settings: renderSettings
 };
@@ -41,8 +43,9 @@ async function render() {
   const [name = 'today', ...params] = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
   const route = routes[name] ? name : 'today';
   const ctx = { params, onCleanup: (fn) => cleanups.push(fn) };
+  const tab = route === 'sprint' ? 'today' : route;
   document.querySelectorAll('.tabbar a').forEach((a) => {
-    if (a.dataset.tab === route) a.setAttribute('aria-current', 'page');
+    if (a.dataset.tab === tab) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');
   });
   try {

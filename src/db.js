@@ -11,7 +11,8 @@ export const SYNCED_TABLES = [
   'palaces',
   'palace_sessions',
   'unprompted_sessions',
-  'weekly_reviews'
+  'weekly_reviews',
+  'sprint_rounds'
 ];
 
 export function createDB(name = 'brain-reset') {
@@ -31,6 +32,10 @@ export function createDB(name = 'brain-reset') {
   // phase 4 uploads them to Supabase Storage.
   db.version(2).stores({
     blobs: 'id, updated_at'
+  });
+  // v3: every in-app arithmetic round, with its settings and per-problem timings.
+  db.version(3).stores({
+    sprint_rounds: 'id, date, updated_at'
   });
   return db;
 }
@@ -182,4 +187,15 @@ export async function saveBlob(blob, database = db) {
 export async function getBlob(id, database = db) {
   const row = id ? await getRow('blobs', id, database) : null;
   return row?.data ?? null;
+}
+
+/**
+ * Save an in-app sprint round. Rounds on standard (Zetamac default) settings also
+ * update the day's sprint score; custom rounds are kept as practice only.
+ */
+export async function logRound(date, round, database = db) {
+  const row = await save('sprint_rounds', { date, ...round }, database);
+  if (round.standard) await logSprint(date, round.score, null, round.score, database);
+  else await setHabit(date, 'sprint', true, {}, database);
+  return row;
 }

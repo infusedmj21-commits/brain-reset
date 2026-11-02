@@ -18,7 +18,7 @@ export const DAY_LOOK = {
 
 // Extra quick links per habit, beyond the habit's own main link.
 export const HABIT_LINKS = {
-  sprint: [{ label: 'Open Zetamac ↗', href: 'https://arithmetic.zetamac.com/' }],
+  sprint: [{ label: 'Play sprint →', href: '#/sprint' }],
   spanish: [
     { label: 'Anki ↗', href: 'https://ankiweb.net/' },
     { label: 'Language Transfer ↗', href: 'https://www.languagetransfer.org/' }

@@ -97,3 +97,21 @@ describe('export and import', () => {
     await expect(importAll({ foo: 1 }, db)).rejects.toThrow();
   });
 });
+
+import { logRound } from '../src/db.js';
+
+describe('in-app sprint rounds', () => {
+  it('standard rounds update the daily best; custom rounds do not', async () => {
+    await logRound('2026-11-02', { score: 41, standard: true, settings: {}, problems: [] }, db);
+    await logRound('2026-11-02', { score: 90, standard: false, settings: {}, problems: [] }, db);
+    await logRound('2026-11-02', { score: 46, standard: true, settings: {}, problems: [] }, db);
+    expect((await getSprint('2026-11-02', db)).best).toBe(46);
+    expect(await db.sprint_rounds.count()).toBe(3);
+    expect((await doneByDate(db))['2026-11-02'].has('sprint')).toBe(true);
+  });
+  it('a custom round alone still ticks the habit but sets no score', async () => {
+    await logRound('2026-11-03', { score: 70, standard: false, settings: {}, problems: [] }, db);
+    expect(await getSprint('2026-11-03', db)).toBeNull();
+    expect((await doneByDate(db))['2026-11-03'].has('sprint')).toBe(true);
+  });
+});

@@ -8,7 +8,7 @@ export const DAY_TYPES = {
 };
 
 export const HABITS = {
-  sprint: { label: 'Arithmetic sprint', minutes: 5, link: 'https://arithmetic.zetamac.com/' },
+  sprint: { label: 'Arithmetic sprint', minutes: 5 },
   spanish: { label: 'Spanish', minutes: 20 },
   reading: { label: 'Deep reading, phone in another room', minutes: 20 },
   unprompted: { label: 'Unprompted session', minutes: 30, link: 'https://unprompted.cool/' },

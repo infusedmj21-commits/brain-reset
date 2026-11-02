@@ -11,6 +11,7 @@ It installs to the iPhone home screen and the computer taskbar from one codebase
 | 1 | Installable shell, Today screen, sprint log, JSON export, light and dark look | Done |
 | 2 | Memory palace trainer | Done |
 | 3 | Unprompted sessions (recording in the app comes later) | Done |
+| — | In-app arithmetic sprint (Zetamac rules and settings) | Done |
 | 4 | Sync between devices (Supabase) | Next |
 | 5 | Weekly review and charts | |
 | 6 | AI review of recorded talks | |
@@ -52,6 +53,7 @@ src/
   logic/palace.js    word picking, lenient recall scoring, weekly test history
   logic/unprompted.js session steps, timestamp-based countdowns, next-day recall
   logic/words.js     bundled list of easy-to-picture words
+  logic/arithmetic.js sprint settings (Zetamac defaults), problem generation, round stats
   views/             one file per screen; look.js holds colours, shapes and emoji per habit
 tests/               Vitest unit tests
 ```

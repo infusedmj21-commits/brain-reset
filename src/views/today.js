@@ -194,11 +194,15 @@ export async function renderToday(el, rerender) {
             }
           </div>
           ${bars}
-          <div class="inputs">
-            <input class="field" type="number" name="r1" inputmode="numeric" min="0" max="200" placeholder="Round 1" aria-label="Round 1">
-            <input class="field" type="number" name="r2" inputmode="numeric" min="0" max="200" placeholder="Round 2" aria-label="Round 2">
-            <button class="btn" type="submit">Save</button>
-          </div>
+          <a class="btn block" href="#/sprint" style="margin-top:14px">Play sprint</a>
+          <details class="manual">
+            <summary>Played on Zetamac? Log it</summary>
+            <div class="inputs">
+              <input class="field" type="number" name="r1" inputmode="numeric" min="0" max="200" placeholder="Round 1" aria-label="Round 1">
+              <input class="field" type="number" name="r2" inputmode="numeric" min="0" max="200" placeholder="Round 2" aria-label="Round 2">
+              <button class="btn" type="submit">Save</button>
+            </div>
+          </details>
         </form>
 
         <div class="card top-sky">
