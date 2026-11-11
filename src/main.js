@@ -71,13 +71,15 @@ async function render() {
   });
   const SUBNAVS = {
     today: [['today', 'Today'], ['palace', 'Palace'], ['unprompted', 'Unprompted'], ['progress', 'Progress']],
-    tasks: [['tasks', 'To do'], ['settings', 'Settings']]
+    tasks: [['tasks', 'To do'], ['settings', 'Settings']],
+    money: [['money', 'Overview'], ['money/insights', 'Insights']]
   };
+  const path = [name, ...params].join('/');
   const subnav = document.getElementById('subnav');
   const items = route === 'sprint' ? null : SUBNAVS[tab];
   subnav.hidden = !items;
   subnav.innerHTML = (items ?? [])
-    .map(([r, label]) => `<a href="#/${r}"${r === route ? ' aria-current="page"' : ''}>${label}</a>`)
+    .map(([r, label]) => `<a href="#/${r}"${r === path || (r === route && !items.some(([x]) => x === path)) ? ' aria-current="page"' : ''}>${label}</a>`)
     .join('');
   try {
     await routes[route](view, render, ctx);
