@@ -30,6 +30,7 @@ import {
   weeklyPay
 } from '../logic/money.js';
 import { esc, toast } from '../ui.js';
+import { shiftsToConfirm } from '../data/tasks.js';
 
 const ACCOUNTS = { main: 'Main account', pot: 'Spending pot', flex: 'Flex' };
 
@@ -134,7 +135,7 @@ export async function renderMoney(el, rerender) {
   const spentLast = spendingByCategory(transactions, prevMonth(date)).reduce((t, c) => t + c.total, 0);
   const balance = unpaidBalance(shifts, payments);
   const live = shifts.filter((s) => s.status !== 'cancelled');
-  const toConfirm = live.filter((s) => s.status === 'booked' && s.date < date).sort((a, b) => a.date.localeCompare(b.date));
+  const toConfirm = shiftsToConfirm(shifts, date);
   const upcoming = live.filter((s) => s.status === 'booked' && s.date >= date).sort((a, b) => a.date.localeCompare(b.date));
   const recent = live.filter((s) => s.status === 'worked').sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
   const venues = [...new Set([...live.map((s) => s.venue), ...VENUE_SUGGESTIONS])];
@@ -157,16 +158,7 @@ export async function renderMoney(el, rerender) {
       <section>
         ${
           toConfirm.length
-            ? `<div class="sec" style="--dot:var(--tomato)"><span class="dot"></span><h2>Did you work these?</h2></div>
-               <ul class="vlist">${toConfirm
-                 .map((s) =>
-                   shiftRow(
-                     s,
-                     roles,
-                     `<span class="row-mini"><button class="btn-mini" type="button" data-worked="${esc(s.id)}">Worked</button><button class="btn-mini" type="button" data-cancel="${esc(s.id)}">Didn’t</button></span>`
-                   )
-                 )
-                 .join('')}</ul>`
+            ? `<a class="banner" href="#/tasks" style="margin-top:18px"><strong>${toConfirm.length} shift${toConfirm.length === 1 ? '' : 's'} to confirm.</strong> Check the actual hours in Tasks so pay stays accurate.</a>`
             : ''
         }
 
@@ -284,7 +276,7 @@ export async function renderMoney(el, rerender) {
     const shiftDate = form.date.value;
     const finalStatus = status === 'booked' && shiftDate < date ? 'worked' : status;
     const hours = Number(form.hours.value);
-    await saveShift({ date: shiftDate, venue: form.venue.value.trim(), role_id: role.id, rate, premium, start: form.start.value, end: form.end.value, hours, status: finalStatus });
+    await saveShift({ date: shiftDate, venue: form.venue.value.trim(), role_id: role.id, rate, premium, start: form.start.value, end: form.end.value, hours, status: finalStatus, confirmed: finalStatus === 'worked' });
     toast(`${finalStatus === 'worked' ? 'Logged' : 'Booked'} · ${gbp(shiftPay({ hours, rate }))}`);
     rerender();
   });
