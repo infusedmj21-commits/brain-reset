@@ -151,6 +151,12 @@ function importPanel(payees) {
 export async function renderMoney(el, rerender, ctx) {
   if (ctx?.params?.[0] === 'insights') return renderInsights(el, rerender);
   if (ctx?.params?.[0] === 'tax') return renderTax(el, rerender);
+  if (ctx?.params?.[0] === 'import') {
+    // From the Monzo to-do: open Overview and bring the import card into view.
+    await renderMoney(el, rerender, { ...ctx, params: [] });
+    requestAnimationFrame(() => document.getElementById('import-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+    return;
+  }
   const date = today();
   const [roles, shifts, payments, transactions, payees, imported, tax] = await Promise.all([
     listRoles(),
