@@ -12,7 +12,7 @@ import {
 import { addDays, prettyDate, today, weekDates, weekStart } from '../logic/dates.js';
 import {
   DAY_TYPES,
-  TIKTOK_SCHEDULE,
+  TIKTOK_LEVELS,
   bestSprint,
   buildChecklist,
   dayStatus,
@@ -20,11 +20,14 @@ import {
   missedYesterday,
   sprintSummary,
   streak,
-  tiktokLimit
+  formatMinutes as fmtMin
 } from '../logic/routine.js';
 import { getName } from '../theme.js';
 import { esc, toast } from '../ui.js';
 import { DAY_LOOK, HABIT_LINKS, HABIT_LOOK } from './look.js';
+import { holdTiktok, loadTiktok, logTiktokDay, restartTiktok, stepTiktok } from '../data/tiktok.js';
+
+const shortDay = (d) => prettyDate(d).replace(/^(\w{3})\w*/, '$1');
 
 const DOW = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
@@ -92,7 +95,8 @@ export async function renderToday(el, rerender) {
   const done = doneMap[date] ?? new Set();
   const currentStreak = streak(date, doneMap);
   const missed = missedYesterday(date, doneMap, first);
-  const limit = tiktokLimit(date);
+  const tk = await loadTiktok(date);
+  const st = tk.state;
   const dayType = plan?.day_type ?? null;
   const sprint = sprintSummary(sprints, date, weekStart);
   const todaySprint = sprints.find((s) => s.date === date);
@@ -128,11 +132,12 @@ export async function renderToday(el, rerender) {
         .map((s) => `<i class="${s.date === date ? 'now' : ''}" style="height:${barHeight(s.best)}%" title="${s.date}: ${s.best}"></i>`)
         .join('')}</div>`
     : '';
-  const maxMin = TIKTOK_SCHEDULE[0].minutes;
-  const steps = TIKTOK_SCHEDULE.map((s) => {
-    const cls = limit && s.week === limit.week ? 'cur' : limit && s.week < limit.week ? 'past' : '';
-    return `<i class="${cls}" style="height:${(s.minutes / maxMin) * 100}%" title="Week ${s.week}: ${formatMinutes(s.minutes)}"></i>`;
+  const maxMin = TIKTOK_LEVELS[0];
+  const steps = TIKTOK_LEVELS.map((m, i) => {
+    const cls = i + 1 === st.level ? 'cur' : i + 1 < st.level ? 'past' : '';
+    return `<i class="${cls}" style="height:${(m / maxMin) * 100}%" title="Week ${i + 1}: ${fmtMin(m)}"></i>`;
   }).join('');
+  const yesterday = addDays(date, -1);
 
   const name = getName();
 
@@ -206,15 +211,53 @@ export async function renderToday(el, rerender) {
           </details>
         </form>
 
-        <div class="card top-sky">
+        <div class="card top-sky tiktok-card">
           <h3>${ICONS.phone} TikTok limit</h3>
+          <div class="row"><div class="big num">${fmtMin(st.minutes)}</div><span class="delta">Week ${st.level} of ${st.total}</span></div>
+          <div class="steps" aria-hidden="true">${steps}</div>
+          <p class="muted small" style="margin:10px 0 0">${st.held ? `At this limit since ${esc(shortDay(st.from))} · ${st.held} day${st.held === 1 ? '' : 's'}` : 'Started today'}</p>
+
+          <div class="tk-log">
+            <span class="stat-label">How did yesterday go?</span>
+            <div class="chips small two" role="group" aria-label="Yesterday">
+              <button type="button" class="chip" data-tk="under" aria-pressed="${tk.logs[yesterday] === 'under'}">Stayed under</button>
+              <button type="button" class="chip" data-tk="over" aria-pressed="${tk.logs[yesterday] === 'over'}">Went over</button>
+            </div>
+            <div class="tk-days" role="group" aria-label="Last 7 days, tap to change">
+              ${st.last7
+                .map(
+                  (d) => `<button type="button" class="tk-day ${d.result ?? 'none'}" data-tkday="${d.date}" aria-label="${esc(shortDay(d.date))}: ${d.result === 'under' ? 'stayed under' : d.result === 'over' ? 'went over' : 'not logged'}"><i></i><small>${'MTWTFSS'[(new Date(`${d.date}T12:00:00Z`).getUTCDay() + 6) % 7]}</small></button>`
+                )
+                .join('')}
+            </div>
+            <span class="muted small">Forgot a day? Tap it to set it: under, over, or blank.</span>
+          </div>
+
           ${
-            limit
-              ? `<div class="row"><div class="big num">${formatMinutes(limit.minutes)}</div><span class="delta">Week ${limit.week} of ${TIKTOK_SCHEDULE.length}</span></div>
-                 <div class="steps" aria-hidden="true">${steps}</div>
-                 <div class="note">At work: Spanish accounts only</div>`
-              : `<p class="muted" style="margin-top:8px">The reduction plan starts on 2 November.</p>`
+            st.offerStep
+              ? `<div class="tk-offer">
+                  <strong>Ready for week ${st.next.level}: ${fmtMin(st.next.minutes)} a day?</strong>
+                  <p class="muted small">${st.under + st.over ? `You stayed under on ${st.under} of the ${st.under + st.over} day${st.under + st.over === 1 ? '' : 's'} you logged this week.` : `You’ve had a week at ${fmtMin(st.minutes)}.`}${st.advice === 'hold' ? ' You went over a few times, so another week here might stick better.' : ''}</p>
+                  <p class="muted small">Change it in Screen Time first (Settings → Screen Time → App Limits → TikTok), then tap below.</p>
+                  <div class="row-btns">
+                    <button class="btn" type="button" data-tkstep="1">I’ve set it to ${fmtMin(st.next.minutes)}</button>
+                    <button class="btn secondary" type="button" data-tkhold>Stay another week</button>
+                  </div>
+                </div>`
+              : st.next
+                ? `<p class="muted small" style="margin:8px 0 0">Next step, ${fmtMin(st.next.minutes)}, is offered after a week at this level.</p>`
+                : '<p class="muted small" style="margin:8px 0 0">Final step. Hold it here.</p>'
           }
+
+          <details class="manual">
+            <summary>Change step</summary>
+            <div class="row-btns" style="margin-top:10px">
+              ${st.next ? `<button class="btn-mini" type="button" data-tkstep="1">Step down now (${fmtMin(st.next.minutes)})</button>` : ''}
+              ${st.prev ? `<button class="btn-mini" type="button" data-tkstep="-1">Step back up (${fmtMin(st.prev.minutes)})</button>` : ''}
+              <button class="btn-mini" type="button" data-tkrestart>Restart at week 1</button>
+            </div>
+          </details>
+          <div class="note">At work: Spanish accounts only</div>
         </div>
 
         <div class="card top-gum">
@@ -234,6 +277,41 @@ export async function renderToday(el, rerender) {
       rerender();
     })
   );
+
+  // ---- TikTok plan ----
+  el.querySelectorAll('[data-tk]').forEach((b) =>
+    b.addEventListener('click', async () => {
+      await logTiktokDay(yesterday, b.dataset.tk, tk.logs);
+      rerender();
+    })
+  );
+  el.querySelectorAll('[data-tkday]').forEach((b) =>
+    b.addEventListener('click', async () => {
+      const d = b.dataset.tkday;
+      const nextResult = { undefined: 'under', under: 'over', over: null }[String(tk.logs[d])];
+      if (nextResult) await logTiktokDay(d, nextResult, { ...tk.logs, [d]: undefined });
+      else await logTiktokDay(d, tk.logs[d], tk.logs);
+      rerender();
+    })
+  );
+  el.querySelectorAll('[data-tkstep]').forEach((b) =>
+    b.addEventListener('click', async () => {
+      const by = Number(b.dataset.tkstep);
+      await stepTiktok(date, by);
+      toast(by > 0 ? `Week ${st.level + 1}: ${fmtMin(TIKTOK_LEVELS[st.level])} a day from today` : `Back to ${fmtMin(TIKTOK_LEVELS[st.level - 2])} a day`);
+      rerender();
+    })
+  );
+  el.querySelector('[data-tkhold]')?.addEventListener('click', async () => {
+    await holdTiktok(date, addDays(date, 7));
+    toast(`Staying at ${fmtMin(st.minutes)} for another week`);
+    rerender();
+  });
+  el.querySelector('[data-tkrestart]')?.addEventListener('click', async () => {
+    await restartTiktok(date);
+    toast('Back to week 1: 6h a day');
+    rerender();
+  });
 
   el.querySelectorAll('[data-tomorrow]').forEach((b) =>
     b.addEventListener('click', async () => {

@@ -129,23 +129,53 @@ export function missedYesterday(date, doneByDate, firstActiveDate) {
   return !dayCounts(doneByDate[yesterday]);
 }
 
-// TikTok daily limit, from the staggered reduction plan (minutes).
-export const TIKTOK_SCHEDULE = [
-  { week: 1, start: '2026-11-02', minutes: 360 },
-  { week: 2, start: '2026-11-09', minutes: 285 },
-  { week: 3, start: '2026-11-16', minutes: 225 },
-  { week: 4, start: '2026-11-23', minutes: 180 },
-  { week: 5, start: '2026-11-30', minutes: 135 },
-  { week: 6, start: '2026-12-07', minutes: 105 },
-  { week: 7, start: '2026-12-14', minutes: 75 },
-  { week: 8, start: '2026-12-21', minutes: 45 },
-  { week: 9, start: '2026-12-28', minutes: 30 }
-];
+// TikTok daily limit: a staggered plan you step down through yourself.
+// The app never moves you on by the calendar. You step down when you've actually
+// changed the limit in Screen Time, so forgotten or skipped weeks don't count.
+export const TIKTOK_LEVELS = [360, 285, 225, 180, 135, 105, 75, 45, 30];
+export const TIKTOK_HOLD_DAYS = 7;
 
-export function tiktokLimit(date, schedule = TIKTOK_SCHEDULE) {
-  let current = null;
-  for (const step of schedule) if (step.start <= date) current = step;
-  return current;
+/**
+ * Where the plan stands. `plan` is { history: [{ level, from }], snoozedUntil? }, levels 1-based.
+ * `logs` maps date -> 'under' | 'over' (how a day went).
+ */
+export function tiktokState(plan, logs, date) {
+  const history = plan?.history?.length ? plan.history : [{ level: 1, from: date }];
+  const cur = history.at(-1);
+  const level = Math.min(Math.max(1, cur.level), TIKTOK_LEVELS.length);
+  const held = Math.max(0, daysBetween(cur.from, date));
+  const last7 = Array.from({ length: 7 }, (_, i) => addDays(date, i - 7));
+  const logged = last7.filter((d) => logs[d] && d >= cur.from);
+  const under = logged.filter((d) => logs[d] === 'under').length;
+  const over = logged.length - under;
+  const next = level < TIKTOK_LEVELS.length ? { level: level + 1, minutes: TIKTOK_LEVELS[level] } : null;
+  const snoozed = plan?.snoozedUntil && plan.snoozedUntil > date;
+  return {
+    level,
+    minutes: TIKTOK_LEVELS[level - 1],
+    total: TIKTOK_LEVELS.length,
+    from: cur.from,
+    held,
+    next,
+    prev: level > 1 ? { level: level - 1, minutes: TIKTOK_LEVELS[level - 2] } : null,
+    last7: last7.map((d) => ({ date: d, result: logs[d] ?? null })),
+    under,
+    over,
+    // Offer the next step after a week at this level, unless held back on purpose.
+    offerStep: Boolean(next) && held >= TIKTOK_HOLD_DAYS && !snoozed,
+    // Mostly over the limit? Suggest holding rather than cutting further.
+    advice: over >= 3 ? 'hold' : 'step'
+  };
+}
+
+/** Plan after a step: down (+1), back up (-1). Steps start today. */
+export function tiktokStep(plan, date, by) {
+  const st = tiktokState(plan, {}, date);
+  const level = Math.min(Math.max(1, st.level + by), TIKTOK_LEVELS.length);
+  const history = [...(plan?.history ?? [{ level: st.level, from: st.from }])];
+  if (history.at(-1)?.from === date) history.pop();
+  history.push({ level, from: date });
+  return { history, snoozedUntil: null };
 }
 
 export function formatMinutes(min) {

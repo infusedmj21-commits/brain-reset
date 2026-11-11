@@ -2,7 +2,8 @@ import { doneByDate, live } from '../db.js';
 import { listGaps } from '../data/checkins.js';
 import { GAP_REASONS } from '../logic/review.js';
 import { addDays, prettyDate, today, weekStart } from '../logic/dates.js';
-import { TIKTOK_SCHEDULE, dayStatus, formatMinutes, sprintSummary, tiktokLimit } from '../logic/routine.js';
+import { TIKTOK_LEVELS, dayStatus, formatMinutes, sprintSummary } from '../logic/routine.js';
+import { loadTiktok } from '../data/tiktok.js';
 
 export async function renderProgress(el) {
   const date = today();
@@ -22,7 +23,10 @@ export async function renderProgress(el) {
 
   const sprint = sprintSummary(sprints, date, weekStart);
   const history = [...sprints].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 7);
-  const current = tiktokLimit(date);
+  const tk = await loadTiktok(date);
+  const current = tk.state;
+  // When each level was last started (steps you confirmed).
+  const startedAt = (lvl) => [...tk.plan.history].reverse().find((h) => h.level === lvl)?.from ?? null;
 
   el.innerHTML = `
     <h1 class="page-title">Progress</h1>
@@ -64,14 +68,15 @@ export async function renderProgress(el) {
         <div class="sec" style="--dot:var(--sky)"><span class="dot"></span><h2>TikTok limit plan</h2></div>
         <div class="card top-sky">
           <table class="num">
-            <thead><tr><th>Week</th><th>From</th><th>Daily limit</th></tr></thead>
+            <thead><tr><th>Week</th><th>Daily limit</th><th>Started</th></tr></thead>
             <tbody>
-              ${TIKTOK_SCHEDULE.map(
-                (s) =>
-                  `<tr class="${current?.week === s.week ? 'current' : ''}"><td>${s.week}</td><td>${prettyDate(s.start).replace(/^\w+ /, '')}</td><td>${formatMinutes(s.minutes)}</td></tr>`
+              ${TIKTOK_LEVELS.map(
+                (m, i) =>
+                  `<tr class="${current.level === i + 1 ? 'current' : ''}"><td>${i + 1}</td><td>${formatMinutes(m)}</td><td>${startedAt(i + 1) ? prettyDate(startedAt(i + 1)).replace(/^\w+ /, '') : i + 1 > current.level ? 'Not yet' : '–'}</td></tr>`
               ).join('')}
             </tbody>
           </table>
+          <p class="note">You move down a step when you confirm it on Today, after at least a week at each level.</p>
           <p class="note">If X goes over 9 hours a week two weeks running, add it to the limit.</p>
         </div>
       </section>
