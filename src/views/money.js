@@ -31,6 +31,7 @@ import {
 } from '../logic/money.js';
 import { esc, toast } from '../ui.js';
 import { shiftsToConfirm } from '../data/tasks.js';
+import { renderInsights } from './insights.js';
 
 const ACCOUNTS = { main: 'Main account', pot: 'Spending pot', flex: 'Flex' };
 
@@ -115,7 +116,8 @@ function importPanel(payees) {
   </div>`;
 }
 
-export async function renderMoney(el, rerender) {
+export async function renderMoney(el, rerender, ctx) {
+  if (ctx?.params?.[0] === 'insights') return renderInsights(el, rerender);
   const date = today();
   const [roles, shifts, payments, transactions, payees, imported] = await Promise.all([
     listRoles(),
