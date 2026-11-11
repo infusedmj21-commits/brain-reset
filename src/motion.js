@@ -92,6 +92,8 @@ export function startEntrance() {
     splash?.remove();
     return;
   }
-  document.querySelector('.shell')?.classList.add('enter');
+  const shell = document.querySelector('.shell');
+  shell?.classList.add('enter');
+  setTimeout(() => shell?.classList.remove('enter'), 2100);
   setTimeout(() => splash?.remove(), 1950);
 }

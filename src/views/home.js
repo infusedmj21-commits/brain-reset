@@ -129,7 +129,7 @@ function pickerHTML(ranked, ventures, dayType) {
 
 export async function renderHome(el, rerender) {
   const date = today();
-  const [plan, doneMap, uDates, first, sprints, focus, tasks, ventures, scores, shift, habitLogs, allFocus, workouts, routines, mode, pay] = await Promise.all([
+  const [plan, doneMap, uDates, first, sprints, focus, tasks, ventures, scores, shift, habitLogs, allFocus, workouts, routines, mode, payRaw] = await Promise.all([
     getDayPlan(date),
     doneByDate(),
     unpromptedDates(),
@@ -147,6 +147,8 @@ export async function renderHome(el, rerender) {
     getMode(),
     nextPay()
   ]);
+  // No payday to show when nothing is owed.
+  const pay = payRaw && payRaw.expected > 0 ? payRaw : null;
   const [shifts, roles, tax, todoCount] = await Promise.all([listShifts(), listRoles(), loadTaxPicture(date), openTaskCount()]);
 
   const dayType = plan?.day_type ?? null;
