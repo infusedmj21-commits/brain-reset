@@ -6,6 +6,8 @@ import { formatScore, needsRescore, rankTasks, scoreHistory } from '../logic/sco
 import { getName } from '../theme.js';
 import { esc, toast } from '../ui.js';
 import { verdictChip } from './scorer.js';
+import { nextShift } from './money.js';
+import { gbp } from '../logic/money.js';
 
 // Picker state survives re-renders while choosing today's 3.
 let picking = false;
@@ -102,7 +104,7 @@ function pickerHTML(ranked, ventures, dayType) {
 
 export async function renderHome(el, rerender) {
   const date = today();
-  const [plan, doneMap, uDates, first, sprints, focus, tasks, ventures, scores] = await Promise.all([
+  const [plan, doneMap, uDates, first, sprints, focus, tasks, ventures, scores, shift] = await Promise.all([
     getDayPlan(date),
     doneByDate(),
     unpromptedDates(),
@@ -111,7 +113,8 @@ export async function renderHome(el, rerender) {
     focusFor(date),
     listTasks(),
     listVentures(),
-    listScores()
+    listScores(),
+    nextShift()
   ]);
 
   const dayType = plan?.day_type ?? null;
@@ -164,6 +167,14 @@ export async function renderHome(el, rerender) {
       </section>
 
       <aside class="side">
+        ${
+          shift
+            ? `<a class="card top-sky reset-card" href="#/money"><div class="big-emoji" aria-hidden="true">🏟️</div>
+                <div><div class="stat-label">Next shift · ${shift.date === date ? 'today' : esc(prettyDate(shift.date))}</div><h3>${esc(shift.venue)}</h3>
+                <p class="muted small" style="margin:2px 0 0">${esc(shift.roleName)} · ${shift.hours}h · ${gbp(shift.pay)}</p></div></a>`
+            : `<a class="card top-sky reset-card" href="#/money"><div class="big-emoji" aria-hidden="true">🏟️</div>
+                <div><h3>No shift booked</h3><p class="muted small" style="margin:2px 0 0">Log your next one in Money.</p></div></a>`
+        }
         <a class="card top-mint reset-card" href="#/today">
           <div class="donut" style="--p:${pct}"><span class="num">${items.length ? `${doneCount}/${items.length}` : '–'}</span></div>
           <div><h3>Brain Reset</h3><p class="muted small" style="margin:2px 0 0">${

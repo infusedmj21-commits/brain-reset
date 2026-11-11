@@ -11,6 +11,8 @@ import { renderHome } from './views/home.js';
 import { renderVentures } from './views/ventures.js';
 import { soon } from './views/soon.js';
 import { seedVentures } from './data/ventures.js';
+import { seedRoles } from './data/money.js';
+import { renderMoney } from './views/money.js';
 import { renderSettings } from './views/settings.js';
 import { renderProgress } from './views/progress.js';
 import { renderPalace } from './views/palace.js';
@@ -21,7 +23,7 @@ import { setOnRemoteChange, startSync } from './sync.js';
 const routes = {
   home: renderHome,
   ventures: renderVentures,
-  money: soon('Money', 'Shifts, expected pay, actual pay from Monzo, and spending.'),
+  money: renderMoney,
   health: soon('Health', 'Routines, live workout logging, PRs and progress.'),
   today: renderToday,
   palace: renderPalace,
@@ -89,14 +91,14 @@ document.addEventListener('visibilitychange', () => {
 
 applyTheme();
 registerSW({ immediate: true });
-seedVentures().finally(render);
+Promise.allSettled([seedVentures(), seedRoles()]).finally(render);
 
 // Changes pulled from another device redraw the current screen, unless the
 // person is typing in a field, where a redraw would wipe what they entered.
 // Only list-style screens redraw; a sprint round or timed session is never interrupted.
 setOnRemoteChange(() => {
   const route = location.hash.replace(/^#\/?/, '').split('/')[0] || 'home';
-  if (!['home', 'ventures', 'today', 'progress', 'settings'].includes(route)) return;
+  if (!['home', 'ventures', 'money', 'today', 'progress', 'settings'].includes(route)) return;
   const active = document.activeElement;
   if (active && ['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName)) return;
   render();

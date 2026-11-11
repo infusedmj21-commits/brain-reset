@@ -14,8 +14,8 @@ It installs to the iPhone home screen and the computer taskbar from one codebase
 | — | In-app arithmetic sprint (Zetamac rules and settings) | Done |
 | 4 | Sync between devices (Supabase) | Done |
 | 5a | Artemis: rename, tab bar, Home, Ventures with scoring and today’s 3 | Done |
-| 5b | Money: shifts, expected vs actual pay, Monzo import, spending | Next |
-| 5c | Health: Hevy-style routines and workout logging | |
+| 5b | Money: shifts by role and rate, expected vs actual pay, Monzo CSV import, spending | Done |
+| 5c | Health: Hevy-style routines and workout logging | Next |
 | 5d | Skipped days and the Monday review | |
 | 6 | AI review of recorded talks | |
 
@@ -68,6 +68,8 @@ src/
   logic/unprompted.js session steps, timestamp-based countdowns, next-day recall
   logic/words.js     bundled list of easy-to-picture words
   logic/scoring.js   (Impact + Urgency) ÷ Effort, anchors, bands, rescore rule
+  logic/money.js     roles and rates, shift pay (rounded half up), weekly pay, Monzo CSV parsing and classifying
+  data/money.js      roles, shifts, payments, transactions, Monzo import (deduplicated by transaction ID)
   data/ventures.js   ventures, scores, tasks, today’s 3 (seeds Halden Labs, Etsy prints, Amazon FBA)
   logic/arithmetic.js sprint settings (Zetamac defaults), problem generation, round stats
   views/             one file per screen; look.js holds colours, shapes and emoji per habit
