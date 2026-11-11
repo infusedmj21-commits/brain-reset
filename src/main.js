@@ -72,7 +72,7 @@ async function render() {
   const SUBNAVS = {
     today: [['today', 'Today'], ['palace', 'Palace'], ['unprompted', 'Unprompted'], ['progress', 'Progress']],
     tasks: [['tasks', 'To do'], ['settings', 'Settings']],
-    money: [['money', 'Overview'], ['money/insights', 'Insights']]
+    money: [['money', 'Overview'], ['money/insights', 'Insights'], ['money/tax', 'Tax']]
   };
   const path = [name, ...params].join('/');
   const subnav = document.getElementById('subnav');

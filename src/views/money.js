@@ -32,6 +32,8 @@ import {
 import { esc, toast } from '../ui.js';
 import { shiftsToConfirm } from '../data/tasks.js';
 import { renderInsights } from './insights.js';
+import { renderTax } from './tax.js';
+import { loadTaxPicture } from '../data/tax.js';
 import { DEDUCTION_THRESHOLD, owed, paydays } from '../logic/payroll.js';
 
 const ACCOUNTS = { main: 'Main account', pot: 'Spending pot', flex: 'Flex' };
@@ -75,23 +77,31 @@ function paydayChart(rows) {
   <div class="legend"><span><i style="background:var(--sky)"></i>Expected from shifts</span><span><i style="background:var(--mint)"></i>Received (Monzo)</span></div>`;
 }
 
-function paydayRow(p, hasMonzo) {
+function paydayRow(p, hasMonzo, est) {
+  // Take-home: the payslip's net when there is one, else an estimate after tax and NI.
+  const takeHome = est && est.net != null && est.source !== 'before-payslips' && est.source !== 'none' ? est : null;
+  const target = takeHome ? takeHome.net : p.expected;
   let badge = '';
   if (p.past && p.received != null) {
-    const diff = pennies(p.received - p.expected);
+    const diff = pennies(p.received - target);
     badge =
       Math.abs(diff) < 0.5
         ? '<span class="vchip v-mint">Paid in full</span>'
         : diff > 0
           ? `<span class="vchip v-mint">+${gbp(diff)}</span>`
-          : `<span class="vchip v-sun">${gbp(-diff)} short${p.expected > DEDUCTION_THRESHOLD ? ' (tax/NI?)' : ''}</span>`;
+          : `<span class="vchip v-sun">${gbp(-diff)} short${!takeHome && p.expected > DEDUCTION_THRESHOLD ? ' (tax/NI?)' : ''}</span>`;
   } else if (p.past && hasMonzo) badge = '<span class="vchip v-none">Not seen in Monzo</span>';
   else if (p.past) badge = '<span class="vchip v-none">Import Monzo to check</span>';
   else if (p.unconfirmed) badge = `<span class="vchip v-none">${p.unconfirmed} to confirm</span>`;
   return `<li class="vrow card${p.isToday ? ' today-row' : ''}">
     <span class="vmain"><strong>${p.isToday ? 'Today' : esc(shortDate(p.payday))}</strong>
-      <span class="muted small">${esc(shortDate(p.start))} – ${esc(shortDate(p.end))} · ${p.shifts.length} shift${p.shifts.length === 1 ? '' : 's'} · ${fmtHours(p.hours)}</span></span>
-    <span class="vside"><span class="vscore num">${p.received != null && p.past ? gbp(p.received) : gbp(p.expected)}</span>${badge}</span>
+      <span class="muted small">${esc(shortDate(p.start))} – ${esc(shortDate(p.end))} · ${p.shifts.length} shift${p.shifts.length === 1 ? '' : 's'} · ${fmtHours(p.hours)}</span>
+      ${
+        takeHome
+          ? `<span class="muted small">${takeHome.source === 'payslip' ? 'Payslip' : 'Est.'}: ${gbp(takeHome.gross)} gross ${takeHome.tax < 0 ? `+ ${gbp(-takeHome.tax)} tax back` : `− ${gbp(takeHome.tax)} tax`}${takeHome.ni > 0 ? ` − ${gbp(takeHome.ni)} NI` : ''}</span>`
+          : ''
+      }</span>
+    <span class="vside"><span class="vscore num">${p.received != null && p.past ? gbp(p.received) : gbp(target)}</span>${takeHome && !(p.received != null && p.past) ? '<span class="vchip v-none">take-home</span>' : ''}${badge}</span>
   </li>`;
 }
 
@@ -139,15 +149,18 @@ function importPanel(payees) {
 
 export async function renderMoney(el, rerender, ctx) {
   if (ctx?.params?.[0] === 'insights') return renderInsights(el, rerender);
+  if (ctx?.params?.[0] === 'tax') return renderTax(el, rerender);
   const date = today();
-  const [roles, shifts, payments, transactions, payees, imported] = await Promise.all([
+  const [roles, shifts, payments, transactions, payees, imported, tax] = await Promise.all([
     listRoles(),
     listShifts(),
     listPayments(),
     listTransactions(),
     getPayPayees(),
-    lastImport()
+    lastImport(),
+    loadTaxPicture(today())
   ]);
+  const est = (p) => tax.byPayday.get(p.payday);
   const ordered = orderRoles(roles, shifts, date);
   const weeks = weeklyPay(shifts, payments, date, 8);
   const thisWeek = weeks.at(-1);
@@ -177,7 +190,7 @@ export async function renderMoney(el, rerender, ctx) {
       <div class="tile t-sky"><div class="stat-label">This week</div><div class="stat-big num">${gbp0(thisWeek.worked + thisWeek.booked)}</div><div class="tile-note">${fmtHours(thisWeek.hours)} · ${gbp0(thisWeek.worked)} worked</div></div>
       <div class="tile t-mint"><div class="stat-label">Paid this month</div><div class="stat-big num">${payments.length ? gbp0(receivedMonth) : '–'}</div><div class="tile-note">${payments.length ? 'From Monzo' : 'Import Monzo to see'}</div></div>
       <div class="tile t-sun"><div class="stat-label">Spent this month</div><div class="stat-big num">${transactions.length ? gbp0(spentMonth) : '–'}</div><div class="tile-note">${transactions.length ? `Last month ${gbp0(spentLast)}` : 'Import Monzo to see'}</div></div>
-      <div class="tile t-grape"><div class="stat-label">${next.isToday ? 'Payday today' : `Next payday · ${esc(shortDate(next.payday))}`}</div><div class="stat-big num">${gbp0(next.expected)}</div><div class="tile-note">${gbp0(onItsWay)} worked, not paid yet</div></div>
+      <div class="tile t-grape"><div class="stat-label">${next.isToday ? 'Payday today' : `Next payday · ${esc(shortDate(next.payday))}`}</div><div class="stat-big num">${gbp0(est(next)?.net ?? next.expected)}</div><div class="tile-note">${est(next)?.net != null && est(next).source !== 'none' ? `Take-home · ${gbp0(est(next).gross)} before tax` : `${gbp0(onItsWay)} worked, not paid yet`}</div></div>
     </div>
 
     <div class="layout">
@@ -227,10 +240,10 @@ export async function renderMoney(el, rerender, ctx) {
         }
 
         <div class="sec" style="--dot:var(--grape)"><span class="dot"></span><h2>Paydays</h2><span class="aside">Wednesdays · Thu–Wed, a week behind</span></div>
-        <ul class="vlist">${[...upcoming3].reverse().map((p) => paydayRow(p, transactions.length > 0)).join('')}</ul>
+        <ul class="vlist">${[...upcoming3].reverse().map((p) => paydayRow(p, transactions.length > 0, est(p))).join('')}</ul>
         <div class="card" style="margin-top:12px">${paydayChart(pays)}</div>
         <details class="manual" style="margin-top:12px"><summary>Past paydays</summary>
-          <ul class="vlist" style="margin-top:10px">${pays.filter((p) => p.past && !p.isToday).reverse().map((p) => paydayRow(p, transactions.length > 0)).join('')}</ul></details>
+          <ul class="vlist" style="margin-top:10px">${pays.filter((p) => p.past && !p.isToday).reverse().map((p) => paydayRow(p, transactions.length > 0, est(p))).join('')}</ul></details>
 
         ${
           recent.length
