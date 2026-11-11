@@ -2,6 +2,7 @@ import { exportAll, importAll } from '../db.js';
 import { today } from '../logic/dates.js';
 import { esc, toast } from '../ui.js';
 import { THEMES, getName, getThemePref, setName, setThemePref } from '../theme.js';
+import { onSyncStatus, sendCode, signOut, syncNow, syncStatus, verifyCode } from '../sync.js';
 
 async function persistenceStatus() {
   if (!navigator.storage?.persisted) return 'Not supported here';
@@ -10,9 +11,96 @@ async function persistenceStatus() {
 
 const THEME_EMOJI = { auto: '🌓', light: '☀️', dark: '🌙' };
 
+function ago(iso) {
+  if (!iso) return 'Never';
+  const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `${hours} h ago`;
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+function syncCardHTML(s, step = 'email', email = '') {
+  if (!s.configured) return '<p class="muted">Sync isn’t set up in this build.</p>';
+  if (s.user) {
+    const state = s.syncing ? 'Syncing…' : s.error ? `Problem: ${esc(s.error)}` : ago(s.lastSync);
+    return `
+      <div class="stat-row"><span class="muted">Signed in</span><strong>${esc(s.user.email ?? '')}</strong></div>
+      <div class="stat-row"><span class="muted">Last synced</span><strong>${state}</strong></div>
+      <div class="stat-row"><span class="muted">Waiting to send</span><strong class="num">${s.pending}</strong></div>
+      <button class="btn block" id="sync-now" type="button"${s.syncing ? ' disabled' : ''}>Sync now</button>
+      <button class="btn secondary block" id="sign-out" type="button">Sign out</button>`;
+  }
+  if (step === 'code') {
+    return `
+      <p>We sent a 6-digit code to <strong>${esc(email)}</strong>. Type it here, in the app.</p>
+      <form id="code-form" class="inputs" style="grid-template-columns:1fr auto" autocomplete="off">
+        <input class="field" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,10}" placeholder="Code" aria-label="Code from the email" required>
+        <button class="btn" type="submit">Sign in</button>
+      </form>
+      <button class="btn secondary block" id="code-back" type="button">Use a different email</button>`;
+  }
+  return `
+    <p>Sign in on each device to keep your phone and computer in step.</p>
+    <form id="email-form" class="inputs" style="grid-template-columns:1fr auto" autocomplete="on">
+      <input class="field" name="email" type="email" autocomplete="email" placeholder="Email" aria-label="Email" value="${esc(email)}" required>
+      <button class="btn" type="submit">Send code</button>
+    </form>
+    <p class="muted small">Anything already on this device is uploaded when you sign in, and merged with what’s there.</p>`;
+}
+
+function bindSync(card, rerender, step = 'email', email = '') {
+  const redraw = async (nextStep = step, nextEmail = email) => {
+    card.innerHTML = syncCardHTML(await syncStatus(), nextStep, nextEmail);
+    bindSync(card, rerender, nextStep, nextEmail);
+  };
+  card.querySelector('#email-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const address = String(new FormData(e.currentTarget).get('email') ?? '').trim();
+    const button = e.currentTarget.querySelector('button');
+    button.disabled = true;
+    try {
+      await sendCode(address);
+      redraw('code', address);
+    } catch (err) {
+      toast(err.message || 'Could not send the code');
+      button.disabled = false;
+    }
+  });
+  card.querySelector('#code-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const code = String(new FormData(e.currentTarget).get('code') ?? '').trim();
+    const button = e.currentTarget.querySelector('button');
+    button.disabled = true;
+    try {
+      await verifyCode(email, code);
+      toast('Signed in · syncing');
+      rerender();
+    } catch (err) {
+      toast(err.message || 'That code didn’t work');
+      button.disabled = false;
+    }
+  });
+  card.querySelector('#code-back')?.addEventListener('click', () => redraw('email', email));
+  card.querySelector('#sync-now')?.addEventListener('click', async () => {
+    const off = onSyncStatus(() => redraw());
+    const result = await syncNow();
+    off();
+    await redraw();
+    if (result) toast(`Synced · ${result.pushed} sent, ${result.pulled} received`);
+  });
+  card.querySelector('#sign-out')?.addEventListener('click', async () => {
+    await signOut();
+    toast('Signed out · data stays on this device');
+    rerender();
+  });
+}
+
 export async function renderSettings(el, rerender) {
   const status = await persistenceStatus();
   const pref = getThemePref();
+  const sync = await syncStatus();
 
   el.innerHTML = `
     <h1 class="page-title">Settings</h1>
@@ -36,15 +124,18 @@ export async function renderSettings(el, rerender) {
 
         <div class="sec" style="--dot:var(--sun)"><span class="dot"></span><h2>About</h2></div>
         <div class="card top-sun">
-          <p><strong>Brain Reset</strong> · phases 1–3</p>
-          <p class="muted small">Next up: sync between devices, weekly review and charts, then recording and AI feedback for unprompted talks.</p>
+          <p><strong>Brain Reset</strong> · phases 1–4</p>
+          <p class="muted small">Next up: the life dashboard, weekly review and charts, then recording and AI feedback for unprompted talks.</p>
         </div>
       </section>
 
       <section>
+        <div class="sec" style="--dot:var(--tomato)"><span class="dot"></span><h2>Sync</h2></div>
+        <div class="card top-tomato stack" id="sync-card">${syncCardHTML(sync)}</div>
+
         <div class="sec" style="--dot:var(--mint)"><span class="dot"></span><h2>Your data</h2></div>
         <div class="card top-mint stack">
-          <p>Everything is stored on this device. Until sync arrives in phase 4, export a backup now and then.</p>
+          <p>${sync.user ? 'Synced to your account, and kept on this device so it works offline.' : 'Stored on this device. Sign in above to sync it between your phone and computer.'}</p>
           <button class="btn block" id="export" type="button">Export backup</button>
           <label class="btn secondary block">
             Import backup
@@ -61,6 +152,8 @@ export async function renderSettings(el, rerender) {
         </div>
       </section>
     </div>`;
+
+  bindSync(el.querySelector('#sync-card'), rerender);
 
   el.querySelectorAll('[data-theme-pref]').forEach((b) =>
     b.addEventListener('click', () => {
