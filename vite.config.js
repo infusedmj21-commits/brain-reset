@@ -7,9 +7,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/apple-touch-icon.png', 'icons/favicon.png'],
       manifest: {
-        name: 'Brain Reset',
-        short_name: 'Brain Reset',
-        description: 'Daily routine for focus, memory and Spanish.',
+        name: 'Artemis',
+        short_name: 'Artemis',
+        description: 'Life dashboard: ventures, shifts, money, health and the Brain Reset routine.',
         start_url: '/',
         scope: '/',
         display: 'standalone',

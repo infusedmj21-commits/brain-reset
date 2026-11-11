@@ -12,7 +12,21 @@ export const SYNCED_TABLES = [
   'palace_sessions',
   'unprompted_sessions',
   'weekly_reviews',
-  'sprint_rounds'
+  'sprint_rounds',
+  // Artemis dashboard
+  'ventures',
+  'venture_scores',
+  'tasks',
+  'day_focus',
+  'roles',
+  'shifts',
+  'payments',
+  'transactions',
+  'routines',
+  'exercises',
+  'workouts',
+  'workout_sets',
+  'checkins'
 ];
 
 export function createDB(name = 'brain-reset') {
@@ -36,6 +50,22 @@ export function createDB(name = 'brain-reset') {
   // v3: every in-app arithmetic round, with its settings and per-problem timings.
   db.version(3).stores({
     sprint_rounds: 'id, date, updated_at'
+  });
+  // v4: the Artemis life dashboard. All synced like the rest.
+  db.version(4).stores({
+    ventures: 'id, status, updated_at',
+    venture_scores: 'id, venture_id, date, updated_at',
+    tasks: 'id, venture_id, done_date, updated_at',
+    day_focus: 'id, date, task_id, updated_at',
+    roles: 'id, updated_at',
+    shifts: 'id, date, status, updated_at',
+    payments: 'id, date, updated_at',
+    transactions: 'id, date, account, updated_at',
+    routines: 'id, updated_at',
+    exercises: 'id, updated_at',
+    workouts: 'id, date, updated_at',
+    workout_sets: 'id, workout_id, exercise_id, updated_at',
+    checkins: 'id, date, kind, updated_at'
   });
   return db;
 }

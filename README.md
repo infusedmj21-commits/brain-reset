@@ -1,6 +1,6 @@
-# Brain Reset
+# Artemis (formerly Brain Reset)
 
-A personal web app for the Brain Reset Routine: a daily checklist built around shift types, an arithmetic sprint log, and (in later phases) a memory palace trainer, unprompted.cool sessions with recording, sync between devices and progress charts.
+Michael’s life dashboard (Home, Ventures, Money, Health) wrapped around the Brain Reset Routine: a daily checklist built around shift types, an arithmetic sprint log, and (in later phases) a memory palace trainer, unprompted.cool sessions with recording, sync between devices and progress charts.
 
 It installs to the iPhone home screen and the computer taskbar from one codebase and works offline.
 
@@ -13,7 +13,10 @@ It installs to the iPhone home screen and the computer taskbar from one codebase
 | 3 | Unprompted sessions (recording in the app comes later) | Done |
 | — | In-app arithmetic sprint (Zetamac rules and settings) | Done |
 | 4 | Sync between devices (Supabase) | Done |
-| 5 | Life dashboard, weekly review and charts | Next |
+| 5a | Artemis: rename, tab bar, Home, Ventures with scoring and today’s 3 | Done |
+| 5b | Money: shifts, expected vs actual pay, Monzo import, spending | Next |
+| 5c | Health: Hevy-style routines and workout logging | |
+| 5d | Skipped days and the Monday review | |
 | 6 | AI review of recorded talks | |
 
 ## Deploy (one-off, about 5 minutes)
@@ -64,6 +67,8 @@ src/
   logic/palace.js    word picking, lenient recall scoring, weekly test history
   logic/unprompted.js session steps, timestamp-based countdowns, next-day recall
   logic/words.js     bundled list of easy-to-picture words
+  logic/scoring.js   (Impact + Urgency) ÷ Effort, anchors, bands, rescore rule
+  data/ventures.js   ventures, scores, tasks, today’s 3 (seeds Halden Labs, Etsy prints, Amazon FBA)
   logic/arithmetic.js sprint settings (Zetamac defaults), problem generation, round stats
   views/             one file per screen; look.js holds colours, shapes and emoji per habit
 tests/               Vitest unit tests

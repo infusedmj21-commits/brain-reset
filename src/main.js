@@ -7,6 +7,10 @@ import './styles.css';
 import { applyTheme } from './theme.js';
 import { registerSW } from 'virtual:pwa-register';
 import { renderToday } from './views/today.js';
+import { renderHome } from './views/home.js';
+import { renderVentures } from './views/ventures.js';
+import { soon } from './views/soon.js';
+import { seedVentures } from './data/ventures.js';
 import { renderSettings } from './views/settings.js';
 import { renderProgress } from './views/progress.js';
 import { renderPalace } from './views/palace.js';
@@ -15,6 +19,10 @@ import { renderSprint } from './views/sprint.js';
 import { setOnRemoteChange, startSync } from './sync.js';
 
 const routes = {
+  home: renderHome,
+  ventures: renderVentures,
+  money: soon('Money', 'Shifts, expected pay, actual pay from Monzo, and spending.'),
+  health: soon('Health', 'Routines, live workout logging, PRs and progress.'),
   today: renderToday,
   palace: renderPalace,
   unprompted: renderUnprompted,
@@ -41,12 +49,20 @@ function runCleanups() {
 async function render() {
   runCleanups();
   // Routes look like #/palace or #/unprompted/session/<id>.
-  const [name = 'today', ...params] = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
-  const route = routes[name] ? name : 'today';
+  const [name = 'home', ...params] = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
+  const route = routes[name] ? name : 'home';
   const ctx = { params, onCleanup: (fn) => cleanups.push(fn) };
-  const tab = route === 'sprint' ? 'today' : route;
+  // Brain Reset's screens live under the Reset tab; Settings under Home.
+  const RESET = ['today', 'sprint', 'palace', 'unprompted', 'progress'];
+  const tab = RESET.includes(route) ? 'today' : route === 'settings' ? 'home' : route;
   document.querySelectorAll('.tabbar a').forEach((a) => {
     if (a.dataset.tab === tab) a.setAttribute('aria-current', 'page');
+    else a.removeAttribute('aria-current');
+  });
+  const subnav = document.getElementById('subnav');
+  subnav.hidden = tab !== 'today' || route === 'sprint';
+  subnav.querySelectorAll('a').forEach((a) => {
+    if (a.dataset.sub === route) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');
   });
   try {
@@ -73,14 +89,14 @@ document.addEventListener('visibilitychange', () => {
 
 applyTheme();
 registerSW({ immediate: true });
-render();
+seedVentures().finally(render);
 
 // Changes pulled from another device redraw the current screen, unless the
 // person is typing in a field, where a redraw would wipe what they entered.
 // Only list-style screens redraw; a sprint round or timed session is never interrupted.
 setOnRemoteChange(() => {
-  const route = location.hash.replace(/^#\/?/, '').split('/')[0] || 'today';
-  if (!['today', 'progress', 'settings'].includes(route)) return;
+  const route = location.hash.replace(/^#\/?/, '').split('/')[0] || 'home';
+  if (!['home', 'ventures', 'today', 'progress', 'settings'].includes(route)) return;
   const active = document.activeElement;
   if (active && ['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName)) return;
   render();
