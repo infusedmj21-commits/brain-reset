@@ -617,3 +617,16 @@ input[type=date].field::-webkit-calendar-picker-indicator, input[type=time].fiel
   .stat-card > div { min-width: 0; }
   .level-chip .lv-name { font-size: 10.5px; letter-spacing: -0.01em; }
 }
+
+/* TikTok card */
+.tk-log { display: grid; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--hairline); }
+.tk-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.tk-day { display: grid; justify-items: center; gap: 3px; padding: 6px 0; border: 0; background: transparent; border-radius: 10px; min-height: 44px; }
+.tk-day i { width: 18px; height: 18px; border-radius: 50%; border: 1.5px dashed rgba(94, 64, 55, 0.4); }
+.tk-day.under i { background: var(--accent); border: 0; }
+.tk-day.over i { background: repeating-linear-gradient(45deg, var(--accent-soft) 0 3px, transparent 3px 6px); border: 1.5px solid var(--accent-deep); }
+.tk-day small { font: 500 10.5px var(--body); color: var(--ink-2); }
+.tk-day:hover { background: rgba(255, 255, 255, 0.5); }
+.tk-offer { display: grid; gap: 6px; margin-top: 14px; padding: 14px; border-radius: 16px; background: var(--blush); }
+.tk-offer p { margin: 0; }
+.tiktok-card details.manual { margin-top: 12px; }

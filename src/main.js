@@ -178,7 +178,41 @@ document.addEventListener('visibilitychange', () => {
 
 applyTheme();
 startEntrance();
-registerSW({ immediate: true });
+// ---- Updates ----
+// Check for a new version on open, whenever the app comes back to the front, and every
+// half hour while it's open. Switch over only on a calm screen: never mid-sprint,
+// mid-workout, in a palace or Unprompted session, or while typing.
+let swReg = null;
+let updateReady = false;
+const updateSW = registerSW({
+  immediate: true,
+  onRegisteredSW(_url, registration) {
+    swReg = registration ?? null;
+  },
+  onNeedRefresh() {
+    updateReady = true;
+    applyUpdateIfSafe();
+  }
+});
+function safeToReload() {
+  const [name, ...params] = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
+  if (name === 'sprint') return false;
+  if (['health', 'palace', 'unprompted'].includes(name) && params.length) return false;
+  const a = document.activeElement;
+  return !(a && ['INPUT', 'TEXTAREA', 'SELECT'].includes(a.tagName));
+}
+function applyUpdateIfSafe() {
+  if (updateReady && safeToReload()) updateSW(true);
+}
+const checkForUpdate = () => swReg?.update().catch(() => {});
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  checkForUpdate();
+  applyUpdateIfSafe();
+});
+window.addEventListener('hashchange', () => setTimeout(applyUpdateIfSafe, 400));
+document.addEventListener('focusout', () => setTimeout(applyUpdateIfSafe, 400));
+setInterval(() => document.visibilityState === 'visible' && checkForUpdate(), 30 * 60 * 1000);
 Promise.allSettled([seedVentures(), seedRoles(), seedHealth()]).finally(render);
 
 // Changes pulled from another device redraw the current screen, unless the

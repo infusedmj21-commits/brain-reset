@@ -7,7 +7,8 @@ import {
   missedYesterday,
   streak,
   suggestUnprompted,
-  tiktokLimit
+  tiktokState,
+  tiktokStep
 } from '../src/logic/routine.js';
 
 // 2026-11-02 is a Monday.
@@ -106,11 +107,26 @@ describe('streaks', () => {
 });
 
 describe('tiktok limit and formatting', () => {
-  it('follows the weekly schedule', () => {
-    expect(tiktokLimit(MON).minutes).toBe(360);
-    expect(tiktokLimit('2026-11-15').minutes).toBe(285);
-    expect(tiktokLimit('2027-02-01').minutes).toBe(30);
-    expect(tiktokLimit('2026-10-01')).toBeNull();
+  it('starts at week 1 and never moves on by the calendar', () => {
+    const plan = { history: [{ level: 1, from: '2026-11-11' }] };
+    expect(tiktokState(plan, {}, '2026-11-11')).toMatchObject({ level: 1, minutes: 360, held: 0, offerStep: false });
+    // Weeks later, still week 1 until a step is confirmed.
+    expect(tiktokState(plan, {}, '2026-12-20')).toMatchObject({ level: 1, minutes: 360, offerStep: true });
+  });
+  it('offers the next step after a week, and holds when mostly over', () => {
+    const plan = { history: [{ level: 1, from: '2026-11-01' }] };
+    const logs = { '2026-11-05': 'over', '2026-11-06': 'over', '2026-11-07': 'over', '2026-11-04': 'under' };
+    const st = tiktokState(plan, logs, '2026-11-08');
+    expect(st).toMatchObject({ offerStep: true, under: 1, over: 3, advice: 'hold', next: { level: 2, minutes: 285 } });
+    expect(tiktokState({ ...plan, snoozedUntil: '2026-11-15' }, {}, '2026-11-08').offerStep).toBe(false);
+  });
+  it('steps down and back up from the day you confirm', () => {
+    let plan = { history: [{ level: 1, from: '2026-11-01' }] };
+    plan = tiktokStep(plan, '2026-11-09', 1);
+    expect(tiktokState(plan, {}, '2026-11-10')).toMatchObject({ level: 2, minutes: 285, from: '2026-11-09', held: 1 });
+    plan = tiktokStep(plan, '2026-11-12', -1);
+    expect(tiktokState(plan, {}, '2026-11-12')).toMatchObject({ level: 1, minutes: 360 });
+    expect(tiktokState(tiktokStep({ history: [{ level: 9, from: '2026-11-01' }] }, '2026-11-20', 1), {}, '2026-11-20')).toMatchObject({ level: 9, next: null, offerStep: false });
   });
   it('formats minutes', () => {
     expect(formatMinutes(360)).toBe('6h');

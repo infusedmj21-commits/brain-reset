@@ -5,7 +5,8 @@ import { GAP_REASONS, activeDates, bestStreak, gapBefore, reviewWeek } from '../
 import { getCheckin, saveGap } from '../data/checkins.js';
 import { listRoutines, listWorkouts, getMode } from '../data/health.js';
 import { weekPlan } from '../logic/health.js';
-import { DAY_TYPES, TIKTOK_SCHEDULE, buildChecklist, formatMinutes, missedYesterday, streak, tiktokLimit } from '../logic/routine.js';
+import { DAY_TYPES, buildChecklist, formatMinutes, missedYesterday, streak } from '../logic/routine.js';
+import { loadTiktok } from '../data/tiktok.js';
 import { formatScore, needsRescore, rankTasks, scoreHistory } from '../logic/scoring.js';
 import { getName } from '../theme.js';
 import { esc, toast } from '../ui.js';
@@ -182,7 +183,7 @@ export async function renderHome(el, rerender) {
   const nowStreak = streak(date, doneMap);
   const sorted = [...sprints].filter((x) => x.date <= date).sort((x, y) => x.date.localeCompare(y.date));
   const lastSprint = sorted.at(-1);
-  const limit = tiktokLimit(date);
+  const limit = (await loadTiktok(date)).state;
   const allDone = items.length && doneCount === items.length;
   const headline = !dayType
     ? 'Set up your <em>day</em>'
