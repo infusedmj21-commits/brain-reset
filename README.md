@@ -15,8 +15,8 @@ It installs to the iPhone home screen and the computer taskbar from one codebase
 | 4 | Sync between devices (Supabase) | Done |
 | 5a | Artemis: rename, tab bar, Home, Ventures with scoring and today’s 3 | Done |
 | 5b | Money: shifts by role and rate, expected vs actual pay, Monzo CSV import, spending | Done |
-| 5c | Health: Hevy-style routines and workout logging | Next |
-| 5d | Skipped days and the Monday review | |
+| 5c | Health: Hevy-style routines and workout logging, PRs, rest timer, Hevy import | Done |
+| 5d | Skipped days and the Monday review | Next |
 | 6 | AI review of recorded talks | |
 
 ## Deploy (one-off, about 5 minutes)
@@ -70,6 +70,8 @@ src/
   logic/scoring.js   (Impact + Urgency) ÷ Effort, anchors, bands, rescore rule
   logic/money.js     roles and rates, shift pay (rounded half up), weekly pay, Monzo CSV parsing and classifying
   data/money.js      roles, shifts, payments, transactions, Monzo import (deduplicated by transaction ID)
+  logic/health.js    Michael's split (gym + home versions), double-progression aims, e1RM, PRs, week plan, Hevy CSV
+  data/health.js     exercises, routines, workouts and sets, daily ticks, Hevy import
   data/ventures.js   ventures, scores, tasks, today’s 3 (seeds Halden Labs, Etsy prints, Amazon FBA)
   logic/arithmetic.js sprint settings (Zetamac defaults), problem generation, round stats
   views/             one file per screen; look.js holds colours, shapes and emoji per habit
