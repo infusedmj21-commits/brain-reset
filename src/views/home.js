@@ -1,6 +1,10 @@
 import { doneByDate, firstActiveDate, getDayPlan, live, unpromptedDates } from '../db.js';
 import { focusFor, listScores, listTasks, listVentures, setFocus, toggleFocus } from '../data/ventures.js';
-import { addDays, daysBetween, prettyDate, today } from '../logic/dates.js';
+import { addDays, daysBetween, prettyDate, today, weekStart } from '../logic/dates.js';
+import { GAP_REASONS, activeDates, bestStreak, gapBefore, reviewWeek } from '../logic/review.js';
+import { getCheckin, saveGap } from '../data/checkins.js';
+import { listRoutines, listWorkouts, getMode } from '../data/health.js';
+import { weekPlan } from '../logic/health.js';
 import { DAY_TYPES, TIKTOK_SCHEDULE, buildChecklist, formatMinutes, missedYesterday, streak, tiktokLimit } from '../logic/routine.js';
 import { formatScore, needsRescore, rankTasks, scoreHistory } from '../logic/scoring.js';
 import { getName } from '../theme.js';
@@ -30,7 +34,8 @@ function greeting(name) {
 function sinceYesterday({ date, doneMap, sprints }) {
   const nowStreak = streak(date, doneMap);
   const prevStreak = streak(addDays(date, -1), doneMap);
-  const streakNote = nowStreak > prevStreak ? `+${nowStreak - prevStreak} today` : nowStreak === 0 ? 'Start one today' : 'Do today’s two to grow it';
+  const best = bestStreak(doneMap);
+  const streakNote = `${nowStreak > prevStreak ? `+${nowStreak - prevStreak} today` : nowStreak === 0 ? 'Start one today' : 'Do today’s two to grow it'}${best > nowStreak ? ` · best ${best}` : ''}`;
 
   const sorted = [...sprints].filter((s) => s.date <= date).sort((a, b) => a.date.localeCompare(b.date));
   const last = sorted.at(-1);
@@ -104,7 +109,7 @@ function pickerHTML(ranked, ventures, dayType) {
 
 export async function renderHome(el, rerender) {
   const date = today();
-  const [plan, doneMap, uDates, first, sprints, focus, tasks, ventures, scores, shift] = await Promise.all([
+  const [plan, doneMap, uDates, first, sprints, focus, tasks, ventures, scores, shift, habitLogs, allFocus, workouts, routines, mode] = await Promise.all([
     getDayPlan(date),
     doneByDate(),
     unpromptedDates(),
@@ -114,7 +119,12 @@ export async function renderHome(el, rerender) {
     listTasks(),
     listVentures(),
     listScores(),
-    nextShift()
+    nextShift(),
+    live('habit_logs'),
+    live('day_focus'),
+    listWorkouts(),
+    listRoutines(),
+    getMode()
   ]);
 
   const dayType = plan?.day_type ?? null;
@@ -135,6 +145,15 @@ export async function renderHome(el, rerender) {
   }
   const focusDone = focus.filter((f) => f.done).length;
 
+  // Comebacks: 2+ whole days away gets a welcome back (once), 1 day a nudge.
+  const gap = gapBefore(date, activeDates({ habitLogs, workouts, focus: allFocus }));
+  const gapAnswered = gap ? await getCheckin(gap.id) : null;
+  const showWelcome = gap && !gapAnswered;
+  const gymPlan = weekPlan(routines, workouts, date, mode);
+  const gymMissed = gymPlan.plan.filter((p) => p.status === 'missed').length;
+  const week = reviewWeek(date, weekStart);
+  const reviewDue = first && first <= week.end && !(await getCheckin(week.id));
+
   el.innerHTML = `
     <section class="home-head">
       <div>
@@ -147,7 +166,25 @@ export async function renderHome(el, rerender) {
       </div>
     </section>
 
-    ${missed ? `<a class="banner" href="#/today"><strong>Missed yesterday.</strong> Never miss twice: the sprint and 10 minutes of Spanish keep the streak alive.</a>` : ''}
+    ${
+      showWelcome
+        ? `<section class="card top-grape stack welcome" style="margin-top:18px">
+            <h2>Welcome back.</h2>
+            <p>You were away ${gap.days} days (${esc(prettyDate(gap.from))} to ${esc(prettyDate(gap.to))}). No drama: one missed stretch doesn’t undo the habit, the next one is what counts.</p>
+            <div class="stat-label">What got in the way? (it shows in your weekly review)</div>
+            <div class="chips small two">${Object.entries(GAP_REASONS).map(([k, label]) => `<button type="button" class="chip" data-reason="${k}">${label}</button>`).join('')}</div>
+            <div class="stat-label" style="margin-top:6px">Catch up, smallest first</div>
+            <ul class="plain-list catchup">
+              <li><a href="#/today">Comeback day: the sprint and 10 minutes of Spanish</a></li>
+              ${dueRescore ? `<li><a href="#/ventures">Rescore ${dueRescore} venture${dueRescore === 1 ? '' : 's'}</a></li>` : ''}
+              ${gymMissed ? `<li><a href="#/health">${gymMissed} gym session${gymMissed === 1 ? '' : 's'} to catch up: start with the next one</a></li>` : ''}
+              <li><a href="#/money">Log any shifts you worked while away</a></li>
+            </ul>
+          </section>`
+        : missed
+          ? `<a class="banner" href="#/today"><strong>Missed yesterday.</strong> Never miss twice: today is a comeback day, so the sprint and 10 minutes of Spanish keep the streak alive.</a>`
+          : ''
+    }
 
     <div class="sec" style="--dot:var(--tomato)"><span class="dot"></span><h2>Since yesterday</h2></div>
     ${sinceYesterday({ date, doneMap, sprints })}
@@ -182,6 +219,12 @@ export async function renderHome(el, rerender) {
           }</p></div>
         </a>
         ${
+          reviewDue
+            ? `<a class="card top-grape reset-card" href="#/review"><div class="big-emoji" aria-hidden="true">🗓️</div>
+                <div><h3>Your week in review</h3><p class="muted small" style="margin:2px 0 0">Last week at a glance, then one thing to change.</p></div></a>`
+            : ''
+        }
+        ${
           dueRescore
             ? `<a class="card top-sun reset-card" href="#/ventures"><div class="big-emoji" aria-hidden="true">📊</div>
                 <div><h3>Rescore ventures</h3><p class="muted small" style="margin:2px 0 0">${dueRescore} not scored this week.</p></div></a>`
@@ -191,6 +234,14 @@ export async function renderHome(el, rerender) {
     </div>`;
 
   // ---- Wiring ----
+  el.querySelectorAll('[data-reason]').forEach((b) =>
+    b.addEventListener('click', async () => {
+      await saveGap(gap, b.dataset.reason);
+      toast('Noted. Let’s go.');
+      rerender();
+    })
+  );
+
   el.querySelector('#pick-start')?.addEventListener('click', () => {
     picking = true;
     picks = new Map();
