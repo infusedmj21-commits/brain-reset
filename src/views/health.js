@@ -109,7 +109,7 @@ async function renderOverview(el, rerender) {
                   </a></li>`;
                 })
                 .join('')}</ul>`
-            : '<div class="empty-hint">Finish a workout or import from Hevy, and your exercises show up here with their bests.</div>'
+            : '<div class="empty-hint">Finish a workout and your exercises show up here with their bests.</div>'
         }
       </section>
 

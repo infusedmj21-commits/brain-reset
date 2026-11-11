@@ -1,47 +1,57 @@
-/* Brain Reset · one playful look with a light and a dark version.
+/* Artemis · Style A: soft, rounded, light and dark versions.
    <html data-theme="light|dark"> is set by the inline script in index.html. */
 
 :root, :root[data-theme="light"] {
   color-scheme: light;
-  --bg: #fbf8f2;
+  --bg: #fbf8f3;
   --card: #ffffff;
-  --field: #fbf8f2;
-  --ink: #2b2240;
-  --ink-2: #756d8a;
-  --outline: #2b2240;
-  --shadow-c: #2b2240;
-  --tick-done: #2b2240;
+  --field: #f6f4fb;
+  --ink: #1f1d2b;
+  --ink-2: #5f5b70;
+  --outline: #e7e3ee;
+  --shadow-c: transparent;
+  --accent: #5b5bd6;
+  --accent-ink: #3f3fb8;
+  --accent-soft: #ecebff;
+  --tick-done: #5b5bd6;
   --tick-ink: #ffffff;
-  --tomato: #ff6b5b; --sun: #ffc93c; --mint: #35d6a0; --sky: #4cc3ff; --grape: #9b7bff; --gum: #ff8ac8;
-  --tomato-soft: #fff0ed; --sun-soft: #fff6dc; --mint-soft: #e6faf2; --sky-soft: #eaf7ff; --grape-soft: #f3efff; --gum-soft: #fff0f8;
-  --on-accent: #2b2240;
-  --bg-shape: #ffc93c;
-  --bg-shape-o: 0.3;
+  --tomato: #ff7a59; --sun: #e0a800; --mint: #2e9e6a; --sky: #5b8def; --grape: #5b5bd6; --gum: #e05f9b;
+  --tomato-soft: #ffe3d3; --sun-soft: #fff1c2; --mint-soft: #d9f3e6; --sky-soft: #dce8ff; --grape-soft: #ecebff; --gum-soft: #ffe0ef;
+  --tomato-ink: #6b2e12; --sun-ink: #6a4a00; --mint-ink: #14513a; --sky-ink: #2b3a66; --grape-ink: #3f3fb8;
+  --on-accent: #ffffff;
+  --bg-shape: transparent;
+  --bg-shape-o: 0;
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #1b1726;
-  --card: #262036;
-  --field: #1b1726;
-  --ink: #f3effa;
-  --ink-2: #b3aac8;
-  --outline: #4a4063;
-  --shadow-c: #0d0a14;
-  --tick-done: #35d6a0;
-  --tick-ink: #1b1726;
-  --tomato-soft: #3d2630; --sun-soft: #3b3220; --mint-soft: #1d3a33; --sky-soft: #1f3142; --grape-soft: #2e2650; --gum-soft: #3b2440;
-  --on-accent: #1b1726;
-  --bg-shape: #9b7bff;
-  --bg-shape-o: 0.16;
+  --bg: #15131c;
+  --card: #201d2a;
+  --field: #2a2636;
+  --ink: #f3f1f8;
+  --ink-2: #b5b0c4;
+  --outline: #353042;
+  --shadow-c: transparent;
+  --accent: #8b8bf0;
+  --accent-ink: #b9b9ff;
+  --accent-soft: #2d2b4a;
+  --tick-done: #8b8bf0;
+  --tick-ink: #15131c;
+  --tomato: #ff8f6e; --sun: #f0c24a; --mint: #4fc792; --sky: #7ea6f5; --grape: #8b8bf0; --gum: #f07cb3;
+  --tomato-soft: #3d2a26; --sun-soft: #3b3220; --mint-soft: #1d3a2f; --sky-soft: #1f2c45; --grape-soft: #2d2b4a; --gum-soft: #3b2438;
+  --tomato-ink: #ffc9b5; --sun-ink: #f5dc96; --mint-ink: #a8e8c8; --sky-ink: #bcd0fb; --grape-ink: #c9c9ff;
+  --on-accent: #15131c;
+  --bg-shape: transparent;
+  --bg-shape-o: 0;
 }
 
 :root {
-  --border: 2px solid var(--outline);
-  --shadow: 0 3px 0 var(--shadow-c);
+  --border: 1px solid var(--outline);
+  --shadow: none;
   --r: 22px;
-  --tabbar-h: 84px;
-  --display: Fredoka, Nunito, ui-rounded, system-ui, sans-serif;
+  --tabbar-h: 78px;
+  --display: Nunito, ui-rounded, system-ui, sans-serif;
+  --body: Inter, system-ui, -apple-system, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -685,3 +695,103 @@ input[type=date].field { min-height: 44px; }
 .cell.away { background-image: repeating-linear-gradient(45deg, transparent 0 4px, var(--outline) 4px 5px); opacity: 0.6; }
 .away-key { background-image: repeating-linear-gradient(45deg, transparent 0 3px, var(--outline) 3px 4px); }
 textarea.field { resize: vertical; font-family: inherit; }
+
+
+/* =====================================================================
+   Style A (Nov 2026): soft, rounded, no outlines. Overrides the original
+   Brain Reset look above so every screen matches the Artemis mockups.
+   ===================================================================== */
+html, body { font: 500 16px/1.45 var(--body); letter-spacing: -0.005em; }
+h1, h2, h3, .page-title, .stat-big, .vscore, .big, .big-emoji, .verdict-box strong { font-family: var(--display); }
+h1, .page-title { font-weight: 900; letter-spacing: -0.5px; }
+h2, h3 { font-weight: 900; }
+.sec h2 { font-size: 19px; font-weight: 900; }
+.sec .dot { width: 10px; height: 10px; }
+.stat-big, .vscore, .big { font-weight: 900; }
+.eyebrow, .stat-label { font-family: var(--body); font-weight: 600; }
+.bg-shape { display: none; }
+
+/* Surfaces */
+.card, .stat-card, .mission, .tile, .icon-btn { border: 0; box-shadow: none; }
+.card { border-radius: 24px; }
+.top-sun, .top-sky, .top-gum, .top-mint, .top-grape, .top-tomato { border-top: 0; }
+.tile { border-radius: 20px; }
+.tile .stat-label, .tile-note { color: var(--ink-2); }
+.t-tomato .stat-label, .t-tomato .tile-note { color: var(--tomato-ink); }
+.t-mint .stat-label, .t-mint .tile-note { color: var(--mint-ink); }
+.t-sky .stat-label, .t-sky .tile-note { color: var(--sky-ink); }
+.t-sun .stat-label, .t-sun .tile-note { color: var(--sun-ink); }
+.t-grape .stat-label, .t-grape .tile-note { color: var(--grape-ink); }
+.stat-card { background: var(--card); }
+.flame { background: var(--tomato-soft) !important; }
+.banner { border: 0; background: var(--tomato-soft); color: var(--ink); }
+.empty-hint { border: 1.5px dashed var(--outline); background: transparent; font-weight: 600; }
+.shape { border: 0; }
+
+/* Controls */
+.btn { background: var(--accent); color: var(--on-accent); border: 0; border-radius: 999px; font: 800 16px var(--display); padding: 12px 18px; }
+.btn.secondary { background: var(--card); color: var(--ink); border: var(--border); }
+.btn-mini, .why, .delta { border: var(--border); font-family: var(--body); font-weight: 700; }
+.field { border: var(--border); background: var(--field); border-radius: 14px; font: 500 16px var(--body); }
+.field:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.chip { border: var(--border); font: 700 15px var(--display); }
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); box-shadow: none; border-color: var(--accent); }
+.chip .ico { border: 0; }
+.tick { border: 2px solid var(--outline); background: var(--card); }
+.mission.done .tick, .vrow.is-done .tick, .tick[aria-pressed="true"] { background: var(--tick-done); border-color: var(--tick-done); color: var(--tick-ink); }
+.donut { border: 0; background: conic-gradient(var(--accent) calc(var(--p) * 1%), var(--accent-soft) 0); }
+.donut span { border: 0; }
+.vchip, .echip { border: 0; font-family: var(--body); font-weight: 700; }
+.v-mint, .e-high { background: var(--mint-soft); color: var(--mint-ink); }
+.v-sun, .e-low { background: var(--sun-soft); color: var(--sun-ink); }
+.v-grape { background: var(--grape-soft); color: var(--grape-ink); }
+.v-none { background: var(--sky-soft); color: var(--sky-ink); }
+.verdict-box { border: 0; }
+.verdict-box.v-mint { color: var(--mint-ink); }
+.verdict-box.v-sun { color: var(--sun-ink); }
+.verdict-box.v-grape { color: var(--grape-ink); }
+.slider input[type=range], .pick-top input, input[type=checkbox] { accent-color: var(--accent); }
+.pick.on { box-shadow: inset 0 0 0 2px var(--accent); }
+.icon-btn { background: var(--card); color: var(--ink-2); border-radius: 14px; }
+.icon-btn svg, .ico-badge svg { width: 22px; height: 22px; }
+.ico-badge { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; flex: none; }
+.ico-badge.sky { background: var(--sky-soft); color: var(--sky-ink); }
+.ico-badge.grape { background: var(--grape-soft); color: var(--grape-ink); }
+.ico-badge.sun { background: var(--sun-soft); color: var(--sun-ink); }
+.legend i, .game-progress { border: 0; }
+table th, table td { border-bottom: 1px solid var(--outline); }
+.subnav a { border: var(--border); font-family: var(--body); font-weight: 700; }
+.subnav a[aria-current="page"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+
+/* Gym */
+.set-type, .prev, .set-done { border: var(--border); font-family: var(--body); font-weight: 700; }
+.set-done[aria-pressed="true"] { background: var(--mint); border-color: var(--mint); color: #fff; }
+.set-row.done .field { background: var(--mint-soft); border-color: transparent; }
+.aim { background: var(--field); }
+.aim-up { background: var(--mint-soft); color: var(--mint-ink); }
+.aim-reps { background: var(--sun-soft); color: var(--sun-ink); }
+.rest-bar { border: var(--border); box-shadow: 0 6px 24px rgba(31, 29, 43, 0.12); }
+.paypair i, .bars i, .steps i { border: 0; }
+.paypair i.exp.booked { border: 1.5px dashed var(--sky); }
+.bars i { background: var(--accent-soft); }
+.bars i.now { background: var(--accent); }
+
+/* Tab bar: flat white bar on phones, line icons, pill behind the active one */
+.tabbar { left: 0; right: 0; bottom: 0; border: 0; border-top: var(--border); border-radius: 0; box-shadow: none; padding: 6px 6px calc(env(safe-area-inset-bottom) + 8px); }
+.tabbar a { font: 700 11px var(--body); color: var(--ink-2); gap: 2px; }
+.ti { width: auto; height: 30px; padding: 0 14px; border: 0; border-radius: 999px; font-size: 0; color: inherit; }
+.ti svg { width: 22px; height: 22px; }
+.tabbar a[aria-current="page"] { color: var(--accent-ink); }
+.tabbar a[aria-current="page"] .ti { background: var(--accent-soft); border: 0; }
+@media (min-width: 900px) {
+  .tabbar { left: 20px; top: 20px; bottom: 20px; border: 0; border-radius: 28px; padding: 20px 14px; }
+  .tabbar a { font: 700 15px var(--body); }
+  .tabbar a .ti, .tabbar a:nth-of-type(n) .ti { background: transparent; width: 40px; height: 40px; padding: 0; }
+  .tabbar a[aria-current="page"] .ti { background: var(--accent-soft); }
+  .brand { font: 900 20px var(--display); }
+  .tip { border: 0; background: var(--grape-soft); }
+}
+.stat-card.flame, .stat-card.flame .stat-label, .stat-card.flame .stat-big { color: var(--tomato-ink); }
+.stat-card.flame .stat-big { color: var(--ink); }
+.mission { background: var(--soft, var(--card)); }
+.week b { border: var(--border); }
