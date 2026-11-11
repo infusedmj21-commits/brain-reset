@@ -30,6 +30,13 @@ export const VENUE_SUGGESTIONS = ["St Andrew's", 'Molineux', 'Villa Park', 'Edgb
 export const pennies = (n) => Math.round(Number((n * 100).toFixed(6))) / 100;
 export const shiftPay = (s) => pennies((Number(s.hours) || 0) * (Number(s.rate) || 0));
 
+/** 7.3333 → '7h 20m'; 8 → '8h'. */
+export function fmtHours(h) {
+  const mins = Math.round((Number(h) || 0) * 60);
+  const m = mins % 60;
+  return `${Math.floor(mins / 60)}h${m ? ` ${String(m).padStart(2, '0')}m` : ''}`;
+}
+
 export const gbp = (n) => `${n < 0 ? '−' : ''}£${Math.abs(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 export const gbp0 = (n) => `${n < 0 ? '−' : ''}£${Math.round(Math.abs(n)).toLocaleString('en-GB')}`;
 
