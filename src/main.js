@@ -65,6 +65,10 @@ async function render() {
   // Brain Reset's screens live under the Reset tab; Settings sits beside To do under Tasks.
   const RESET = ['today', 'sprint', 'palace', 'unprompted', 'progress'];
   const tab = RESET.includes(route) ? 'today' : route === 'settings' ? 'tasks' : route === 'review' ? 'home' : route;
+  // Phone tab bar: slide the pill under the active tab (Settings lives under Tasks there).
+  const phoneTabs = [...document.querySelectorAll('.tabbar a:not(.side-only)')];
+  const idx = phoneTabs.findIndex((x) => x.dataset.tab === tab);
+  document.querySelector('.tabbar').style.setProperty('--i', String(Math.max(0, idx)));
   document.querySelectorAll('.tabbar a').forEach((a) => {
     if (a.dataset.tab === tab || (a.dataset.tab === 'settings' && route === 'settings')) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');

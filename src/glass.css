@@ -90,7 +90,7 @@ h3, .card h3 { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
   flex: 1 1 0; min-width: 0; min-height: calc(100vh - 48px);
   background: var(--glass-panel); border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: var(--r-panel); box-shadow: var(--shadow-panel);
-  padding: 28px; position: relative;
+  padding: 28px; position: relative; isolation: isolate;
 }
 .view { max-width: 1180px; margin: 0 auto; padding: 0 !important; z-index: auto; }
 .subnav {
@@ -113,6 +113,7 @@ h3, .card h3 { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
 .side-toggle, .side-h, .side-foot, .side-only, .brand { display: none; }
 
 @media (min-width: 760px) {
+  .tab-pill { display: none; }
   .sidebar {
     position: sticky; top: calc(env(safe-area-inset-top) + 24px); flex: 0 0 auto;
     width: var(--rail); min-height: calc(100vh - 48px); min-height: calc(100dvh - 48px);
@@ -188,23 +189,32 @@ h3, .card h3 { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
 
 /* Phone: one glass panel, a frosted tab bar at the bottom. */
 @media (max-width: 759px) {
-  .shell { padding: calc(env(safe-area-inset-top) + 10px) 10px calc(env(safe-area-inset-bottom) + 92px); display: block; }
+  .shell { padding: calc(env(safe-area-inset-top) + 10px) 10px calc(env(safe-area-inset-bottom) + 96px); display: block; }
   .panel { min-height: 0; padding: 18px; border-radius: 26px; }
   .sidebar {
-    position: fixed; z-index: 5; left: 10px; right: 10px; bottom: calc(env(safe-area-inset-bottom) + 10px);
-    display: grid; grid-template-columns: repeat(6, 1fr); padding: 6px; gap: 2px;
-    background: rgba(255, 248, 244, 0.72); border: 1px solid rgba(255, 255, 255, 0.7); border-radius: 26px;
-    box-shadow: 0 16px 40px rgba(60, 25, 15, 0.22);
+    position: fixed; z-index: 30; left: 10px; right: 10px; bottom: calc(env(safe-area-inset-bottom) + 10px); top: auto;
+    display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0; padding: 6px;
+    background: rgba(255, 248, 244, 0.74); border: 1px solid rgba(255, 255, 255, 0.75); border-radius: 26px;
+    box-shadow: 0 14px 36px rgba(60, 25, 15, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    transform: translateZ(0); /* own layer: no repaint jitter while the page scrolls */
   }
+  .tab-pill {
+    position: absolute; top: 6px; bottom: 6px; left: 6px; width: calc((100% - 12px) / 6);
+    border-radius: 20px; background: rgba(255, 255, 255, 0.95); box-shadow: 0 4px 14px rgba(90, 40, 30, 0.14);
+    transform: translateX(calc(var(--i, 0) * 100%)); transition: transform .5s var(--ease-width);
+  }
+  .sidebar:not([style*="--i"]) .tab-pill { opacity: 0; }
   .sidebar a {
-    position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
     min-height: 52px; border-radius: 20px; color: var(--ink-2); text-decoration: none; font: 600 10.5px var(--body);
+    transition: color .3s ease; -webkit-tap-highlight-color: transparent;
   }
-  .sidebar .ti { width: auto; height: 28px; padding: 0 12px; border-radius: 999px; display: grid; place-items: center; background: transparent; }
+  .sidebar .ti { width: auto; height: 24px; padding: 0; border-radius: 0; display: grid; place-items: center; background: transparent !important; box-shadow: none !important; transition: scale .2s ease, translate .35s var(--ease-in); }
   .sidebar .ti svg { width: 21px; height: 21px; }
+  .sidebar a:active .ti { scale: .88; }
   .sidebar a[aria-current="page"] { color: var(--accent-ink); }
-  .sidebar a[aria-current="page"] .ti { background: rgba(255, 255, 255, 0.95); box-shadow: 0 4px 12px rgba(90, 40, 30, 0.14); }
-  .sidebar .badge { position: absolute; top: 2px; left: calc(50% + 6px); right: auto; background: var(--accent); color: #fff; }
+  .sidebar a[aria-current="page"] .ti { translate: 0 -1px; }
+  .sidebar .badge { position: absolute; top: 4px; left: calc(50% + 5px); right: auto; background: var(--accent); color: #fff; }
   .subnav { margin-bottom: 16px; }
   .sidebar .side-only { display: none; }
 }
@@ -337,7 +347,8 @@ tr.current td { background: rgba(255, 255, 255, 0.55); }
 
 /* ---------- Blur, only where the guide allows it ---------- */
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .panel { -webkit-backdrop-filter: blur(30px) saturate(150%); backdrop-filter: blur(30px) saturate(150%); }
+  /* Blur lives on a layer behind the panel: backdrop-filter on the panel itself would trap fixed children like the rest timer. */
+  .panel::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; -webkit-backdrop-filter: blur(30px) saturate(150%); backdrop-filter: blur(30px) saturate(150%); }
   .sidebar { -webkit-backdrop-filter: blur(22px) saturate(140%); backdrop-filter: blur(22px) saturate(140%); }
   .rest-bar, .toast { -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
 }
@@ -376,12 +387,14 @@ tr.current td { background: rgba(255, 255, 255, 0.55); }
 @keyframes splash-load { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @keyframes splash-out { to { opacity: 0; visibility: hidden; } }
 .splash.done { display: none; }
-.shell.enter { animation: shell-in .9s var(--ease-in) 1.05s both; }
+/* Animate the panel and bar, never the shell: a transform on the shell would make it the
+   containing block for the fixed tab bar, so the bar would scroll with the page. */
+.shell.enter > .panel, .shell.enter > .sidebar { animation: shell-in .9s var(--ease-in) 1.05s backwards; }
 @keyframes shell-in { from { opacity: 0; scale: .985; } to { opacity: 1; scale: 1; } }
 
 @media (prefers-reduced-motion: reduce) {
   .splash { display: none; }
-  .shell.enter, .rise { animation: none !important; }
+  .shell.enter > *, .rise { animation: none !important; }
   .sidebar, .sidebar .lbl, .side-h, .side-toggle svg { transition: none !important; }
   .hero-orbit, .pulse-dot { animation: none !important; }
 }
