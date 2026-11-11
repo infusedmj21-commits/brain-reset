@@ -10,6 +10,7 @@ import { formatScore, needsRescore, rankTasks, scoreHistory } from '../logic/sco
 import { getName } from '../theme.js';
 import { esc, toast } from '../ui.js';
 import { verdictChip } from './scorer.js';
+import { ICONS } from './icons.js';
 import { nextShift } from './money.js';
 import { gbp } from '../logic/money.js';
 
@@ -161,8 +162,8 @@ export async function renderHome(el, rerender) {
         <h1 class="page-title">${greeting(getName())}</h1>
       </div>
       <div class="head-links">
-        <a class="icon-btn" href="#/progress" aria-label="Progress"><span aria-hidden="true">📈</span></a>
-        <a class="icon-btn" href="#/settings" aria-label="Settings"><span aria-hidden="true">⚙️</span></a>
+        <a class="icon-btn" href="#/progress" aria-label="Progress">${ICONS.progress}</a>
+        <a class="icon-btn" href="#/settings" aria-label="Settings">${ICONS.settings}</a>
       </div>
     </section>
 
@@ -206,10 +207,10 @@ export async function renderHome(el, rerender) {
       <aside class="side">
         ${
           shift
-            ? `<a class="card top-sky reset-card" href="#/money"><div class="big-emoji" aria-hidden="true">🏟️</div>
+            ? `<a class="card top-sky reset-card" href="#/money"><div class="ico-badge sky">${ICONS.shift}</div>
                 <div><div class="stat-label">Next shift · ${shift.date === date ? 'today' : esc(prettyDate(shift.date))}</div><h3>${esc(shift.venue)}</h3>
                 <p class="muted small" style="margin:2px 0 0">${esc(shift.roleName)} · ${shift.hours}h · ${gbp(shift.pay)}</p></div></a>`
-            : `<a class="card top-sky reset-card" href="#/money"><div class="big-emoji" aria-hidden="true">🏟️</div>
+            : `<a class="card top-sky reset-card" href="#/money"><div class="ico-badge sky">${ICONS.shift}</div>
                 <div><h3>No shift booked</h3><p class="muted small" style="margin:2px 0 0">Log your next one in Money.</p></div></a>`
         }
         <a class="card top-mint reset-card" href="#/today">
@@ -220,13 +221,13 @@ export async function renderHome(el, rerender) {
         </a>
         ${
           reviewDue
-            ? `<a class="card top-grape reset-card" href="#/review"><div class="big-emoji" aria-hidden="true">🗓️</div>
+            ? `<a class="card top-grape reset-card" href="#/review"><div class="ico-badge grape">${ICONS.review}</div>
                 <div><h3>Your week in review</h3><p class="muted small" style="margin:2px 0 0">Last week at a glance, then one thing to change.</p></div></a>`
             : ''
         }
         ${
           dueRescore
-            ? `<a class="card top-sun reset-card" href="#/ventures"><div class="big-emoji" aria-hidden="true">📊</div>
+            ? `<a class="card top-sun reset-card" href="#/ventures"><div class="ico-badge sun">${ICONS.ventures}</div>
                 <div><h3>Rescore ventures</h3><p class="muted small" style="margin:2px 0 0">${dueRescore} not scored this week.</p></div></a>`
             : ''
         }
@@ -252,7 +253,7 @@ export async function renderHome(el, rerender) {
     b.addEventListener('click', async () => {
       const row = focus.find((f) => f.id === b.dataset.focus);
       await toggleFocus(row, date);
-      if (!row.done && focusDone + 1 === focus.length) toast('All 3 locked in and done 🎉');
+      if (!row.done && focusDone + 1 === focus.length) toast('All 3 done. Great day.');
       rerender();
     })
   );
