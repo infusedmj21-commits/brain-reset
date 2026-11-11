@@ -37,7 +37,7 @@ export async function renderTax(el, rerender) {
     ${
       r
         ? `<div class="tiles four">
-            <div class="tile t-mint tile-wide"><div class="stat-label">Estimated refund after April</div>
+            <div class="tile t-mint tile-wide hot"><div class="stat-label">Estimated refund after April</div>
               <div class="stat-big num">${r.refund >= 0 ? gbp0(r.refund) : `−${gbp0(-r.refund)}`}</div>
               <div class="tile-note">${r.refund >= 0 ? 'Income tax you’ll likely get back' : 'You may owe this'} · moves as you work</div></div>
             <div class="tile t-sky"><div class="stat-label">Tax paid so far</div><div class="stat-big num">${gbp0(t.latest.taxToDate + (Number(settings.otherTax) || 0))}</div><div class="tile-note">To ${esc(shortDate(t.latest.payDate))}, all jobs</div></div>
@@ -90,7 +90,12 @@ export async function renderTax(el, rerender) {
         }
 
         <div class="sec" style="--dot:var(--sun)"><span class="dot"></span><h2>Payslips</h2><span class="aside">${slips.length} this year</span></div>
-        ${slips.length ? `<ul class="vlist">${slips.map(payslipRow).join('')}</ul>` : '<div class="empty-hint">None yet.</div>'}
+        ${
+          slips.length
+            ? `<ul class="vlist">${slips.slice(0, 4).map(payslipRow).join('')}</ul>
+              ${slips.length > 4 ? `<details class="fold"><summary class="btn secondary block">Show ${slips.length - 4} older payslips</summary><ul class="vlist" style="margin-top:10px">${slips.slice(4).map(payslipRow).join('')}</ul></details>` : ''}`
+            : '<div class="empty-hint">None yet.</div>'
+        }
       </section>
 
       <aside class="side">

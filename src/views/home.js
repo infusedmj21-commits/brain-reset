@@ -1,6 +1,6 @@
 import { doneByDate, firstActiveDate, getDayPlan, live, unpromptedDates } from '../db.js';
 import { focusFor, listScores, listTasks, listVentures, setFocus, toggleFocus } from '../data/ventures.js';
-import { addDays, daysBetween, prettyDate, today, weekStart } from '../logic/dates.js';
+import { addDays, daysBetween, prettyDate, today, weekDates, weekStart } from '../logic/dates.js';
 import { GAP_REASONS, activeDates, bestStreak, gapBefore, reviewWeek } from '../logic/review.js';
 import { getCheckin, saveGap } from '../data/checkins.js';
 import { listRoutines, listWorkouts, getMode } from '../data/health.js';
@@ -12,7 +12,10 @@ import { esc, toast } from '../ui.js';
 import { verdictChip } from './scorer.js';
 import { ICONS } from './icons.js';
 import { nextPay, nextShift } from './money.js';
-import { fmtHours, gbp } from '../logic/money.js';
+import { byWhen, fmtHours, gbp, gbp0, shiftPay } from '../logic/money.js';
+import { listRoles, listShifts } from '../data/money.js';
+import { loadTaxPicture } from '../data/tax.js';
+import { openTaskCount } from '../data/tasks.js';
 
 // Picker state survives re-renders while choosing today's 3.
 let picking = false;
@@ -28,31 +31,47 @@ const ENERGY_HINT = {
 
 function greeting(name) {
   const h = new Date().getHours();
-  const part = h < 12 ? 'Morning' : h < 18 ? 'Afternoon' : 'Evening';
-  return `${part}${name ? `, ${esc(name)}` : ''}.`;
+  const part = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+  return `${part}${name ? `, ${esc(name)}` : ''}`;
 }
 
-function sinceYesterday({ date, doneMap, sprints }) {
-  const nowStreak = streak(date, doneMap);
-  const prevStreak = streak(addDays(date, -1), doneMap);
-  const best = bestStreak(doneMap);
-  const streakNote = `${nowStreak > prevStreak ? `+${nowStreak - prevStreak} today` : nowStreak === 0 ? 'Start one today' : 'Do today’s two to grow it'}${best > nowStreak ? ` · best ${best}` : ''}`;
+const line = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const I = {
+  gym: line('<path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11"/>'),
+  spanish: line('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'),
+  ventures: line('<path d="M5 20V11M12 20V5M19 20v-6"/>'),
+  focus: line('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>'),
+  pay: line('<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/>'),
+  check: line('<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/>'),
+  clock: line('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+  plus: line('<path d="M12 5v14M5 12h14"/>'),
+  cal: line('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>'),
+  arrow: line('<path d="M7 17L17 7M8 7h9v9"/>')
+};
 
-  const sorted = [...sprints].filter((s) => s.date <= date).sort((a, b) => a.date.localeCompare(b.date));
-  const last = sorted.at(-1);
-  const prev = sorted.at(-2);
-  const sprintNote = !last ? 'No sprint yet' : prev ? `${last.best - prev.best >= 0 ? '+' : ''}${last.best - prev.best} vs the time before` : 'First score';
+/** ISO week number (Monday start). */
+function isoWeek(date) {
+  const d = new Date(`${date}T12:00:00Z`);
+  const day = (d.getUTCDay() + 6) % 7;
+  d.setUTCDate(d.getUTCDate() - day + 3);
+  const jan4 = new Date(Date.UTC(d.getUTCFullYear(), 0, 4));
+  return 1 + Math.round(((d - jan4) / 86400000 - 3 + ((jan4.getUTCDay() + 6) % 7)) / 7);
+}
 
-  const limit = tiktokLimit(date);
-  const prevStep = limit ? TIKTOK_SCHEDULE.find((s) => s.week === limit.week - 1) : null;
-  const tiktokNote = !limit ? 'Plan not started' : prevStep ? `−${formatMinutes(prevStep.minutes - limit.minutes)} this week` : 'Week 1';
+/** 84×30 sparkline, no axes. */
+function spark(values) {
+  if (values.length < 2 || !values.some((v) => v > 0)) return '';
+  const max = Math.max(...values);
+  const pts = values.map((v, i) => `${((i / (values.length - 1)) * 80 + 2).toFixed(1)},${(28 - (max ? (v / max) * 24 : 0)).toFixed(1)}`).join(' ');
+  return `<svg class="spark" viewBox="0 0 84 30" width="84" height="30" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
 
-  return `
-    <div class="tiles three">
-      <div class="tile t-tomato"><div class="stat-label">Streak</div><div class="stat-big num">${nowStreak} day${nowStreak === 1 ? '' : 's'}</div><div class="tile-note">${streakNote}</div></div>
-      <div class="tile t-mint"><div class="stat-label">Sprint best</div><div class="stat-big num">${last ? last.best : '–'}</div><div class="tile-note">${esc(sprintNote)}</div></div>
-      <div class="tile t-sky"><div class="stat-label">TikTok cap</div><div class="stat-big num">${limit ? formatMinutes(limit.minutes) : '–'}</div><div class="tile-note">${tiktokNote}</div></div>
-    </div>`;
+function statCard({ hot = false, icon, pill, value, label, note, sparkline = '' }) {
+  return `<div class="stat-glass${hot ? ' hot' : ''}">
+    <div class="sg-top"><span class="chipico">${icon}</span>${pill ? `<span class="sg-pill">${pill}</span>` : ''}</div>
+    <div class="stat-big num">${value}</div>
+    <div class="sg-bottom"><div><div class="sg-label">${label}</div><div class="sg-note">${note}</div></div>${sparkline}</div>
+  </div>`;
 }
 
 function focusHTML(focus, tasks, ventures) {
@@ -128,6 +147,7 @@ export async function renderHome(el, rerender) {
     getMode(),
     nextPay()
   ]);
+  const [shifts, roles, tax, todoCount] = await Promise.all([listShifts(), listRoles(), loadTaxPicture(date), openTaskCount()]);
 
   const dayType = plan?.day_type ?? null;
   const items = dayType ? buildChecklist({ date, dayType, unpromptedDates: uDates, rotation: plan.rotation ?? null }).items : [];
@@ -156,20 +176,79 @@ export async function renderHome(el, rerender) {
   const week = reviewWeek(date, weekStart);
   const reviewDue = first && first <= week.end && !(await getCheckin(week.id));
 
+  // ---- Hero: today's reset ----
+  const nowStreak = streak(date, doneMap);
+  const sorted = [...sprints].filter((x) => x.date <= date).sort((x, y) => x.date.localeCompare(y.date));
+  const lastSprint = sorted.at(-1);
+  const limit = tiktokLimit(date);
+  const allDone = items.length && doneCount === items.length;
+  const headline = !dayType
+    ? 'Set up your <em>day</em>'
+    : allDone
+      ? 'Today’s reset is <em>done</em>'
+      : doneCount
+        ? 'Your day is on a <em>roll</em>'
+        : 'Let’s get <em>going</em>';
+  const heroLine = !dayType
+    ? 'Pick today’s day type and Artemis lines up your missions.'
+    : nextItem
+      ? `Next up: ${esc(nextItem.label)}, ${nextItem.minutes} minutes. ${doneCount} of ${items.length} done so far.`
+      : 'Everything’s ticked off. Rest counts too.';
+  const C = 2 * Math.PI * 66;
+
+  // ---- Calendar: this week's shifts and payday ----
+  const days = weekDates(date);
+  const roleName = (id) => roles.find((r) => r.id === id)?.name ?? '';
+  const liveShifts = shifts.filter((x) => x.status !== 'cancelled');
+  const weekShifts = liveShifts.filter((x) => days.includes(x.date)).sort(byWhen);
+  const payEst = pay ? tax.byPayday.get(pay.payday) : null;
+  const takeHome = payEst && payEst.net != null && payEst.source !== 'none' && payEst.source !== 'before-payslips' ? payEst.net : pay?.expected ?? 0;
+  const events = [
+    ...liveShifts
+      .filter((x) => x.date >= date && x.date <= addDays(date, 7) && x.status === 'booked')
+      .map((x) => ({ date: x.date, time: x.start ?? '', title: x.venue, meta: `${prettyDate(x.date).slice(0, 3)} · ${roleName(x.role_id)} · ${fmtHours(x.hours)}` })),
+    ...(pay && pay.payday <= addDays(date, 7)
+      ? [{ date: pay.payday, time: 'Pay', title: `Payday · ${gbp0(takeHome)}`, meta: `${prettyDate(pay.payday).slice(0, 3)} · ${pay.shifts.length} shift${pay.shifts.length === 1 ? '' : 's'}` }]
+      : [])
+  ]
+    .sort((x, y) => x.date.localeCompare(y.date) || (x.time === 'Pay' ? '00:00' : x.time).localeCompare(y.time === 'Pay' ? '00:00' : y.time))
+    .slice(0, 3);
+  const [weekdayName, dayNum, monthName, yearNum] = new Date(`${date}T12:00:00`).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).replace(',', '').split(' ');
+
+  // ---- Stats ----
+  const weekHours = weekShifts.reduce((t, x) => t + (Number(x.hours) || 0), 0);
+  const weekPay = weekShifts.reduce((t, x) => t + shiftPay(x), 0);
+  const hoursByWeek = Array.from({ length: 8 }, (_, i) => {
+    const wk = weekDates(addDays(date, -7 * (7 - i)));
+    return liveShifts.filter((x) => wk.includes(x.date)).reduce((t, x) => t + (Number(x.hours) || 0), 0);
+  });
+  const paidNets = tax.year.weeks.filter((w) => w.payday <= (pay?.payday ?? date) && w.net > 0).slice(-8).map((w) => w.net);
+  const gymDone = gymPlan.plan.filter((x) => x.status === 'done').length;
+  const gymByWeek = Array.from({ length: 8 }, (_, i) => {
+    const wk = weekDates(addDays(date, -7 * (7 - i)));
+    return workouts.filter((w) => w.finished_at && wk.includes(w.date)).length;
+  });
+  const focusByDay = Array.from({ length: 7 }, (_, i) => allFocus.filter((f) => f.date === addDays(date, i - 6) && f.done).length);
+  const nudges = [
+    reviewDue ? `<a class="nudge" href="#/review"><span class="chipico">${ICONS.review}</span><span><strong>Your week in review</strong><span class="muted small">Last week at a glance, then one thing to change.</span></span></a>` : '',
+    dueRescore ? `<a class="nudge" href="#/ventures"><span class="chipico">${ICONS.ventures}</span><span><strong>Rescore ventures</strong><span class="muted small">${dueRescore} not scored this week.</span></span></a>` : ''
+  ].filter(Boolean);
+
   el.innerHTML = `
     <section class="home-head">
       <div>
-        <div class="eyebrow">${esc(prettyDate(date))}${dayType ? ` · ${esc(DAY_TYPES[dayType].label)}` : ''}</div>
         <h1 class="page-title">${greeting(getName())}</h1>
+        <div class="page-sub">${esc(prettyDate(date))}${dayType ? ` · ${esc(DAY_TYPES[dayType].label)}` : ''}${todoCount ? ` · <a href="#/tasks">${todoCount} thing${todoCount === 1 ? '' : 's'} need${todoCount === 1 ? 's' : ''} you</a>` : ''}</div>
       </div>
       <div class="head-links">
-        <a class="icon-btn" href="#/progress" aria-label="Progress">${ICONS.progress}</a>
+        <a class="btn secondary" href="#/review">${I.clock}Weekly review</a>
+        <a class="btn" href="#/money">${I.plus}Log a shift</a>
       </div>
     </section>
 
     ${
       showWelcome
-        ? `<section class="card top-grape stack welcome" style="margin-top:18px">
+        ? `<section class="card stack welcome">
             <h2>Welcome back.</h2>
             <p>You were away ${gap.days} days (${esc(prettyDate(gap.from))} to ${esc(prettyDate(gap.to))}). No drama: one missed stretch doesn’t undo the habit, the next one is what counts.</p>
             <div class="stat-label">What got in the way? (it shows in your weekly review)</div>
@@ -187,58 +266,108 @@ export async function renderHome(el, rerender) {
           : ''
     }
 
-    <div class="sec" style="--dot:var(--tomato)"><span class="dot"></span><h2>Since yesterday</h2></div>
-    ${sinceYesterday({ date, doneMap, sprints })}
+    <div class="home-top">
+      <section class="hero-card">
+        <div class="hero-left">
+          <span class="hero-pill"><i class="pulse-dot"></i>Week ${isoWeek(date)} · ${nowStreak}-day streak</span>
+          <h2 class="hero-title">${headline}</h2>
+          <p class="hero-line">${heroLine}</p>
+          <div class="hero-minis">
+            <div><b class="count num">${nowStreak}</b><span>Day streak</span></div>
+            <div><b class="count num">${lastSprint ? lastSprint.best : '–'}</b><span>Sprint best</span></div>
+            <div><b class="num">${limit ? formatMinutes(limit.minutes) : '–'}</b><span>TikTok cap</span></div>
+          </div>
+          <div class="hero-btns">
+            <a class="btn white" href="#/today">${allDone ? 'Open today’s reset' : 'Start today’s reset'} ${I.arrow}</a>
+            <a class="btn ghost" href="#/progress">Progress</a>
+          </div>
+        </div>
+        <div class="hero-right" aria-hidden="true">
+          <div class="hero-orbit">
+            <span style="--a:0deg">${I.gym}</span><span style="--a:90deg">${I.spanish}</span><span style="--a:180deg">${I.ventures}</span><span style="--a:270deg">${I.focus}</span>
+          </div>
+          <svg class="hero-ring" viewBox="0 0 150 150"><circle cx="75" cy="75" r="66" class="track"/><circle cx="75" cy="75" r="66" class="bar" style="--p:${items.length ? doneCount / items.length : 0};--c:${C.toFixed(2)}px"/></svg>
+          <div class="hero-ring-label"><b class="count num">${pct}%</b><span>of today’s reset</span></div>
+        </div>
+      </section>
 
-    <div class="layout">
-      <section>
-        <div class="sec" style="--dot:var(--mint)"><span class="dot"></span><h2>Lock in today</h2>
-          ${focus.length && !picking ? `<span class="aside num">${focusDone} of ${focus.length}</span>` : ''}</div>
+      <section class="card cal-card">
+        <div class="cal-top">
+          <span class="cal-day num">${dayNum}</span>
+          <span class="cal-when"><strong>${weekdayName}</strong><span class="muted small">${monthName} ${yearNum} · ${weekShifts.length} shift${weekShifts.length === 1 ? '' : 's'} this week</span></span>
+          <a class="icon-btn" href="#/money" aria-label="Shifts">${I.cal}</a>
+        </div>
+        <div class="cal-strip">
+          ${days
+            .map((d) => {
+              const has = liveShifts.some((x) => x.date === d) || pay?.payday === d;
+              return `<span class="cs${d === date ? ' today' : ''}"><small>${'MTWTFSS'[days.indexOf(d)]}</small><b class="num">${Number(d.slice(8))}</b><i${has ? '' : ' hidden'}></i></span>`;
+            })
+            .join('')}
+        </div>
+        <ul class="cal-events">
+          ${
+            events.length
+              ? events
+                  .map(
+                    (e, i) => `<li><span class="ev-time num">${esc(e.time)}</span><i></i><span class="ev-main"><strong>${esc(e.title)}</strong><span class="muted small">${esc(e.meta)}</span></span>${i === 0 ? '<span class="next-pill">Next</span>' : ''}</li>`
+                  )
+                  .join('')
+              : '<li class="ev-empty"><span class="muted small">Nothing booked in the next week.</span></li>'
+          }
+        </ul>
+      </section>
+    </div>
+
+    <div class="home-stats">
+      ${statCard({
+        hot: true,
+        icon: I.pay,
+        pill: pay ? esc(prettyDate(pay.payday).replace(/^(\w{3})\w*/, '$1')) : '',
+        value: pay ? gbp0(takeHome) : '–',
+        label: pay?.isToday ? 'Payday today' : 'Next payday',
+        note: pay ? `Take-home · ${gbp0(payEst?.gross ?? pay.expected)} before tax` : 'Log shifts to see it',
+        sparkline: spark(paidNets)
+      })}
+      ${statCard({
+        icon: I.check,
+        pill: `of ${focus.length || 3}`,
+        value: String(focusDone),
+        label: 'Today’s 3',
+        note: focus.length ? (focusDone === focus.length ? 'All done' : 'Tasks locked in') : 'Not picked yet',
+        sparkline: spark(focusByDay)
+      })}
+      ${statCard({
+        icon: I.gym,
+        pill: `of ${gymPlan.plan.length}`,
+        value: String(gymDone),
+        label: 'Gym this week',
+        note: gymMissed ? `${gymMissed} to catch up` : gymPlan.next ? `Next: ${esc(gymPlan.next.routine.name ?? '')}` : 'On track',
+        sparkline: spark(gymByWeek)
+      })}
+      ${statCard({
+        icon: I.cal,
+        pill: `${weekShifts.length} shift${weekShifts.length === 1 ? '' : 's'}`,
+        value: fmtHours(weekHours),
+        label: 'Shifts this week',
+        note: `${gbp0(weekPay)} before tax`,
+        sparkline: spark(hoursByWeek)
+      })}
+    </div>
+
+    <div class="home-bottom${nudges.length ? '' : ' solo'}">
+      <section class="card today3">
+        <div class="t3-head"><h3>Lock in today</h3>${focus.length && !picking ? `<span class="sg-pill num">${focusDone} of ${focus.length}</span>` : ''}</div>
         ${
           picking
             ? pickerHTML(ranked, ventures, dayType)
             : focus.length
               ? `${focusHTML(focus, tasks, ventures)}<button class="btn secondary block" type="button" id="pick-start" style="margin-top:12px">Change today’s 3</button>`
-              : `<div class="card stack"><p>Pick 3 tasks for today, each with when and where you’ll do it.</p>
-                  <button class="btn block" type="button" id="pick-start">Pick today’s 3</button></div>`
+              : `<p class="muted small">Pick 3 tasks for today, each with when and where you’ll do it.</p>
+                  <button class="btn block" type="button" id="pick-start">Pick today’s 3</button>`
         }
       </section>
-
-      <aside class="side">
-        ${
-          shift
-            ? `<a class="card top-sky reset-card" href="#/money"><div class="ico-badge sky">${ICONS.shift}</div>
-                <div><div class="stat-label">Next shift · ${shift.date === date ? 'today' : esc(prettyDate(shift.date))}</div><h3>${esc(shift.venue)}</h3>
-                <p class="muted small" style="margin:2px 0 0">${esc(shift.roleName)} · ${fmtHours(shift.hours)} · ${gbp(shift.pay)}</p></div></a>`
-            : `<a class="card top-sky reset-card" href="#/money"><div class="ico-badge sky">${ICONS.shift}</div>
-                <div><h3>No shift booked</h3><p class="muted small" style="margin:2px 0 0">Log your next one in Money.</p></div></a>`
-        }
-        ${
-          pay && pay.expected > 0
-            ? `<a class="card reset-card" href="#/money"><div class="ico-badge sun">${ICONS.money}</div>
-                <div><div class="stat-label">${pay.isToday ? 'Payday today' : `Payday · ${esc(prettyDate(pay.payday))}`}</div><h3>${gbp(pay.expected)} expected</h3>
-                <p class="muted small" style="margin:2px 0 0">${pay.shifts.length} shift${pay.shifts.length === 1 ? '' : 's'}, ${esc(prettyDate(pay.start).replace(/^\w+ /, ''))} – ${esc(prettyDate(pay.end).replace(/^\w+ /, ''))}${pay.unconfirmed ? ` · ${pay.unconfirmed} to confirm` : ''}</p></div></a>`
-            : ''
-        }
-        <a class="card top-mint reset-card" href="#/today">
-          <div class="donut" style="--p:${pct}"><span class="num">${items.length ? `${doneCount}/${items.length}` : '–'}</span></div>
-          <div><h3>Brain Reset</h3><p class="muted small" style="margin:2px 0 0">${
-            !dayType ? 'Pick today’s day type to get your missions.' : nextItem ? `Next: ${esc(nextItem.label)}, ${nextItem.minutes} min` : 'All done today.'
-          }</p></div>
-        </a>
-        ${
-          reviewDue
-            ? `<a class="card top-grape reset-card" href="#/review"><div class="ico-badge grape">${ICONS.review}</div>
-                <div><h3>Your week in review</h3><p class="muted small" style="margin:2px 0 0">Last week at a glance, then one thing to change.</p></div></a>`
-            : ''
-        }
-        ${
-          dueRescore
-            ? `<a class="card top-sun reset-card" href="#/ventures"><div class="ico-badge sun">${ICONS.ventures}</div>
-                <div><h3>Rescore ventures</h3><p class="muted small" style="margin:2px 0 0">${dueRescore} not scored this week.</p></div></a>`
-            : ''
-        }
-      </aside>
+      ${nudges.length ? `<aside class="nudges">${nudges.join('')}</aside>` : ''}
     </div>`;
 
   // ---- Wiring ----

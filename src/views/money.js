@@ -189,7 +189,7 @@ export async function renderMoney(el, rerender, ctx) {
       <div class="tile t-sky"><div class="stat-label">This week</div><div class="stat-big num">${gbp0(thisWeek.worked + thisWeek.booked)}</div><div class="tile-note">${fmtHours(thisWeek.hours)} · ${gbp0(thisWeek.worked)} worked</div></div>
       <div class="tile t-mint"><div class="stat-label">Paid this month</div><div class="stat-big num">${payments.length ? gbp0(receivedMonth) : '–'}</div><div class="tile-note">${payments.length ? 'From Monzo' : 'Import Monzo to see'}</div></div>
       <div class="tile t-sun"><div class="stat-label">Spent this month</div><div class="stat-big num">${transactions.length ? gbp0(spentMonth) : '–'}</div><div class="tile-note">${transactions.length ? `Last month ${gbp0(spentLast)}` : 'Import Monzo to see'}</div></div>
-      <div class="tile t-grape"><div class="stat-label">${next.isToday ? 'Payday today' : `Next payday · ${esc(shortDate(next.payday))}`}</div><div class="stat-big num">${gbp0(est(next)?.net ?? next.expected)}</div><div class="tile-note">${est(next)?.net != null && est(next).source !== 'none' ? `Take-home · ${gbp0(est(next).gross)} before tax` : `${gbp0(onItsWay)} worked, not paid yet`}</div></div>
+      <div class="tile t-grape hot"><div class="stat-label">${next.isToday ? 'Payday today' : `Next payday · ${esc(shortDate(next.payday))}`}</div><div class="stat-big num">${gbp0(est(next)?.net ?? next.expected)}</div><div class="tile-note">${est(next)?.net != null && est(next).source !== 'none' ? `Take-home · ${gbp0(est(next).gross)} before tax` : `${gbp0(onItsWay)} worked, not paid yet`}</div></div>
     </div>
 
     <div class="layout">

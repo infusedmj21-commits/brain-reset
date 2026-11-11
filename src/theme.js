@@ -25,13 +25,9 @@ export function resolveTheme(pref = getThemePref()) {
 }
 
 export function applyTheme() {
-  const theme = resolveTheme();
-  document.documentElement.dataset.theme = theme;
-  const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
-  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
-    m.removeAttribute('media');
-    m.setAttribute('content', bg || (theme === 'dark' ? '#1b1726' : '#fbf8f2'));
-  });
+  // Artemis has one look now: warm glass. No dark version.
+  document.documentElement.dataset.theme = 'glass';
+  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', '#B28570'));
 }
 
 export function setThemePref(pref) {

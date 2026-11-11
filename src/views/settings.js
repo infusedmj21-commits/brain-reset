@@ -1,7 +1,7 @@
 import { exportAll, importAll } from '../db.js';
 import { today } from '../logic/dates.js';
 import { esc, toast } from '../ui.js';
-import { THEMES, getName, getThemePref, setName, setThemePref } from '../theme.js';
+import { getName, setName } from '../theme.js';
 import { createAccount, onSyncStatus, signIn, signOut, syncNow, syncStatus } from '../sync.js';
 
 async function persistenceStatus() {
@@ -9,7 +9,6 @@ async function persistenceStatus() {
   return (await navigator.storage.persisted()) ? 'Protected ✓' : 'Not protected yet';
 }
 
-const THEME_EMOJI = { auto: '🌓', light: '☀️', dark: '🌙' };
 
 function ago(iso) {
   if (!iso) return 'Never';
@@ -82,7 +81,6 @@ function bindSync(card, rerender) {
 
 export async function renderSettings(el, rerender) {
   const status = await persistenceStatus();
-  const pref = getThemePref();
   const sync = await syncStatus();
 
   el.innerHTML = `
@@ -90,15 +88,9 @@ export async function renderSettings(el, rerender) {
 
     <div class="cols">
       <section>
-        <div class="sec" style="--dot:var(--grape)"><span class="dot"></span><h2>Look</h2></div>
+        <div class="sec" style="--dot:var(--grape)"><span class="dot"></span><h2>You</h2></div>
         <div class="card top-grape stack">
-          <div class="chips small three" role="group" aria-label="Theme">
-            ${Object.entries(THEMES)
-              .map(([k, label]) => `<button type="button" class="chip" data-theme-pref="${k}" aria-pressed="${pref === k}">${THEME_EMOJI[k]} ${label}</button>`)
-              .join('')}
-          </div>
-          <p class="muted small">Auto follows your device’s light or dark mode.</p>
-          <form id="name-form" class="inputs" style="grid-template-columns:1fr auto;margin-top:6px" autocomplete="off">
+          <form id="name-form" class="inputs" style="grid-template-columns:1fr auto;margin-top:0" autocomplete="off">
             <input class="field" name="name" value="${esc(getName())}" placeholder="Your name" aria-label="Name for the greeting" maxlength="30">
             <button class="btn" type="submit">Save</button>
           </form>
@@ -138,12 +130,6 @@ export async function renderSettings(el, rerender) {
 
   bindSync(el.querySelector('#sync-card'), rerender);
 
-  el.querySelectorAll('[data-theme-pref]').forEach((b) =>
-    b.addEventListener('click', () => {
-      setThemePref(b.dataset.themePref);
-      rerender();
-    })
-  );
 
   el.querySelector('#name-form').addEventListener('submit', (e) => {
     e.preventDefault();
