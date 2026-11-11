@@ -11,7 +11,7 @@ import { getName } from '../theme.js';
 import { esc, toast } from '../ui.js';
 import { verdictChip } from './scorer.js';
 import { ICONS } from './icons.js';
-import { nextShift } from './money.js';
+import { nextPay, nextShift } from './money.js';
 import { fmtHours, gbp } from '../logic/money.js';
 
 // Picker state survives re-renders while choosing today's 3.
@@ -110,7 +110,7 @@ function pickerHTML(ranked, ventures, dayType) {
 
 export async function renderHome(el, rerender) {
   const date = today();
-  const [plan, doneMap, uDates, first, sprints, focus, tasks, ventures, scores, shift, habitLogs, allFocus, workouts, routines, mode] = await Promise.all([
+  const [plan, doneMap, uDates, first, sprints, focus, tasks, ventures, scores, shift, habitLogs, allFocus, workouts, routines, mode, pay] = await Promise.all([
     getDayPlan(date),
     doneByDate(),
     unpromptedDates(),
@@ -125,7 +125,8 @@ export async function renderHome(el, rerender) {
     live('day_focus'),
     listWorkouts(),
     listRoutines(),
-    getMode()
+    getMode(),
+    nextPay()
   ]);
 
   const dayType = plan?.day_type ?? null;
@@ -211,6 +212,13 @@ export async function renderHome(el, rerender) {
                 <p class="muted small" style="margin:2px 0 0">${esc(shift.roleName)} · ${fmtHours(shift.hours)} · ${gbp(shift.pay)}</p></div></a>`
             : `<a class="card top-sky reset-card" href="#/money"><div class="ico-badge sky">${ICONS.shift}</div>
                 <div><h3>No shift booked</h3><p class="muted small" style="margin:2px 0 0">Log your next one in Money.</p></div></a>`
+        }
+        ${
+          pay && pay.expected > 0
+            ? `<a class="card reset-card" href="#/money"><div class="ico-badge sun">${ICONS.money}</div>
+                <div><div class="stat-label">${pay.isToday ? 'Payday today' : `Payday · ${esc(prettyDate(pay.payday))}`}</div><h3>${gbp(pay.expected)} expected</h3>
+                <p class="muted small" style="margin:2px 0 0">${pay.shifts.length} shift${pay.shifts.length === 1 ? '' : 's'}, ${esc(prettyDate(pay.start).replace(/^\w+ /, ''))} – ${esc(prettyDate(pay.end).replace(/^\w+ /, ''))}${pay.unconfirmed ? ` · ${pay.unconfirmed} to confirm` : ''}</p></div></a>`
+            : ''
         }
         <a class="card top-mint reset-card" href="#/today">
           <div class="donut" style="--p:${pct}"><span class="num">${items.length ? `${doneCount}/${items.length}` : '–'}</span></div>

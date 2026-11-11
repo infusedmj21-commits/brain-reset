@@ -21,17 +21,18 @@ import {
   parseMonzo,
   fmtHours,
   isPremiumDay,
+  pennies,
   lastTimes,
   PREMIUM,
   shiftPay,
   shiftTimes,
   spendingByCategory,
-  unpaidBalance,
   weeklyPay
 } from '../logic/money.js';
 import { esc, toast } from '../ui.js';
 import { shiftsToConfirm } from '../data/tasks.js';
 import { renderInsights } from './insights.js';
+import { DEDUCTION_THRESHOLD, owed, paydays } from '../logic/payroll.js';
 
 const ACCOUNTS = { main: 'Main account', pot: 'Spending pot', flex: 'Flex' };
 
@@ -55,23 +56,43 @@ function shiftRow(s, roles, actions) {
   </li>`;
 }
 
-function weeksChart(weeks) {
-  const max = Math.max(1, ...weeks.map((w) => Math.max(w.worked + w.booked, w.received)));
+function paydayChart(rows) {
+  const max = Math.max(1, ...rows.map((w) => Math.max(w.expected, w.received ?? 0)));
   const h = (v) => `${Math.max(v > 0 ? 6 : 0, Math.round((v / max) * 100))}%`;
-  return `<div class="paybars" role="img" aria-label="Expected and received pay for the last ${weeks.length} weeks">
-    ${weeks
+  return `<div class="paybars" role="img" aria-label="Expected and received pay for each payday">
+    ${rows
       .map(
-        (w) => `<div class="paycol" title="Week of ${w.start}: expected ${gbp(w.worked + w.booked)}, received ${gbp(w.received)}">
+        (w) => `<div class="paycol" title="Payday ${w.payday}: expected ${gbp(w.expected)}${w.received != null ? `, received ${gbp(w.received)}` : ''}">
           <div class="paypair">
-            <i class="exp" style="height:${h(w.worked)}"></i>${w.booked ? `<i class="exp booked" style="height:${h(w.booked)}"></i>` : ''}
-            <i class="rec" style="height:${h(w.received)}"></i>
+            <i class="exp${w.past ? '' : ' booked'}" style="height:${h(w.expected)}"></i>
+            <i class="rec" style="height:${h(w.received ?? 0)}"></i>
           </div>
-          <span class="muted small num">${esc(shortDate(w.start).replace(/^\w+ /, ''))}</span>
+          <span class="muted small num">${esc(shortDate(w.payday).replace(/^\w+ /, ''))}</span>
         </div>`
       )
       .join('')}
   </div>
-  <div class="legend"><span><i style="background:var(--sky)"></i>Expected from shifts</span><span><i style="background:var(--mint)"></i>Received</span></div>`;
+  <div class="legend"><span><i style="background:var(--sky)"></i>Expected from shifts</span><span><i style="background:var(--mint)"></i>Received (Monzo)</span></div>`;
+}
+
+function paydayRow(p, hasMonzo) {
+  let badge = '';
+  if (p.past && p.received != null) {
+    const diff = pennies(p.received - p.expected);
+    badge =
+      Math.abs(diff) < 0.5
+        ? '<span class="vchip v-mint">Paid in full</span>'
+        : diff > 0
+          ? `<span class="vchip v-mint">+${gbp(diff)}</span>`
+          : `<span class="vchip v-sun">${gbp(-diff)} short${p.expected > DEDUCTION_THRESHOLD ? ' (tax/NI?)' : ''}</span>`;
+  } else if (p.past && hasMonzo) badge = '<span class="vchip v-none">Not seen in Monzo</span>';
+  else if (p.past) badge = '<span class="vchip v-none">Import Monzo to check</span>';
+  else if (p.unconfirmed) badge = `<span class="vchip v-none">${p.unconfirmed} to confirm</span>`;
+  return `<li class="vrow card${p.isToday ? ' today-row' : ''}">
+    <span class="vmain"><strong>${p.isToday ? 'Today' : esc(shortDate(p.payday))}</strong>
+      <span class="muted small">${esc(shortDate(p.start))} – ${esc(shortDate(p.end))} · ${p.shifts.length} shift${p.shifts.length === 1 ? '' : 's'} · ${fmtHours(p.hours)}</span></span>
+    <span class="vside"><span class="vscore num">${p.received != null && p.past ? gbp(p.received) : gbp(p.expected)}</span>${badge}</span>
+  </li>`;
 }
 
 function importPanel(payees) {
@@ -135,7 +156,10 @@ export async function renderMoney(el, rerender, ctx) {
   const spendCats = spendingByCategory(transactions, month);
   const spentMonth = spendCats.reduce((t, c) => t + c.total, 0);
   const spentLast = spendingByCategory(transactions, prevMonth(date)).reduce((t, c) => t + c.total, 0);
-  const balance = unpaidBalance(shifts, payments);
+  const pays = paydays(shifts, payments, date, 6, 3);
+  const upcoming3 = pays.filter((p) => !p.past || p.isToday);
+  const next = upcoming3[0];
+  const onItsWay = owed(shifts, date);
   const live = shifts.filter((s) => s.status !== 'cancelled');
   const toConfirm = shiftsToConfirm(shifts, date);
   const upcoming = live.filter((s) => s.status === 'booked' && s.date >= date).sort((a, b) => a.date.localeCompare(b.date));
@@ -153,7 +177,7 @@ export async function renderMoney(el, rerender, ctx) {
       <div class="tile t-sky"><div class="stat-label">This week</div><div class="stat-big num">${gbp0(thisWeek.worked + thisWeek.booked)}</div><div class="tile-note">${fmtHours(thisWeek.hours)} · ${gbp0(thisWeek.worked)} worked</div></div>
       <div class="tile t-mint"><div class="stat-label">Paid this month</div><div class="stat-big num">${payments.length ? gbp0(receivedMonth) : '–'}</div><div class="tile-note">${payments.length ? 'From Monzo' : 'Import Monzo to see'}</div></div>
       <div class="tile t-sun"><div class="stat-label">Spent this month</div><div class="stat-big num">${transactions.length ? gbp0(spentMonth) : '–'}</div><div class="tile-note">${transactions.length ? `Last month ${gbp0(spentLast)}` : 'Import Monzo to see'}</div></div>
-      <div class="tile t-grape"><div class="stat-label">Worked, not paid yet</div><div class="stat-big num">${balance == null ? '–' : balance <= 0 ? 'Up to date' : gbp0(balance)}</div><div class="tile-note">${balance == null ? 'Needs a Monzo import' : balance <= 0 ? 'Pay covers every shift logged' : 'About a week’s pay is normal'}</div></div>
+      <div class="tile t-grape"><div class="stat-label">${next.isToday ? 'Payday today' : `Next payday · ${esc(shortDate(next.payday))}`}</div><div class="stat-big num">${gbp0(next.expected)}</div><div class="tile-note">${gbp0(onItsWay)} worked, not paid yet</div></div>
     </div>
 
     <div class="layout">
@@ -192,12 +216,21 @@ export async function renderMoney(el, rerender, ctx) {
         <div class="sec" style="--dot:var(--mint)"><span class="dot"></span><h2>Coming up</h2><span class="aside num">${upcoming.length ? gbp(upcoming.reduce((t, s) => t + shiftPay(s), 0)) : ''}</span></div>
         ${
           upcoming.length
-            ? `<ul class="vlist">${upcoming.map((s) => shiftRow(s, roles, `<button class="btn-mini" type="button" data-cancel="${esc(s.id)}">Cancel</button>`)).join('')}</ul>`
+            ? `<ul class="vlist">${upcoming.slice(0, 5).map((s) => shiftRow(s, roles, `<button class="btn-mini" type="button" data-cancel="${esc(s.id)}">Cancel</button>`)).join('')}</ul>
+               ${
+                 upcoming.length > 5
+                   ? `<details class="manual" style="margin-top:12px"><summary>${upcoming.length - 5} more booked</summary>
+                       <ul class="vlist" style="margin-top:10px">${upcoming.slice(5).map((s) => shiftRow(s, roles, `<button class="btn-mini" type="button" data-cancel="${esc(s.id)}">Cancel</button>`)).join('')}</ul></details>`
+                   : ''
+               }`
             : '<div class="empty-hint">No booked shifts. Log one above as Booked.</div>'
         }
 
-        <div class="sec" style="--dot:var(--grape)"><span class="dot"></span><h2>Last 8 weeks</h2></div>
-        <div class="card">${weeksChart(weeks)}</div>
+        <div class="sec" style="--dot:var(--grape)"><span class="dot"></span><h2>Paydays</h2><span class="aside">Wednesdays · Thu–Wed, a week behind</span></div>
+        <ul class="vlist">${[...upcoming3].reverse().map((p) => paydayRow(p, transactions.length > 0)).join('')}</ul>
+        <div class="card" style="margin-top:12px">${paydayChart(pays)}</div>
+        <details class="manual" style="margin-top:12px"><summary>Past paydays</summary>
+          <ul class="vlist" style="margin-top:10px">${pays.filter((p) => p.past && !p.isToday).reverse().map((p) => paydayRow(p, transactions.length > 0)).join('')}</ul></details>
 
         ${
           recent.length
@@ -336,6 +369,13 @@ export async function renderMoney(el, rerender, ctx) {
     toast(`Imported ${counts.pay} pay, ${counts.spending} spending${counts.skipped ? ` · ${counts.skipped} already in` : ''}`);
     rerender();
   });
+}
+
+/** The next payday and what it should bring, for Home. */
+export async function nextPay() {
+  const date = today();
+  const [shifts, payments] = await Promise.all([listShifts(), listPayments()]);
+  return paydays(shifts, payments, date, 0, 1)[0];
 }
 
 /** The next booked shift, for Home. */

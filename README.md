@@ -69,6 +69,7 @@ src/
   logic/words.js     bundled list of easy-to-picture words
   logic/scoring.js   (Impact + Urgency) ÷ Effort, anchors, bands, rescore rule
   logic/money.js     roles and rates, shift pay (rounded half up), weekly pay, Monzo CSV parsing and classifying
+  logic/payroll.js   weekly Wednesday paydays for Thu–Wed periods a week behind; expected vs received per payday
   logic/insights.js  monthly earned/paid/spent, categories (fixed colours), calendar, weekdays, top shops, earnings by venue/role
   data/money.js      roles, shifts, payments, transactions, Monzo import (deduplicated by transaction ID)
   logic/health.js    Michael's split (gym + home versions), double-progression aims, e1RM, PRs, week plan, Hevy CSV
