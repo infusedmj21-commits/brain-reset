@@ -558,3 +558,20 @@ details.fold[open] > summary { display: none; }
 .muted, .legend, .back { color: var(--muted-panel); }
 .card .muted, .tile .muted, .stat-glass .muted, .vrow .muted, .cal-events .muted, .nudge .muted, .pick .muted,
 .card .legend, .card .tile-note, .card .stat-label { color: var(--ink-2); }
+
+/* To-do: why each task matters */
+.task-why { font-size: 12.5px; color: var(--ink-2); margin-top: 4px; line-height: 1.45; }
+.task-why b { font-weight: 600; color: var(--accent-ink); margin-right: 4px; }
+
+/* Date and time fields: iOS gives them a fixed native width that ignores width:100%,
+   so they spill out of narrow cards. Strip the native look and let them shrink. */
+input[type=date].field, input[type=time].field {
+  -webkit-appearance: none; appearance: none; display: block; width: 100%; min-width: 0; max-width: 100%;
+  text-align: left; line-height: 1.2;
+}
+input[type=date].field::-webkit-date-and-time-value, input[type=time].field::-webkit-date-and-time-value { text-align: left; margin: 0; }
+input[type=date].field::-webkit-calendar-picker-indicator, input[type=time].field::-webkit-calendar-picker-indicator { margin-left: auto; opacity: .7; }
+.grid2 > *, .grid2 .field, label.stack, .card form, .card .stack > * { min-width: 0; }
+.card { overflow-wrap: anywhere; }
+.grid2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.confirm-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }

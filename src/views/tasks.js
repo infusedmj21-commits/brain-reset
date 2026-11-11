@@ -50,7 +50,7 @@ function ticksTask(t) {
 function linkTask(t) {
   return `<li><a class="card task task-link" href="${t.href}">
     <span class="ico-dot grape" aria-hidden="true"></span>
-    <span class="vmain"><strong>${esc(t.title)}</strong><span class="muted small">${esc(t.detail)}</span></span>
+    <span class="vmain"><strong>${esc(t.title)}</strong><span class="muted small">${esc(t.detail)}</span>${t.why ? `<span class="task-why"><b>Why</b> ${esc(t.why)}</span>` : ''}</span>
     <span class="chev" aria-hidden="true">›</span></a></li>`;
 }
 
