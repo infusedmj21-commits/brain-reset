@@ -3,9 +3,9 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL, syncConfigured } from './config.js';
 import { db, getMeta, onSave } from './db.js';
 import { LAST_SYNC_KEY, pendingCount, syncOnce } from './sync-core.js';
 
-// Sync between devices through Supabase. Sign-in is by a 6-digit email code
-// rather than a link: on iPhone a link opens Safari, whose storage is separate
-// from the home screen app, so the app itself would stay signed out.
+// Sync between devices through Supabase. Sign-in is email + password, typed in
+// the app: an emailed link would open Safari on iPhone, whose storage is
+// separate from the home screen app, so the app itself would stay signed out.
 
 let client = null;
 function supabase() {
@@ -113,16 +113,19 @@ export function startSync() {
   syncNow();
 }
 
-// ---- Sign in with an emailed code ----
+// ---- Sign in with email and password ----
 
-export async function sendCode(email) {
-  const { error } = await supabase().auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+export async function signIn(email, password) {
+  const { error } = await supabase().auth.signInWithPassword({ email, password });
   if (error) throw error;
+  await syncNow();
 }
 
-export async function verifyCode(email, token) {
-  const { error } = await supabase().auth.verifyOtp({ email, token, type: 'email' });
+/** First device only. Needs "Confirm email" off in Supabase, so no email is sent. */
+export async function createAccount(email, password) {
+  const { data, error } = await supabase().auth.signUp({ email, password });
   if (error) throw error;
+  if (!data.session) throw new Error('Account made, but Supabase wants the email confirmed first. Turn off "Confirm email" in Supabase, then sign in.');
   await syncNow();
 }
 

@@ -30,13 +30,13 @@ It installs to the iPhone home screen and the computer taskbar from one codebase
 
 ## Your data
 
-Each device keeps its own copy in IndexedDB, so the app works offline. Sign in under **Settings → Sync** with an emailed 6-digit code and changes go up to Supabase and come down on your other devices: on launch, when the app comes back to the foreground, when you go back online, a few seconds after each change, and every 5 minutes while open. If two devices edit the same thing, the newer edit wins. Photos in notes (`blobs`) are not synced yet.
+Each device keeps its own copy in IndexedDB, so the app works offline. Sign in under **Settings → Sync** with your email and password and changes go up to Supabase and come down on your other devices: on launch, when the app comes back to the foreground, when you go back online, a few seconds after each change, and every 5 minutes while open. If two devices edit the same thing, the newer edit wins. Photos in notes (`blobs`) are not synced yet.
 
 ### Supabase setup (one-off)
 
 1. **SQL Editor → New query**, paste `supabase/schema.sql`, **Run**.
-2. **Authentication → Emails → Magic Link** template: make sure the body contains `{{ .Token }}` so the email shows the code. (A link would open Safari, not the home screen app.)
-3. After signing in on your devices, **Authentication → Sign In / Providers → turn off "Allow new users to sign up"** so nobody else can make an account.
+2. **Authentication → Sign In / Providers → Email**: turn off **Confirm email**, so creating the account needs no email. (Sign-in is by password in the app because an emailed link would open Safari, not the home screen app.)
+3. On the first device use **Create account**; everywhere else, **Sign in**. Then **Authentication → Sign In / Providers → turn off "Allow new users to sign up"** so nobody else can make an account.
 
 The URL and publishable key live in `src/config.js` (Vercel env vars `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` override them). Never put the `service_role` key in the app.
 

@@ -2,7 +2,7 @@ import { exportAll, importAll } from '../db.js';
 import { today } from '../logic/dates.js';
 import { esc, toast } from '../ui.js';
 import { THEMES, getName, getThemePref, setName, setThemePref } from '../theme.js';
-import { onSyncStatus, sendCode, signOut, syncNow, syncStatus, verifyCode } from '../sync.js';
+import { createAccount, onSyncStatus, signIn, signOut, syncNow, syncStatus } from '../sync.js';
 
 async function persistenceStatus() {
   if (!navigator.storage?.persisted) return 'Not supported here';
@@ -21,7 +21,7 @@ function ago(iso) {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 }
 
-function syncCardHTML(s, step = 'email', email = '') {
+function syncCardHTML(s) {
   if (!s.configured) return '<p class="muted">Sync isn’t set up in this build.</p>';
   if (s.user) {
     const state = s.syncing ? 'Syncing…' : s.error ? `Problem: ${esc(s.error)}` : ago(s.lastSync);
@@ -32,57 +32,40 @@ function syncCardHTML(s, step = 'email', email = '') {
       <button class="btn block" id="sync-now" type="button"${s.syncing ? ' disabled' : ''}>Sync now</button>
       <button class="btn secondary block" id="sign-out" type="button">Sign out</button>`;
   }
-  if (step === 'code') {
-    return `
-      <p>We sent a 6-digit code to <strong>${esc(email)}</strong>. Type it here, in the app.</p>
-      <form id="code-form" class="inputs" style="grid-template-columns:1fr auto" autocomplete="off">
-        <input class="field" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,10}" placeholder="Code" aria-label="Code from the email" required>
-        <button class="btn" type="submit">Sign in</button>
-      </form>
-      <button class="btn secondary block" id="code-back" type="button">Use a different email</button>`;
-  }
   return `
     <p>Sign in on each device to keep your phone and computer in step.</p>
-    <form id="email-form" class="inputs" style="grid-template-columns:1fr auto" autocomplete="on">
-      <input class="field" name="email" type="email" autocomplete="email" placeholder="Email" aria-label="Email" value="${esc(email)}" required>
-      <button class="btn" type="submit">Send code</button>
+    <form id="auth-form" class="stack" autocomplete="on">
+      <input class="field" name="email" type="email" autocomplete="username" placeholder="Email" aria-label="Email" required>
+      <input class="field" name="password" type="password" autocomplete="current-password" minlength="8" placeholder="Password" aria-label="Password" required>
+      <button class="btn block" type="submit" data-mode="in">Sign in</button>
+      <button class="btn secondary block" type="submit" data-mode="new">Create account (first time only)</button>
     </form>
     <p class="muted small">Anything already on this device is uploaded when you sign in, and merged with what’s there.</p>`;
 }
 
-function bindSync(card, rerender, step = 'email', email = '') {
-  const redraw = async (nextStep = step, nextEmail = email) => {
-    card.innerHTML = syncCardHTML(await syncStatus(), nextStep, nextEmail);
-    bindSync(card, rerender, nextStep, nextEmail);
+function bindSync(card, rerender) {
+  const redraw = async () => {
+    card.innerHTML = syncCardHTML(await syncStatus());
+    bindSync(card, rerender);
   };
-  card.querySelector('#email-form')?.addEventListener('submit', async (e) => {
+  card.querySelector('#auth-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const address = String(new FormData(e.currentTarget).get('email') ?? '').trim();
-    const button = e.currentTarget.querySelector('button');
-    button.disabled = true;
+    const form = new FormData(e.currentTarget);
+    const email = String(form.get('email') ?? '').trim();
+    const password = String(form.get('password') ?? '');
+    const mode = e.submitter?.dataset.mode ?? 'in';
+    const buttons = e.currentTarget.querySelectorAll('button');
+    buttons.forEach((b) => (b.disabled = true));
     try {
-      await sendCode(address);
-      redraw('code', address);
-    } catch (err) {
-      toast(err.message || 'Could not send the code');
-      button.disabled = false;
-    }
-  });
-  card.querySelector('#code-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const code = String(new FormData(e.currentTarget).get('code') ?? '').trim();
-    const button = e.currentTarget.querySelector('button');
-    button.disabled = true;
-    try {
-      await verifyCode(email, code);
+      if (mode === 'new') await createAccount(email, password);
+      else await signIn(email, password);
       toast('Signed in · syncing');
       rerender();
     } catch (err) {
-      toast(err.message || 'That code didn’t work');
-      button.disabled = false;
+      toast(err.message || 'Could not sign in');
+      buttons.forEach((b) => (b.disabled = false));
     }
   });
-  card.querySelector('#code-back')?.addEventListener('click', () => redraw('email', email));
   card.querySelector('#sync-now')?.addEventListener('click', async () => {
     const off = onSyncStatus(() => redraw());
     const result = await syncNow();
