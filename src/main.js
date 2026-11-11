@@ -1,12 +1,12 @@
-import '@fontsource/nunito/latin-700.css';
-import '@fontsource/nunito/latin-800.css';
-import '@fontsource/nunito/latin-900.css';
 import '@fontsource/inter/latin-400.css';
 import '@fontsource/inter/latin-500.css';
 import '@fontsource/inter/latin-600.css';
 import '@fontsource/inter/latin-700.css';
+import '@fontsource/instrument-serif/latin-400-italic.css';
 import './styles.css';
-import { applyTheme } from './theme.js';
+import './glass.css';
+import { animatePage, startEntrance } from './motion.js';
+import { applyTheme, getName } from './theme.js';
 import { registerSW } from 'virtual:pwa-register';
 import { renderToday } from './views/today.js';
 import { renderHome } from './views/home.js';
@@ -24,7 +24,7 @@ import { renderProgress } from './views/progress.js';
 import { renderPalace } from './views/palace.js';
 import { renderUnprompted } from './views/unprompted.js';
 import { renderSprint } from './views/sprint.js';
-import { setOnRemoteChange, startSync } from './sync.js';
+import { onSyncStatus, setOnRemoteChange, startSync, syncStatus } from './sync.js';
 
 const routes = {
   home: renderHome,
@@ -66,7 +66,7 @@ async function render() {
   const RESET = ['today', 'sprint', 'palace', 'unprompted', 'progress'];
   const tab = RESET.includes(route) ? 'today' : route === 'settings' ? 'tasks' : route === 'review' ? 'home' : route;
   document.querySelectorAll('.tabbar a').forEach((a) => {
-    if (a.dataset.tab === tab) a.setAttribute('aria-current', 'page');
+    if (a.dataset.tab === tab || (a.dataset.tab === 'settings' && route === 'settings')) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');
   });
   const SUBNAVS = {
@@ -87,8 +87,64 @@ async function render() {
     console.error(err);
     view.innerHTML = `<div class="card"><p><strong>Something went wrong.</strong></p><p class="muted small">${String(err.message ?? err)}</p></div>`;
   }
+  // Motion plays on a new page, not when the same page redraws after a tick.
+  if (path !== lastPath) {
+    animatePage(view, { first: lastPath === null });
+    lastPath = path;
+  }
   updateBadge();
+  updateFoot();
 }
+let lastPath = null;
+
+// ---- Sidebar (desktop): a rail that opens and pushes the page across ----
+const toggle = document.getElementById('side-toggle');
+const wide = window.matchMedia('(min-width: 760px)');
+const isOpen = () => document.documentElement.dataset.sidebar === 'open';
+function setSidebar(open) {
+  if (open) document.documentElement.dataset.sidebar = 'open';
+  else delete document.documentElement.dataset.sidebar;
+  toggle.setAttribute('aria-expanded', String(open));
+  toggle.setAttribute('aria-label', open ? 'Close the sidebar' : 'Open the sidebar');
+  try {
+    localStorage.setItem('artemis-sidebar', open ? 'open' : 'closed');
+  } catch {}
+}
+setSidebar(isOpen());
+toggle.addEventListener('click', () => setSidebar(!isOpen()));
+// In the rail, picking a page also opens the sidebar.
+document.querySelectorAll('.sidebar a').forEach((a) =>
+  a.addEventListener('click', () => {
+    if (wide.matches && !isOpen()) setSidebar(true);
+  })
+);
+
+// Profile row: name and when this device last synced.
+function ago(iso) {
+  const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} min ago`;
+  const h = Math.round(mins / 60);
+  return h < 24 ? `${h}h ago` : `${Math.round(h / 24)}d ago`;
+}
+async function updateFoot() {
+  const name = getName() || 'You';
+  document.getElementById('side-name').textContent = name;
+  document.getElementById('side-avatar').textContent = name.slice(0, 1).toUpperCase();
+  try {
+    const s = await syncStatus();
+    document.getElementById('side-sync').textContent = !s.user
+      ? 'On this device'
+      : s.syncing
+        ? 'Syncing…'
+        : s.error
+          ? 'Sync paused'
+          : s.lastSync
+            ? `Synced ${ago(s.lastSync)}`
+            : 'Signed in';
+  } catch {}
+}
+onSyncStatus(() => updateFoot());
 
 // The red count on the Tasks tab.
 function updateBadge() {
@@ -117,6 +173,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 applyTheme();
+startEntrance();
 registerSW({ immediate: true });
 Promise.allSettled([seedVentures(), seedRoles(), seedHealth()]).finally(render);
 

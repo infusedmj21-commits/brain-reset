@@ -5,39 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Artemis</title>
     <meta name="description" content="Michael’s life dashboard: ventures, shifts, money, health and the Brain Reset routine." />
-    <meta name="theme-color" content="#fbf8f3" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#15131c" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#B28570" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Artemis" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link rel="icon" type="image/png" href="/icons/favicon.png" />
     <script>
-      // Set the theme before first paint so there's no flash of the wrong colours.
+      // One glass look; the sidebar remembers whether it was left open (desktop only).
+      document.documentElement.dataset.theme = 'glass';
       try {
-        var p = localStorage.getItem('brain-reset-theme');
-        if (p !== 'light' && p !== 'dark') p = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        document.documentElement.dataset.theme = p;
-      } catch (e) {
-        document.documentElement.dataset.theme = 'light';
-      }
+        if (localStorage.getItem('artemis-sidebar') === 'open') document.documentElement.dataset.sidebar = 'open';
+      } catch (e) {}
     </script>
   </head>
   <body>
-    <div class="bg-shape" aria-hidden="true"></div>
-    <nav class="tabbar" aria-label="Sections">
-      <div class="brand"><i aria-hidden="true"></i>Artemis</div>
-      <a href="#/home" data-tab="home"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></span>Home</a>
-      <a href="#/tasks" data-tab="tasks"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg><b class="badge" id="task-badge" hidden></b></span>Tasks</a>
-      <a href="#/ventures" data-tab="ventures"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6"/></svg></span>Ventures</a>
-      <a href="#/money" data-tab="money"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/></svg></span>Money</a>
-      <a href="#/health" data-tab="health"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 0 0-7.1 7.1L12 21.5l8.8-8.8a5 5 0 0 0 0-7.1z"/></svg></span>Health</a>
-      <a href="#/today" data-tab="today"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z"/></svg></span>Reset</a>
-      <div class="tip"><b>Never miss twice</b>Missed a day? Do the minimum today and the streak lives on.</div>
-    </nav>
-    <nav class="subnav" id="subnav" aria-label="Section" hidden></nav>
-    <main id="view" class="view" tabindex="-1"></main>
+    <div class="room" aria-hidden="true"></div>
+    <div class="splash" id="splash" aria-hidden="true"><div class="splash-in"><span class="splash-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg></span><span class="splash-word">ARTEMIS</span><i class="splash-line"></i></div></div>
+    <div class="shell">
+      <nav class="tabbar sidebar" aria-label="Sections">
+        <button class="side-toggle" type="button" id="side-toggle" aria-expanded="false" aria-label="Open the sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+        <div class="brand"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg></span><span class="lbl"><b>Artemis</b><small>Life dashboard</small></span></div>
+        <div class="side-h">Main</div>
+        <a href="#/home" data-tab="home"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></span><span class="lbl">Home</span></a>
+        <a href="#/tasks" data-tab="tasks"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg></span><span class="lbl">Tasks</span><b class="badge" id="task-badge" hidden></b></a>
+        <div class="side-h">Life</div>
+        <a href="#/ventures" data-tab="ventures"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6"/></svg></span><span class="lbl">Ventures</span></a>
+        <a href="#/money" data-tab="money"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/></svg></span><span class="lbl">Money</span></a>
+        <a href="#/health" data-tab="health"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 0 0-7.1 7.1L12 21.5l8.8-8.8a5 5 0 0 0 0-7.1z"/></svg></span><span class="lbl">Health</span></a>
+        <a href="#/today" data-tab="today"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z"/></svg></span><span class="lbl">Reset</span></a>
+        <div class="side-h">System</div>
+        <a href="#/settings" data-tab="settings" class="side-only"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.3a2 2 0 0 1-2 0l-.2-.1a2 2 0 0 0-2.7.7l-.2.4a2 2 0 0 0 .7 2.7l.2.1a2 2 0 0 1 1 1.7v.6a2 2 0 0 1-1 1.7l-.2.1a2 2 0 0 0-.7 2.7l.2.4a2 2 0 0 0 2.7.7l.2-.1a2 2 0 0 1 2 0l.4.3a2 2 0 0 1 1 1.7v.2a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.3a2 2 0 0 1 2 0l.2.1a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.2-.1a2 2 0 0 1-1-1.7v-.6a2 2 0 0 1 1-1.7l.2-.1a2 2 0 0 0 .7-2.7l-.2-.4a2 2 0 0 0-2.7-.7l-.2.1a2 2 0 0 1-2 0l-.4-.3a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="lbl">Settings</span></a>
+        <div class="side-foot"><span class="avatar" id="side-avatar">M</span><span class="lbl"><b id="side-name">Michael</b><small id="side-sync">On this device</small></span></div>
+      </nav>
+      <div class="panel">
+        <nav class="subnav" id="subnav" aria-label="Section" hidden></nav>
+        <main id="view" class="view" tabindex="-1"></main>
+      </div>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
