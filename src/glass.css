@@ -575,3 +575,10 @@ input[type=date].field::-webkit-calendar-picker-indicator, input[type=time].fiel
 .card { overflow-wrap: anywhere; }
 .grid2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .confirm-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }
+
+/* Week browser on the review */
+.week-nav { margin-top: 6px; }
+.week-head { text-align: center; min-width: 0; }
+.week-head .page-sub { margin-top: 2px; }
+.month-nav .icon-btn { font: 600 22px/1 var(--body); color: var(--ink); text-decoration: none; display: grid; place-items: center; }
+.month-nav .icon-btn[aria-disabled="true"] { opacity: .35; pointer-events: none; }
