@@ -883,3 +883,13 @@ input[type=time].field { min-height: 44px; }
   background: var(--ink); color: var(--bg); border-radius: 12px; padding: 8px 10px; font: 600 13px/1.35 var(--body);
 }
 .viz-tip[hidden] { display: none; }
+
+/* ---- Tax ---- */
+.meter { height: 14px; border-radius: 999px; background: var(--mint-soft); overflow: hidden; margin-top: 8px; position: relative; }
+.meter i { display: block; height: 100%; background: var(--mint); border-radius: 999px; }
+.tax-table { width: 100%; border-collapse: collapse; }
+.tax-table td { padding: 8px 0; border-bottom: 2px dashed var(--mint-soft); }
+.tax-table td:last-child { text-align: right; }
+.tax-table tr.total td { border-bottom: 0; color: var(--mint-ink); }
+.tiles .tile-wide { grid-column: span 2; }
+@media (max-width: 640px) { .tiles .tile-wide { grid-column: 1 / -1; } }

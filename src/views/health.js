@@ -5,7 +5,6 @@ import {
   discardWorkout,
   finishWorkout,
   getMode,
-  importHevy,
   lastSetsFor,
   listExercises,
   listRoutines,
@@ -18,7 +17,7 @@ import {
   ticksFor
 } from '../data/health.js';
 import { prettyDate, today } from '../logic/dates.js';
-import { DAY_NAMES, RESTART_DATE, aimFor, bests, e1rm, fmtKg, parseHevy, prsFor, weekPlan } from '../logic/health.js';
+import { DAY_NAMES, RESTART_DATE, aimFor, bests, e1rm, fmtKg, prsFor, weekPlan } from '../logic/health.js';
 import { chime, confirmAction, esc, ticker, toast, unlockAudio } from '../ui.js';
 
 const TYPE_LABEL = { normal: '', warmup: 'W', drop: 'D', failure: 'F' };
@@ -141,11 +140,6 @@ async function renderOverview(el, rerender) {
             : ''
         }
 
-        <form class="card stack" id="hevy-form">
-          <h3>Import from Hevy</h3>
-          <p class="muted small">In Hevy: Settings → Export &amp; import data → Export workouts (CSV). Importing twice is safe.</p>
-          <label class="btn secondary block">Choose Hevy CSV<input type="file" accept=".csv,text/csv" hidden></label>
-        </form>
       </aside>
     </div>`;
 
@@ -169,17 +163,6 @@ async function renderOverview(el, rerender) {
       location.hash = `#/health/workout/${encodeURIComponent(w.id)}`;
     })
   );
-  el.querySelector('#hevy-form input[type=file]').addEventListener('change', async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const { workoutsAdded, setsAdded } = await importHevy(parseHevy(await file.text()));
-      toast(workoutsAdded ? `Imported ${workoutsAdded} workouts, ${setsAdded} sets` : 'Nothing new in that file');
-      rerender();
-    } catch (err) {
-      toast(err.message || 'Could not read that file');
-    }
-  });
 }
 
 // ---------- Live workout ----------
