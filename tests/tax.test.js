@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parsePayslipText } from '../src/logic/payslip.js';
 import {
@@ -111,5 +111,24 @@ describe('year projection', () => {
     const gain = codeFixGain({ payslip: nov, today: '2026-11-12', currentAllowance: 5979, fixedAllowance: 12579, weeklyGross: 250 });
     expect(gain.lump).toBe(554.2);
     expect(gain.weekly).toBeCloseTo((250 - 5979 / 52) * 0.2 - (250 - 12579 / 52) * 0.2, 2);
+  });
+});
+
+describe('every payslip this year', () => {
+  const dir = new URL('./fixtures/', import.meta.url);
+  const files = readdirSync(dir).filter((f) => f.startsWith('payslip-'));
+  const slips = files.map((f) => parsePayslipText(readFileSync(new URL(f, dir), 'utf8')));
+
+  it('reads all of them, including weeks with no tax or NI lines', () => {
+    expect(slips.length).toBeGreaterThanOrEqual(19);
+    for (const p of slips) expect(Math.abs(p.gross - p.tax - p.ni - p.net)).toBeLessThan(0.01);
+    expect(slips.find((p) => p.payDate === '2026-04-15')).toMatchObject({ tax: 0, ni: 0, net: 185.06 });
+    expect(slips.find((p) => p.payDate === '2026-08-05').tax).toBe(-5.2);
+  });
+  it('reproduces tax to date on every one', () => {
+    for (const p of slips) expect([p.payDate, taxToDate(p.taxableToDate, p.taxWeek, 5979)]).toEqual([p.payDate, p.taxToDate]);
+  });
+  it('gets NI within a penny on every one', () => {
+    for (const p of slips) expect(Math.abs(niFor(p.gross) - p.ni)).toBeLessThan(0.011);
   });
 });

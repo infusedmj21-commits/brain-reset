@@ -63,9 +63,12 @@ export function parsePayslipText(raw) {
   out.basic = Math.round(out.basic * 100) / 100;
   out.holiday = Math.round(out.holiday * 100) / 100;
   out.basicHours = Math.round(out.basicHours * 100) / 100;
-  if (out.gross == null || out.tax == null || out.ni == null || out.taxToDate == null) {
+  if (out.gross == null || out.taxToDate == null) {
     throw new Error('Couldn’t read the pay figures from that payslip.');
   }
+  // Compass leaves the Tax and NI lines off entirely in weeks where none was deducted.
+  out.tax ??= 0;
+  out.ni ??= 0;
   out.net ??= Math.round((out.gross - out.tax - out.ni - out.pension) * 100) / 100;
   return out;
 }

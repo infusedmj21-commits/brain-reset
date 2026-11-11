@@ -48,7 +48,8 @@ export function allowanceFromCode(code) {
  * Taxable pay and free pay are rounded down to whole pounds before the rate is applied.
  */
 export function taxToDate(taxable, week, allowance) {
-  const free = (allowance * week) / WEEKS;
+  // HMRC's tables round the weekly tax-free amount up to the penny (code 597L: £114.99 a week).
+  const free = week * (Math.ceil(Number(((allowance / WEEKS) * 100).toFixed(6))) / 100);
   const due = Math.max(0, Math.floor(taxable - free));
   const band = Math.floor((BASIC_BAND * week) / WEEKS);
   const tax = Math.min(due, band) * BASIC_RATE + Math.max(0, due - band) * HIGHER_RATE;
