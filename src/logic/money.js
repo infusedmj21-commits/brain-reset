@@ -23,7 +23,45 @@ export const ROLE_SEED = [
   ['wine-waiter', 'Wine waiter', 13.45]
 ].map(([slug, name, rate], order) => ({ id: `role:${slug}`, name, rate, order }));
 
-export const VENUE_SUGGESTIONS = ["St Andrew's", 'Molineux', 'Villa Park', 'Edgbaston', 'NEC'];
+export const VENUE_SUGGESTIONS = ["St Andrew's", 'Molineux', 'Villa Park', 'Utilita Arena', 'NEC', 'Edgbaston'];
+
+// England and Wales bank holidays (GOV.UK). Add each new year's dates here.
+export const BANK_HOLIDAYS = new Set([
+  '2026-01-01', '2026-04-03', '2026-04-06', '2026-05-04', '2026-05-25', '2026-08-31', '2026-12-25', '2026-12-28',
+  '2027-01-01', '2027-03-26', '2027-03-29', '2027-05-03', '2027-05-31', '2027-08-30', '2027-12-27', '2027-12-28'
+]);
+export const PREMIUM = 1.5;
+
+/** 1.5x pay on bank holidays, and on Christmas Day and Boxing Day themselves even when the holiday moves to a weekday. */
+export const isPremiumDay = (date) => BANK_HOLIDAYS.has(date) || /-12-2[56]$/.test(date);
+
+/** Unpaid breaks: 30 min once a shift reaches 6 hours, two 30-min breaks once it's over 12 hours. */
+export function breakMinutes(scheduledMinutes) {
+  if (scheduledMinutes > 12 * 60) return 60;
+  if (scheduledMinutes >= 6 * 60) return 30;
+  return 0;
+}
+
+const toMin = (t) => {
+  const m = String(t ?? '').match(/^(\d{1,2}):(\d{2})$/);
+  return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+};
+
+/** Scheduled minutes, break and paid hours from 'HH:MM' start and end (an end before the start runs past midnight). */
+export function shiftTimes(start, end) {
+  const a = toMin(start);
+  const b = toMin(end);
+  if (a == null || b == null) return null;
+  const scheduled = (b - a + 24 * 60) % (24 * 60) || 24 * 60;
+  const unpaid = breakMinutes(scheduled);
+  return { scheduled, unpaid, paidHours: (scheduled - unpaid) / 60 };
+}
+
+/** Start and end of the last shift at a venue, else 09:00–17:00. */
+export function lastTimes(shifts, venue) {
+  const last = [...shifts].filter((s) => s.venue === venue && s.start && s.end && s.status !== 'cancelled').sort((a, b) => b.date.localeCompare(a.date))[0];
+  return last ? { start: last.start, end: last.end } : { start: '09:00', end: '17:00' };
+}
 
 // Round half up to the penny, as payroll does: 8.5h × £13.45 = £114.325 → £114.33.
 // toFixed(6) first strips floating-point noise (114.32499999…) before rounding.

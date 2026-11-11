@@ -140,3 +140,29 @@ describe('money data', () => {
     expect(await getPayPayees(db)).toEqual(['acme staffing ltd']);
   });
 });
+
+import { breakMinutes, isPremiumDay, shiftTimes } from '../src/logic/money.js';
+
+describe('breaks and bank holidays', () => {
+  it('takes 30 min off from 6 hours and an hour over 12', () => {
+    expect(breakMinutes(5 * 60 + 59)).toBe(0);
+    expect(breakMinutes(6 * 60)).toBe(30);
+    expect(breakMinutes(12 * 60)).toBe(30);
+    expect(breakMinutes(12 * 60 + 1)).toBe(60);
+  });
+
+  it('works out paid hours from start and end, including past midnight', () => {
+    expect(shiftTimes('09:00', '18:30')).toEqual({ scheduled: 570, unpaid: 30, paidHours: 9 });
+    expect(shiftTimes('12:30', '16:30').paidHours).toBe(4);
+    expect(shiftTimes('17:00', '23:30').paidHours).toBe(6);
+    expect(shiftTimes('22:00', '02:00').paidHours).toBe(4);
+    expect(shiftTimes('06:00', '20:30').paidHours).toBe(13.5);
+  });
+
+  it('pays 1.5x on bank holidays and on Christmas and Boxing Day themselves', () => {
+    expect(isPremiumDay('2026-12-26')).toBe(true); // Boxing Day (a Saturday)
+    expect(isPremiumDay('2026-12-28')).toBe(true); // substitute bank holiday
+    expect(isPremiumDay('2027-08-30')).toBe(true);
+    expect(isPremiumDay('2026-12-24')).toBe(false);
+  });
+});

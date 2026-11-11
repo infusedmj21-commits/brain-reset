@@ -14,14 +14,17 @@ import { prettyDate, today } from '../logic/dates.js';
 import {
   VENUE_SUGGESTIONS,
   classify,
-  defaultHours,
   gbp,
   gbp0,
   incomingPayees,
   orderRoles,
   parseMonzo,
   fmtHours,
+  isPremiumDay,
+  lastTimes,
+  PREMIUM,
   shiftPay,
+  shiftTimes,
   spendingByCategory,
   unpaidBalance,
   weeklyPay
@@ -44,7 +47,8 @@ function shiftRow(s, roles, actions) {
   const role = roles.find((r) => r.id === s.role_id);
   return `<li class="vrow card">
     <span class="vmain"><strong>${esc(s.venue)}</strong>
-      <span class="muted small">${esc(shortDate(s.date))} · ${esc(role?.name ?? 'Role')} · ${fmtHours(s.hours)} @ ${gbp(Number(s.rate))}</span></span>
+      <span class="muted small">${esc(shortDate(s.date))}${s.start ? ` · ${esc(s.start)}–${esc(s.end)}` : ''} · ${esc(role?.name ?? 'Role')}</span>
+      <span class="muted small">${fmtHours(s.hours)} paid @ ${gbp(Number(s.rate))}${s.premium ? ' · 1.5× bank holiday' : ''}</span></span>
     <span class="vside"><span class="vscore num">${gbp(shiftPay(s))}</span>${actions}</span>
   </li>`;
 }
@@ -135,6 +139,7 @@ export async function renderMoney(el, rerender) {
   const recent = live.filter((s) => s.status === 'worked').sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
   const venues = [...new Set([...live.map((s) => s.venue), ...VENUE_SUGGESTIONS])];
   const firstVenue = [...live].sort((a, b) => b.date.localeCompare(a.date))[0]?.venue ?? VENUE_SUGGESTIONS[0];
+  const firstTimes = lastTimes(shifts, firstVenue);
   const maxCat = Math.max(1, ...spendCats.map((c) => c.total));
 
   el.innerHTML = `
@@ -167,17 +172,22 @@ export async function renderMoney(el, rerender) {
 
         <div class="sec" style="--dot:var(--sky)"><span class="dot"></span><h2>Log a shift</h2></div>
         <form class="card stack" id="shift-form" autocomplete="off">
-          <div class="grid2">
-            <label class="stack" style="gap:4px"><span class="stat-label">Date</span><input class="field" type="date" name="date" value="${date}" required></label>
-            <label class="stack" style="gap:4px"><span class="stat-label">Hours</span><input class="field" type="number" name="hours" min="0.5" max="24" step="0.25" value="${Math.round(defaultHours(shifts, firstVenue) * 4) / 4}" required></label>
-          </div>
           <label class="stack" style="gap:4px"><span class="stat-label">Venue</span>
             <input class="field" name="venue" list="venues" value="${esc(firstVenue)}" required maxlength="40">
             <datalist id="venues">${venues.map((v) => `<option value="${esc(v)}"></option>`).join('')}</datalist>
           </label>
+          <label class="stack" style="gap:4px"><span class="stat-label">Date</span><input class="field" type="date" name="date" value="${date}" required></label>
+          <div class="grid2">
+            <label class="stack" style="gap:4px"><span class="stat-label">Start</span><input class="field" type="time" name="start" value="${firstTimes.start}" required></label>
+            <label class="stack" style="gap:4px"><span class="stat-label">End</span><input class="field" type="time" name="end" value="${firstTimes.end}" required></label>
+          </div>
           <label class="stack" style="gap:4px"><span class="stat-label">Role</span>
             <select class="field" name="role">${ordered.map((r) => `<option value="${esc(r.id)}">${esc(r.name)} · ${gbp(r.rate)}/h</option>`).join('')}</select>
           </label>
+          <div class="grid2">
+            <label class="stack" style="gap:4px"><span class="stat-label">Paid hours</span><input class="field" type="number" name="hours" min="0.25" max="24" step="0.01" required></label>
+            <div class="stack" style="gap:4px"><span class="stat-label">Breakdown</span><span class="muted small" id="shift-note" style="padding-top:8px"></span></div>
+          </div>
           <div class="chips small two" role="group" aria-label="Status">
             <button type="button" class="chip" data-status="booked" aria-pressed="true">Booked</button>
             <button type="button" class="chip" data-status="worked" aria-pressed="false">Worked</button>
@@ -227,13 +237,25 @@ export async function renderMoney(el, rerender) {
       </aside>
     </div>`;
 
-  // ---- Shift form ----
+  // ---- Shift form: paid hours follow the times (minus unpaid breaks) until edited by hand ----
   const form = el.querySelector('#shift-form');
   let status = 'booked';
+  let hoursEdited = false;
   const payOut = el.querySelector('#shift-pay');
-  const updatePay = () => {
+  const note = el.querySelector('#shift-note');
+  const current = () => {
     const role = roles.find((r) => r.id === form.role.value);
-    const pay = shiftPay({ hours: form.hours.value, rate: role?.rate ?? 0 });
+    const premium = isPremiumDay(form.date.value);
+    return { role, premium, rate: Math.round((role?.rate ?? 0) * (premium ? PREMIUM : 1) * 10000) / 10000 };
+  };
+  const update = () => {
+    const t = shiftTimes(form.start.value, form.end.value);
+    if (t && !hoursEdited) form.hours.value = Math.round(t.paidHours * 100) / 100;
+    const { premium, rate } = current();
+    note.textContent = t
+      ? `${fmtHours(t.scheduled / 60)} shift${t.unpaid ? ` − ${t.unpaid}m break` : ', no break'}${premium ? ' · 1.5× bank holiday' : ''}`
+      : '';
+    const pay = shiftPay({ hours: form.hours.value, rate });
     payOut.textContent = pay ? `· ${gbp(pay)}` : '';
   };
   form.querySelectorAll('[data-status]').forEach((b) =>
@@ -243,19 +265,27 @@ export async function renderMoney(el, rerender) {
     })
   );
   form.venue.addEventListener('change', () => {
-    form.hours.value = Math.round(defaultHours(shifts, form.venue.value.trim()) * 4) / 4;
-    updatePay();
+    const t = lastTimes(shifts, form.venue.value.trim());
+    form.start.value = t.start;
+    form.end.value = t.end;
+    hoursEdited = false;
+    update();
   });
-  form.hours.addEventListener('input', updatePay);
-  form.role.addEventListener('change', updatePay);
-  updatePay();
+  ['start', 'end', 'date', 'role'].forEach((n) => form[n].addEventListener('input', update));
+  form.role.addEventListener('change', update);
+  form.hours.addEventListener('input', () => {
+    hoursEdited = true;
+    update();
+  });
+  update();
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const role = roles.find((r) => r.id === form.role.value);
+    const { role, premium, rate } = current();
     const shiftDate = form.date.value;
     const finalStatus = status === 'booked' && shiftDate < date ? 'worked' : status;
-    await saveShift({ date: shiftDate, venue: form.venue.value.trim(), role_id: role.id, rate: role.rate, hours: Number(form.hours.value), status: finalStatus });
-    toast(`${finalStatus === 'worked' ? 'Logged' : 'Booked'} · ${gbp(shiftPay({ hours: form.hours.value, rate: role.rate }))}`);
+    const hours = Number(form.hours.value);
+    await saveShift({ date: shiftDate, venue: form.venue.value.trim(), role_id: role.id, rate, premium, start: form.start.value, end: form.end.value, hours, status: finalStatus });
+    toast(`${finalStatus === 'worked' ? 'Logged' : 'Booked'} · ${gbp(shiftPay({ hours, rate }))}`);
     rerender();
   });
 
