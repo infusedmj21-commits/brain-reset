@@ -617,3 +617,24 @@ a.banner { display: block; color: inherit; text-decoration: none; }
 .reset-card { display: flex; align-items: center; gap: 14px; color: inherit; text-decoration: none; }
 .big-emoji { font-size: 34px; width: 60px; text-align: center; flex: none; }
 select.field { appearance: auto; }
+
+/* ---------- Money ---------- */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.row-mini { display: flex; gap: 6px; }
+.paybars { display: flex; align-items: flex-end; gap: 8px; height: 150px; }
+.paycol { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; min-width: 0; }
+.paypair { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 3px; }
+.paypair i { width: 40%; max-width: 22px; border: var(--border); border-radius: 6px 6px 3px 3px; }
+.paypair i.exp { background: var(--sky); }
+.paypair i.exp.booked { background: var(--sky-soft); border-style: dashed; }
+.paypair i.rec { background: var(--mint); }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 12px; font-size: 13px; color: var(--ink-2); font-weight: 800; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 4px; border: var(--border); margin-right: 6px; vertical-align: -1px; }
+.catlist { display: grid; gap: 10px; margin-top: 10px; }
+.cat { display: grid; gap: 4px; }
+.cat-top { display: flex; justify-content: space-between; gap: 10px; font-size: 15px; }
+.cat-bar { height: 10px; background: var(--field); border-radius: 999px; overflow: hidden; }
+.cat-bar i { display: block; height: 100%; background: var(--mint); border-radius: 999px; }
+.payees { border: 0; padding: 0; margin: 0; }
+.payees .pick-top { border: var(--border); border-radius: 14px; padding: 8px 10px; }
+input[type=date].field { min-height: 44px; }
