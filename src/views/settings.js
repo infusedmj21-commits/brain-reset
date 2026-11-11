@@ -102,13 +102,13 @@ export async function renderSettings(el, rerender) {
             <input class="field" name="name" value="${esc(getName())}" placeholder="Your name" aria-label="Name for the greeting" maxlength="30">
             <button class="btn" type="submit">Save</button>
           </form>
-          <p class="muted small">Used in the greeting on Today. Leave it blank for just “Hey!”.</p>
+          <p class="muted small">Used in the greetings on Home and Reset. Leave it blank for just “Hey!”.</p>
         </div>
 
         <div class="sec" style="--dot:var(--sun)"><span class="dot"></span><h2>About</h2></div>
         <div class="card top-sun">
-          <p><strong>Brain Reset</strong> · phases 1–4</p>
-          <p class="muted small">Next up: the life dashboard, weekly review and charts, then recording and AI feedback for unprompted talks.</p>
+          <p><strong>Artemis</strong> · life dashboard with the Brain Reset routine</p>
+          <p class="muted small">Home, Tasks, Ventures, Money, Health and Reset, synced between your devices.</p>
         </div>
       </section>
 

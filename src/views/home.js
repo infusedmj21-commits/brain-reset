@@ -163,7 +163,6 @@ export async function renderHome(el, rerender) {
       </div>
       <div class="head-links">
         <a class="icon-btn" href="#/progress" aria-label="Progress">${ICONS.progress}</a>
-        <a class="icon-btn" href="#/settings" aria-label="Settings">${ICONS.settings}</a>
       </div>
     </section>
 

@@ -16,6 +16,8 @@ import { seedRoles } from './data/money.js';
 import { renderMoney } from './views/money.js';
 import { renderHealth } from './views/health.js';
 import { renderReview } from './views/review.js';
+import { renderTasks } from './views/tasks.js';
+import { openTaskCount } from './data/tasks.js';
 import { seedHealth } from './data/health.js';
 import { renderSettings } from './views/settings.js';
 import { renderProgress } from './views/progress.js';
@@ -30,6 +32,7 @@ const routes = {
   money: renderMoney,
   health: renderHealth,
   review: renderReview,
+  tasks: renderTasks,
   today: renderToday,
   palace: renderPalace,
   unprompted: renderUnprompted,
@@ -59,25 +62,42 @@ async function render() {
   const [name = 'home', ...params] = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
   const route = routes[name] ? name : 'home';
   const ctx = { params, onCleanup: (fn) => cleanups.push(fn) };
-  // Brain Reset's screens live under the Reset tab; Settings under Home.
+  // Brain Reset's screens live under the Reset tab; Settings sits beside To do under Tasks.
   const RESET = ['today', 'sprint', 'palace', 'unprompted', 'progress'];
-  const tab = RESET.includes(route) ? 'today' : ['settings', 'review'].includes(route) ? 'home' : route;
+  const tab = RESET.includes(route) ? 'today' : route === 'settings' ? 'tasks' : route === 'review' ? 'home' : route;
   document.querySelectorAll('.tabbar a').forEach((a) => {
     if (a.dataset.tab === tab) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');
   });
+  const SUBNAVS = {
+    today: [['today', 'Today'], ['palace', 'Palace'], ['unprompted', 'Unprompted'], ['progress', 'Progress']],
+    tasks: [['tasks', 'To do'], ['settings', 'Settings']]
+  };
   const subnav = document.getElementById('subnav');
-  subnav.hidden = tab !== 'today' || route === 'sprint';
-  subnav.querySelectorAll('a').forEach((a) => {
-    if (a.dataset.sub === route) a.setAttribute('aria-current', 'page');
-    else a.removeAttribute('aria-current');
-  });
+  const items = route === 'sprint' ? null : SUBNAVS[tab];
+  subnav.hidden = !items;
+  subnav.innerHTML = (items ?? [])
+    .map(([r, label]) => `<a href="#/${r}"${r === route ? ' aria-current="page"' : ''}>${label}</a>`)
+    .join('');
   try {
     await routes[route](view, render, ctx);
   } catch (err) {
     console.error(err);
     view.innerHTML = `<div class="card"><p><strong>Something went wrong.</strong></p><p class="muted small">${String(err.message ?? err)}</p></div>`;
   }
+  updateBadge();
+}
+
+// The red count on the Tasks tab.
+function updateBadge() {
+  openTaskCount()
+    .then((n) => {
+      const b = document.getElementById('task-badge');
+      b.hidden = !n;
+      b.textContent = n > 9 ? '9+' : String(n);
+      document.querySelector('[data-tab="tasks"]').setAttribute('aria-label', n ? `Tasks, ${n} to do` : 'Tasks');
+    })
+    .catch(() => {});
 }
 
 window.addEventListener('hashchange', () => {
@@ -103,7 +123,10 @@ Promise.allSettled([seedVentures(), seedRoles(), seedHealth()]).finally(render);
 // Only list-style screens redraw; a sprint round or timed session is never interrupted.
 setOnRemoteChange(() => {
   const route = location.hash.replace(/^#\/?/, '').split('/')[0] || 'home';
-  if (!['home', 'ventures', 'money', 'today', 'progress', 'settings'].includes(route)) return;
+  if (!['home', 'ventures', 'money', 'tasks', 'today', 'progress', 'settings'].includes(route)) {
+    updateBadge();
+    return;
+  }
   const active = document.activeElement;
   if (active && ['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName)) return;
   render();
