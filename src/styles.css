@@ -795,3 +795,5 @@ table th, table td { border-bottom: 1px solid var(--outline); }
 .stat-card.flame .stat-big { color: var(--ink); }
 .mission { background: var(--soft, var(--card)); }
 .week b { border: var(--border); }
+
+input[type=time].field { min-height: 44px; }
