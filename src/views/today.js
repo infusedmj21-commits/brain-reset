@@ -1,3 +1,4 @@
+import { ICONS } from './icons.js';
 import {
   doneByDate,
   firstActiveDate,
@@ -33,8 +34,8 @@ function dayChips(selected, attr, small = false) {
       .map(([key, t]) => {
         const look = DAY_LOOK[key];
         return `<button type="button" class="chip" ${attr}="${key}" aria-pressed="${selected === key}">
-          <span class="ico" style="--ico:${look.colour}" aria-hidden="true">${look.emoji}</span>
-          <span>${small ? `${look.emoji} ${esc(look.short)}` : esc(t.label)}<small>${esc(t.hint)}</small></span>
+          <span class="ico" style="--ico:${look.colour}" aria-hidden="true">${look.icon}</span>
+          <span>${small ? esc(look.short) : esc(t.label)}<small>${esc(t.hint)}</small></span>
         </button>`;
       })
       .join('')}
@@ -57,7 +58,7 @@ function missionHTML(item, done, suggestion, rotating) {
   const why = item.rotating && suggestion ? `<span class="why">${esc(suggestion.reason)}</span>` : '';
   const actions = links || swap ? `<div class="actions">${links}${swap}</div>` : '';
   return `<li class="mission m-${look.colour}${done ? ' done' : ''}">
-    <div class="shape ${look.shape}" aria-hidden="true">${look.emoji}</div>
+    <div class="shape ${look.shape}" aria-hidden="true">${look.icon}</div>
     <div>
       <h3>${esc(item.label)}</h3>
       <div class="meta">${item.minutes} min · ${esc(item.slot ?? '')}</div>
@@ -139,7 +140,7 @@ export async function renderToday(el, rerender) {
     <section class="hero">
       <div>
         <div class="eyebrow">${esc(prettyDate(date))}</div>
-        <h1 class="page-title">Hey${name ? ` ${esc(name)}` : ''}! 👋</h1>
+        <h1 class="page-title">Hey${name ? ` ${esc(name)}` : ''}</h1>
         <p class="page-sub">${esc(subline(dayType, doneCount, items.length))}</p>
       </div>
       <div class="hero-stats">
@@ -148,7 +149,7 @@ export async function renderToday(el, rerender) {
           <div><div class="stat-label">Today</div><div class="stat-big num">${items.length ? `${pct}%` : '–'}</div></div>
         </div>
         <div class="stat-card flame" title="Days in a row with at least the sprint and Spanish">
-          <span class="emoji" aria-hidden="true">🔥</span>
+          <span class="chipico" aria-hidden="true">${ICONS.flame}</span>
           <div><div class="stat-label">Streak</div><div class="stat-big num">${currentStreak} day${currentStreak === 1 ? '' : 's'}</div></div>
         </div>
         <div class="stat-card week-card"><div class="stat-label">This week</div><div class="week">${week}</div></div>
@@ -179,7 +180,7 @@ export async function renderToday(el, rerender) {
         <div class="sec" style="--dot:var(--sky);margin-bottom:0"><span class="dot"></span><h2>Scoreboard</h2></div>
 
         <form class="card top-sun" id="sprint-form" autocomplete="off">
-          <h3><span aria-hidden="true">🧮</span> Sprint</h3>
+          <h3>${ICONS.calc} Sprint</h3>
           <div class="row">
             <div>
               <div class="big num">${todaySprint ? todaySprint.best : sprint.latest ? sprint.latest.best : '–'}</div>
@@ -206,18 +207,18 @@ export async function renderToday(el, rerender) {
         </form>
 
         <div class="card top-sky">
-          <h3><span aria-hidden="true">📱</span> TikTok limit</h3>
+          <h3>${ICONS.phone} TikTok limit</h3>
           ${
             limit
               ? `<div class="row"><div class="big num">${formatMinutes(limit.minutes)}</div><span class="delta">Week ${limit.week} of ${TIKTOK_SCHEDULE.length}</span></div>
                  <div class="steps" aria-hidden="true">${steps}</div>
-                 <div class="note">At work: Spanish accounts only 🇪🇸</div>`
+                 <div class="note">At work: Spanish accounts only</div>`
               : `<p class="muted" style="margin-top:8px">The reduction plan starts on 2 November.</p>`
           }
         </div>
 
         <div class="card top-gum">
-          <h3><span aria-hidden="true">🗓️</span> Tomorrow</h3>
+          <h3>${ICONS.calendar} Tomorrow</h3>
           <p class="muted small" style="margin:4px 0 12px">${
             tomorrowPlan ? `Set: ${esc(DAY_TYPES[tomorrowPlan.day_type]?.label ?? '')}` : 'Set it tonight so tomorrow starts ready.'
           }</p>
@@ -247,7 +248,7 @@ export async function renderToday(el, rerender) {
       const habit = b.dataset.toggle;
       const nowDone = !done.has(habit);
       await setHabit(date, habit, nowDone);
-      if (nowDone && doneCount + 1 === items.length) toast('All missions done 🎉');
+      if (nowDone && doneCount + 1 === items.length) toast('All missions done. Great day.');
       rerender();
     })
   );

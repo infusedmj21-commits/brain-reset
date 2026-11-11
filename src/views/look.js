@@ -1,19 +1,20 @@
-// Visual vocabulary shared by the screens: colour, shape and emoji per habit and day type.
+// Visual vocabulary shared by the screens: colour, shape and line icon per habit and day type.
+import { ICONS } from './icons.js';
 
 export const HABIT_LOOK = {
-  sprint: { colour: 'tomato', shape: 's-circle', emoji: '🧮' },
-  spanish: { colour: 'sun', shape: 's-blob', emoji: '🇪🇸' },
-  reading: { colour: 'sky', shape: 's-squircle', emoji: '📚' },
-  unprompted: { colour: 'grape', shape: 's-diamond', emoji: '🎙️' },
-  palace: { colour: 'mint', shape: 's-squircle', emoji: '🏰' },
-  recall: { colour: 'gum', shape: 's-circle', emoji: '💭' }
+  sprint: { colour: 'tomato', shape: 's-circle', icon: ICONS.calc },
+  spanish: { colour: 'sun', shape: 's-blob', icon: ICONS.chat },
+  reading: { colour: 'sky', shape: 's-squircle', icon: ICONS.book },
+  unprompted: { colour: 'grape', shape: 's-diamond', icon: ICONS.mic },
+  palace: { colour: 'mint', shape: 's-squircle', icon: ICONS.castle },
+  recall: { colour: 'gum', shape: 's-circle', icon: ICONS.bulb }
 };
 
 export const DAY_LOOK = {
-  early: { emoji: '🌅', colour: 'var(--sun)', short: 'Early' },
-  late: { emoji: '🌙', colour: 'var(--grape-soft)', short: 'Late' },
-  off: { emoji: '🏖️', colour: 'var(--mint)', short: 'Off' },
-  minimum: { emoji: '🪫', colour: 'var(--gum)', short: 'Minimum' }
+  early: { icon: ICONS.sunrise, colour: 'var(--sun)', short: 'Early' },
+  late: { icon: ICONS.moon, colour: 'var(--grape-soft)', short: 'Late' },
+  off: { icon: ICONS.sun, colour: 'var(--mint)', short: 'Off' },
+  minimum: { icon: ICONS.battery, colour: 'var(--gum)', short: 'Minimum' }
 };
 
 // Extra quick links per habit, beyond the habit's own main link.
