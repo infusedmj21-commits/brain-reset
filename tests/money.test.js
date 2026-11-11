@@ -166,3 +166,15 @@ describe('breaks and bank holidays', () => {
     expect(isPremiumDay('2026-12-24')).toBe(false);
   });
 });
+
+describe('shift order', () => {
+  it('puts the earlier of two same-day shifts first', async () => {
+    const { byWhen } = await import('../src/logic/money.js');
+    const shifts = [
+      { date: '2026-11-21', start: '17:00' },
+      { date: '2026-11-20', start: '18:00' },
+      { date: '2026-11-21', start: '09:00' }
+    ].sort(byWhen);
+    expect(shifts.map((s) => `${s.date} ${s.start}`)).toEqual(['2026-11-20 18:00', '2026-11-21 09:00', '2026-11-21 17:00']);
+  });
+});

@@ -1,7 +1,7 @@
 // Michael's agency pays weekly on Wednesday, for hours worked Thursday to Wednesday,
 // with each period ending one week before its payday (e.g. 5–11 Nov is paid on 18 Nov).
 import { addDays, weekday } from './dates.js';
-import { pennies, shiftPay } from './money.js';
+import { byWhen, pennies, shiftPay } from './money.js';
 
 const THURSDAY = 3; // Monday = 0
 export const PAY_LAG_DAYS = 7;
@@ -30,7 +30,7 @@ export function paydays(shifts, payments, date, back = 6, ahead = 3) {
   for (let i = -back; i < ahead; i += 1) {
     const payday = addDays(thisPayday, i * 7);
     const p = periodPaidOn(payday);
-    const inPeriod = live.filter((s) => s.date >= p.start && s.date <= p.end).sort((a, b) => a.date.localeCompare(b.date));
+    const inPeriod = live.filter((s) => s.date >= p.start && s.date <= p.end).sort(byWhen);
     const paid = payments.filter((x) => nearPayday(x.date, payday));
     out.push({
       ...p,

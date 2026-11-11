@@ -1,6 +1,7 @@
 import { db, firstActiveDate, getDayPlan, live } from '../db.js';
 import { getCheckin } from './checkins.js';
 import { lastImport, listShifts } from './money.js';
+import { byWhen } from '../logic/money.js';
 import { listScores, listVentures, focusFor } from './ventures.js';
 import { listWorkouts, ticksFor } from './health.js';
 import { daysBetween, today, weekStart } from '../logic/dates.js';
@@ -13,7 +14,7 @@ import { needsRescore, scoreHistory } from '../logic/scoring.js';
 export function shiftsToConfirm(shifts, date) {
   return shifts
     .filter((s) => !s.deleted && s.status !== 'cancelled' && !s.confirmed && s.date < date)
-    .sort((a, b) => a.date.localeCompare(b.date));
+    .sort(byWhen);
 }
 
 export const MONZO_EVERY_DAYS = 14;
