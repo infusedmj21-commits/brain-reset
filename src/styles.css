@@ -677,3 +677,11 @@ input[type=date].field { min-height: 44px; }
 .bars.tall { height: 140px; }
 .focus-mode .view { padding-bottom: calc(env(safe-area-inset-bottom) + 110px); }
 .focus-mode .toast { bottom: calc(env(safe-area-inset-bottom) + 110px); }
+
+/* ---------- Comebacks and review ---------- */
+.welcome h2 { font-size: 26px; }
+.catchup { display: grid; gap: 8px; padding-left: 20px; margin: 0; }
+.catchup a { font-weight: 800; }
+.cell.away { background-image: repeating-linear-gradient(45deg, transparent 0 4px, var(--outline) 4px 5px); opacity: 0.6; }
+.away-key { background-image: repeating-linear-gradient(45deg, transparent 0 3px, var(--outline) 3px 4px); }
+textarea.field { resize: vertical; font-family: inherit; }

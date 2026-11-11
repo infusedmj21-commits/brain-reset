@@ -13,6 +13,7 @@ import { seedVentures } from './data/ventures.js';
 import { seedRoles } from './data/money.js';
 import { renderMoney } from './views/money.js';
 import { renderHealth } from './views/health.js';
+import { renderReview } from './views/review.js';
 import { seedHealth } from './data/health.js';
 import { renderSettings } from './views/settings.js';
 import { renderProgress } from './views/progress.js';
@@ -26,6 +27,7 @@ const routes = {
   ventures: renderVentures,
   money: renderMoney,
   health: renderHealth,
+  review: renderReview,
   today: renderToday,
   palace: renderPalace,
   unprompted: renderUnprompted,
@@ -57,7 +59,7 @@ async function render() {
   const ctx = { params, onCleanup: (fn) => cleanups.push(fn) };
   // Brain Reset's screens live under the Reset tab; Settings under Home.
   const RESET = ['today', 'sprint', 'palace', 'unprompted', 'progress'];
-  const tab = RESET.includes(route) ? 'today' : route === 'settings' ? 'home' : route;
+  const tab = RESET.includes(route) ? 'today' : ['settings', 'review'].includes(route) ? 'home' : route;
   document.querySelectorAll('.tabbar a').forEach((a) => {
     if (a.dataset.tab === tab) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');

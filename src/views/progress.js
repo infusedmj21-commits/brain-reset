@@ -1,10 +1,12 @@
 import { doneByDate, live } from '../db.js';
+import { listGaps } from '../data/checkins.js';
+import { GAP_REASONS } from '../logic/review.js';
 import { addDays, prettyDate, today, weekStart } from '../logic/dates.js';
 import { TIKTOK_SCHEDULE, dayStatus, formatMinutes, sprintSummary, tiktokLimit } from '../logic/routine.js';
 
 export async function renderProgress(el) {
   const date = today();
-  const [doneMap, sprints] = await Promise.all([doneByDate(), live('sprint_scores')]);
+  const [doneMap, sprints, gaps] = await Promise.all([doneByDate(), live('sprint_scores'), listGaps()]);
   const start = addDays(weekStart(date), -21);
   const days = Array.from({ length: 28 }, (_, i) => addDays(start, i));
   const counted = days.filter((d) => d <= date && dayStatus(doneMap[d]) !== 'none').length;
@@ -13,7 +15,8 @@ export async function renderProgress(el) {
   const cells = days
     .map((d) => {
       const cls = ['cell', d > date ? 'future' : dayStatus(doneMap[d]), d === date ? 'today' : ''].join(' ');
-      return `<div class="${cls}" title="${d}"></div>`;
+      const gap = gaps.find((g) => g.from <= d && d <= g.to);
+      return `<div class="${cls}${gap ? ' away' : ''}" title="${d}${gap ? ` · away: ${GAP_REASONS[gap.reason] ?? ''}` : ''}"></div>`;
     })
     .join('');
 
@@ -22,8 +25,8 @@ export async function renderProgress(el) {
   const current = tiktokLimit(date);
 
   el.innerHTML = `
-    <div class="eyebrow">Charts and the weekly review arrive in phase 5</div>
     <h1 class="page-title">Progress</h1>
+    <a class="btn secondary" href="#/review" style="margin-top:12px;display:inline-block">Weekly review</a>
 
     <div class="cols">
       <section>
@@ -37,6 +40,7 @@ export async function renderProgress(el) {
           <div class="legend">
             <span><i style="background:var(--mint)"></i>Sprint, Spanish, reading</span>
             <span><i style="background:var(--sun)"></i>Minimum</span>
+            <span><i class="away-key"></i>Away, reason given</span>
           </div>
         </div>
 
