@@ -57,6 +57,9 @@ export function shiftTimes(start, end) {
   return { scheduled, unpaid, paidHours: (scheduled - unpaid) / 60 };
 }
 
+/** Shift order: by date, then start time, so two shifts on one day sit earliest first. */
+export const byWhen = (a, b) => a.date.localeCompare(b.date) || (a.start || '').localeCompare(b.start || '');
+
 /** Start and end of the last shift at a venue, else 09:00–17:00. */
 export function lastTimes(shifts, venue) {
   const last = [...shifts].filter((s) => s.venue === venue && s.start && s.end && s.status !== 'cancelled').sort((a, b) => b.date.localeCompare(a.date))[0];

@@ -26,6 +26,7 @@ import {
   PREMIUM,
   shiftPay,
   shiftTimes,
+  byWhen,
   spendingByCategory,
   weeklyPay
 } from '../logic/money.js';
@@ -175,11 +176,9 @@ export async function renderMoney(el, rerender, ctx) {
   const onItsWay = owed(shifts, date);
   const live = shifts.filter((s) => s.status !== 'cancelled');
   const toConfirm = shiftsToConfirm(shifts, date);
-  const upcoming = live.filter((s) => s.status === 'booked' && s.date >= date).sort((a, b) => a.date.localeCompare(b.date));
-  const recent = live.filter((s) => s.status === 'worked').sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
+  const upcoming = live.filter((s) => s.status === 'booked' && s.date >= date).sort(byWhen);
+  const recent = live.filter((s) => s.status === 'worked').sort((a, b) => byWhen(b, a)).slice(0, 10);
   const venues = [...new Set([...live.map((s) => s.venue), ...VENUE_SUGGESTIONS])];
-  const firstVenue = [...live].sort((a, b) => b.date.localeCompare(a.date))[0]?.venue ?? VENUE_SUGGESTIONS[0];
-  const firstTimes = lastTimes(shifts, firstVenue);
   const maxCat = Math.max(1, ...spendCats.map((c) => c.total));
 
   el.innerHTML = `
@@ -204,16 +203,16 @@ export async function renderMoney(el, rerender, ctx) {
         <div class="sec" style="--dot:var(--sky)"><span class="dot"></span><h2>Log a shift</h2></div>
         <form class="card stack" id="shift-form" autocomplete="off">
           <label class="stack" style="gap:4px"><span class="stat-label">Venue</span>
-            <input class="field" name="venue" list="venues" value="${esc(firstVenue)}" required maxlength="40">
+            <input class="field" name="venue" list="venues" value="" placeholder="Pick or type a venue" required maxlength="40">
             <datalist id="venues">${venues.map((v) => `<option value="${esc(v)}"></option>`).join('')}</datalist>
           </label>
           <label class="stack" style="gap:4px"><span class="stat-label">Date</span><input class="field" type="date" name="date" value="${date}" required></label>
           <div class="grid2">
-            <label class="stack" style="gap:4px"><span class="stat-label">Start</span><input class="field" type="time" name="start" value="${firstTimes.start}" required></label>
-            <label class="stack" style="gap:4px"><span class="stat-label">End</span><input class="field" type="time" name="end" value="${firstTimes.end}" required></label>
+            <label class="stack" style="gap:4px"><span class="stat-label">Start</span><input class="field" type="time" name="start" value="" required></label>
+            <label class="stack" style="gap:4px"><span class="stat-label">End</span><input class="field" type="time" name="end" value="" required></label>
           </div>
           <label class="stack" style="gap:4px"><span class="stat-label">Role</span>
-            <select class="field" name="role">${ordered.map((r) => `<option value="${esc(r.id)}">${esc(r.name)} · ${gbp(r.rate)}/h</option>`).join('')}</select>
+            <select class="field" name="role" required><option value="" selected disabled>Choose a role</option>${ordered.map((r) => `<option value="${esc(r.id)}">${esc(r.name)} · ${gbp(r.rate)}/h</option>`).join('')}</select>
           </label>
           <div class="grid2">
             <label class="stack" style="gap:4px"><span class="stat-label">Paid hours</span><input class="field" type="number" name="hours" min="0.25" max="24" step="0.01" required></label>
@@ -305,7 +304,10 @@ export async function renderMoney(el, rerender, ctx) {
     })
   );
   form.venue.addEventListener('change', () => {
-    const t = lastTimes(shifts, form.venue.value.trim());
+    // Suggest that venue's usual times, but never overwrite times already typed.
+    const venue = form.venue.value.trim();
+    if (form.start.value || form.end.value || !shifts.some((s) => s.venue === venue && s.start)) return;
+    const t = lastTimes(shifts, venue);
     form.start.value = t.start;
     form.end.value = t.end;
     hoursEdited = false;
@@ -395,7 +397,7 @@ export async function nextPay() {
 export async function nextShift() {
   const date = today();
   const [shifts, roles] = await Promise.all([listShifts(), listRoles()]);
-  const next = shifts.filter((s) => s.status === 'booked' && s.date >= date).sort((a, b) => a.date.localeCompare(b.date))[0];
+  const next = shifts.filter((s) => s.status === 'booked' && s.date >= date).sort(byWhen)[0];
   if (!next) return null;
   return { ...next, roleName: roles.find((r) => r.id === next.role_id)?.name ?? '', pay: shiftPay(next) };
 }
