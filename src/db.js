@@ -45,6 +45,12 @@ export const db = createDB();
 const uuid = () => crypto.randomUUID();
 const now = () => new Date().toISOString();
 
+// Sync registers here to hear about local writes.
+let afterSave = null;
+export function onSave(fn) {
+  afterSave = fn;
+}
+
 // One row per day, so the id is derived from the date. Two devices logging the
 // same day then write the same row instead of creating duplicates.
 export const dayPlanId = (date) => `day:${date}`;
@@ -64,6 +70,7 @@ export async function save(table, row, database = db) {
     await database.table(table).put(record);
     await database.outbox.add({ table, row_id: record.id, queued_at: record.updated_at });
   });
+  afterSave?.(table);
   return record;
 }
 
@@ -160,6 +167,7 @@ export async function importAll(data, database = db) {
       }
     }
   });
+  if (added) afterSave?.('import');
   return added;
 }
 

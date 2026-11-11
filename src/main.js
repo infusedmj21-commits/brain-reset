@@ -12,6 +12,7 @@ import { renderProgress } from './views/progress.js';
 import { renderPalace } from './views/palace.js';
 import { renderUnprompted } from './views/unprompted.js';
 import { renderSprint } from './views/sprint.js';
+import { setOnRemoteChange, startSync } from './sync.js';
 
 const routes = {
   today: renderToday,
@@ -73,3 +74,15 @@ document.addEventListener('visibilitychange', () => {
 applyTheme();
 registerSW({ immediate: true });
 render();
+
+// Changes pulled from another device redraw the current screen, unless the
+// person is typing in a field, where a redraw would wipe what they entered.
+// Only list-style screens redraw; a sprint round or timed session is never interrupted.
+setOnRemoteChange(() => {
+  const route = location.hash.replace(/^#\/?/, '').split('/')[0] || 'today';
+  if (!['today', 'progress', 'settings'].includes(route)) return;
+  const active = document.activeElement;
+  if (active && ['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName)) return;
+  render();
+});
+startSync();

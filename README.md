@@ -12,8 +12,8 @@ It installs to the iPhone home screen and the computer taskbar from one codebase
 | 2 | Memory palace trainer | Done |
 | 3 | Unprompted sessions (recording in the app comes later) | Done |
 | — | In-app arithmetic sprint (Zetamac rules and settings) | Done |
-| 4 | Sync between devices (Supabase) | Next |
-| 5 | Weekly review and charts | |
+| 4 | Sync between devices (Supabase) | Done |
+| 5 | Life dashboard, weekly review and charts | Next |
 | 6 | AI review of recorded talks | |
 
 ## Deploy (one-off, about 5 minutes)
@@ -30,7 +30,15 @@ It installs to the iPhone home screen and the computer taskbar from one codebase
 
 ## Your data
 
-Phase 1 stores everything on the device (IndexedDB). Until sync arrives, use **Settings → Export backup** now and then. Each device has its own data until phase 4.
+Each device keeps its own copy in IndexedDB, so the app works offline. Sign in under **Settings → Sync** with your email and password and changes go up to Supabase and come down on your other devices: on launch, when the app comes back to the foreground, when you go back online, a few seconds after each change, and every 5 minutes while open. If two devices edit the same thing, the newer edit wins. Photos in notes (`blobs`) are not synced yet.
+
+### Supabase setup (one-off)
+
+1. **SQL Editor → New query**, paste `supabase/schema.sql`, **Run**.
+2. **Authentication → Sign In / Providers → Email**: turn off **Confirm email**, so creating the account needs no email. (Sign-in is by password in the app because an emailed link would open Safari, not the home screen app.)
+3. On the first device use **Create account**; everywhere else, **Sign in**. Then **Authentication → Sign In / Providers → turn off "Allow new users to sign up"** so nobody else can make an account.
+
+The URL and publishable key live in `src/config.js` (Vercel env vars `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` override them). Never put the `service_role` key in the app.
 
 ## Development
 
@@ -48,6 +56,9 @@ src/
   main.js            router, tab bar, service worker registration
   theme.js           Auto / Light / Dark preference and greeting name
   db.js              Dexie schema, sync-ready save/remove, export/import
+  config.js          Supabase URL and publishable key
+  sync-core.js       push outbox, pull by server sequence, newer-wins merge (unit tested)
+  sync.js            Supabase client, email-code sign-in, when to sync
   logic/dates.js     local-date helpers (Monday-start weeks, DST-safe)
   logic/routine.js   day templates, unprompted-day rule, streaks, TikTok schedule
   logic/palace.js    word picking, lenient recall scoring, weekly test history
@@ -58,4 +69,4 @@ src/
 tests/               Vitest unit tests
 ```
 
-Every synced row has a device-generated `id`, `updated_at`, `deleted` and `user_id`, and every write queues an `outbox` entry, so phase 4 sync can push to Supabase without changing the data shape. Rows that are naturally one-per-day (day plans, habit ticks, sprint scores) use date-based ids so two devices logging the same day update one row instead of creating duplicates.
+Every synced row has a device-generated `id`, `updated_at`, `deleted` and `user_id`, and every write queues an `outbox` entry, so sync pushes to Supabase without changing the data shape. Rows that are naturally one-per-day (day plans, habit ticks, sprint scores) use date-based ids so two devices logging the same day update one row instead of creating duplicates.
