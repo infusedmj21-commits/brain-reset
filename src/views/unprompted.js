@@ -1,3 +1,4 @@
+import { ICONS } from './icons.js';
 import { getBlob, getRow, live, remove, save, saveBlob, setHabit } from '../db.js';
 import { prettyDate, today, weekDates } from '../logic/dates.js';
 import { UNPROMPTED_PER_WEEK } from '../logic/routine.js';
@@ -27,7 +28,7 @@ async function renderHome(el, rerender, ctx) {
 
   const recallCard = recall
     ? `<div class="card top-gum stack" id="recall-card">
-        <h3>💭 Recall yesterday’s topic</h3>
+        <h3>${ICONS.bulb} Recall yesterday’s topic</h3>
         <p class="recall-topic">${esc(recall.topic)}</p>
         <p class="muted small">Explain it out loud from memory for 60 seconds. No notes, no recording, no peeking.</p>
         <div class="recall-timer">
@@ -43,7 +44,7 @@ async function renderHome(el, rerender, ctx) {
   const activeCard = active
     ? `<div class="card top-grape">
         <div class="stat-row">
-          <div style="min-width:0"><h3>🎙️ Session in progress</h3>
+          <div style="min-width:0"><h3>${ICONS.mic} Session in progress</h3>
           <p class="muted small ellipsis" style="margin:4px 0 0">${esc(active.topic)} · ${esc(STEPS[stepIndex(active.step)]?.label ?? '')}</p></div>
           <a class="btn" href="#/unprompted/session/${active.id}">Resume</a>
         </div>
@@ -52,7 +53,7 @@ async function renderHome(el, rerender, ctx) {
 
   const newCard = `
     <form class="card top-grape stack" id="new-form" autocomplete="off">
-      <h3>✨ New session</h3>
+      <h3>${ICONS.sparkle} New session</h3>
       <ol class="steps-list">
         <li>Get a random topic from unprompted.cool and paste it below.</li>
         <li>15 minutes of research on Google Scholar, with handwritten notes.</li>
@@ -71,8 +72,8 @@ async function renderHome(el, rerender, ctx) {
       (s) => `<li><a class="card list-card lib-item" href="#/unprompted/view/${s.id}">
         <div class="stat-row">
           <div style="min-width:0"><h3 class="ellipsis">${esc(s.topic)}</h3>
-          <p class="muted small" style="margin:2px 0 0">${esc(prettyDate(s.date))}${s.key_points ? ` · ${s.key_points.split('\n').filter(Boolean).length} points` : ''}${s.notes_photo_id ? ' · 📷' : ''}</p></div>
-          <span class="badge ${s.recall_done_at ? 'ok' : ''}">${s.recall_done_at ? '💭 Recalled' : 'Not recalled'}</span>
+          <p class="muted small" style="margin:2px 0 0">${esc(prettyDate(s.date))}${s.key_points ? ` · ${s.key_points.split('\n').filter(Boolean).length} points` : ''}${s.notes_photo_id ? ' · photo' : ''}</p></div>
+          <span class="badge ${s.recall_done_at ? 'ok' : ''}">${s.recall_done_at ? 'Recalled' : 'Not recalled'}</span>
         </div>
       </a></li>`
     )
@@ -87,7 +88,7 @@ async function renderHome(el, rerender, ctx) {
       </div>
       <div class="hero-stats">
         <div class="stat-card"><div class="donut" style="--p:${Math.min(100, (thisWeek / UNPROMPTED_PER_WEEK) * 100)}"><span class="num">${thisWeek}/${UNPROMPTED_PER_WEEK}</span></div><div><div class="stat-label">This week</div><div class="stat-big num">${thisWeek} done</div></div></div>
-        <div class="stat-card flame"><span class="emoji" aria-hidden="true">📚</span><div><div class="stat-label">Topics you know</div><div class="stat-big num">${completed.length}</div></div></div>
+        <div class="stat-card flame"><span class="chipico" aria-hidden="true">${ICONS.book}</span><div><div class="stat-label">Topics you know</div><div class="stat-big num">${completed.length}</div></div></div>
       </div>
     </section>
 
@@ -131,7 +132,7 @@ async function renderHome(el, rerender, ctx) {
     el.querySelector('#recall-done').addEventListener('click', async () => {
       await save('unprompted_sessions', { ...recall, recall_done_at: new Date().toISOString() });
       await setHabit(date, 'recall', true);
-      toast('Recall logged 💭');
+      toast('Recall logged');
       rerender();
     });
   }
@@ -211,7 +212,7 @@ async function renderSession(el, rerender, ctx, id) {
           <textarea class="field" name="points" rows="6" placeholder="What it is…&#10;Why it matters…&#10;The key evidence…&#10;One surprising detail…">${esc(s.key_points ?? '')}</textarea>
         </label>
         <div class="photo-row">
-          <label class="btn secondary">📷 ${s.notes_photo_id ? 'Replace notes photo' : 'Add a photo of your notes'}
+          <label class="btn secondary">${ICONS.camera} ${s.notes_photo_id ? 'Replace notes photo' : 'Add a photo of your notes'}
             <input type="file" accept="image/*" capture="environment" id="photo" hidden>
           </label>
           <img id="photo-preview" alt="Your notes" ${s.notes_photo_id ? '' : 'hidden'}>
@@ -338,7 +339,7 @@ async function renderSession(el, rerender, ctx, id) {
       const date = today();
       s = await save('unprompted_sessions', { ...s, step: 'done', completed: true, completed_at: new Date().toISOString(), date });
       await setHabit(date, 'unprompted', true);
-      toast('Session saved 🎉 Recall it tomorrow');
+      toast('Session saved. Recall it tomorrow.');
       go(`#/unprompted/view/${s.id}`);
     });
   }
@@ -362,18 +363,18 @@ async function renderDetail(el, rerender, ctx, id) {
     <h1 class="page-title topic-title">${esc(s.topic)}</h1>
     <div class="badges">
       <span class="badge ok">✓ Completed</span>
-      <span class="badge ${s.recall_done_at ? 'ok' : ''}">${s.recall_done_at ? `💭 Recalled ${esc(prettyDate(s.recall_done_at.slice(0, 10)).replace(/^\w+ /, ''))}` : '💭 Recall tomorrow'}</span>
-      ${s.takes ? `<span class="badge">🎥 ${s.takes} take${s.takes === 1 ? '' : 's'}</span>` : ''}
+      <span class="badge ${s.recall_done_at ? 'ok' : ''}">${s.recall_done_at ? `Recalled ${esc(prettyDate(s.recall_done_at.slice(0, 10)).replace(/^\w+ /, ''))}` : 'Recall tomorrow'}</span>
+      ${s.takes ? `<span class="badge">${s.takes} take${s.takes === 1 ? '' : 's'}</span>` : ''}
     </div>
     <div class="cols" style="margin-top:18px">
       <form class="card top-sun stack" id="edit-form">
-        <h3>📝 Key points</h3>
+        <h3>${ICONS.note} Key points</h3>
         <textarea class="field" name="points" rows="7" placeholder="No points saved">${esc(s.key_points ?? '')}</textarea>
         <button class="btn" type="submit">Save points</button>
       </form>
       <div class="stack" style="align-content:start">
         <div class="card top-sky">
-          <h3>📷 Notes</h3>
+          <h3>${ICONS.camera} Notes</h3>
           <div class="photo-row" style="margin-top:10px">
             <img id="photo" alt="Your handwritten notes" hidden>
             <label class="btn secondary">${s.notes_photo_id ? 'Replace photo' : 'Add a photo'}

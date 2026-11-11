@@ -1,3 +1,4 @@
+import { ICONS } from './icons.js';
 import { getMeta, getRow, live, remove, save, setHabit, setMeta } from '../db.js';
 import { prettyDate, today, weekStart, weekDates } from '../logic/dates.js';
 import { WEEKLY_TEST, parseLines, pickWords, scoreRecall, weeklyTestHistory } from '../logic/palace.js';
@@ -34,7 +35,7 @@ async function renderHome(el, rerender, ctx) {
   const activeCard = active
     ? `<div class="card top-mint resume">
         <div class="stat-row">
-          <div><h3>🏰 Session in progress</h3>
+          <div><h3>${ICONS.castle} Session in progress</h3>
           <p class="muted small" id="active-status" style="margin:4px 0 0">${esc(active.palace_name)} · ${active.items.length} words${active.mode === 'test' ? ' · weekly test' : ''}</p></div>
           <a class="btn" href="#/palace/session">Resume</a>
         </div>
@@ -43,7 +44,7 @@ async function renderHome(el, rerender, ctx) {
 
   const startCard = palaces.length
     ? `<form class="card top-mint stack" id="start-form" autocomplete="off">
-        <h3>🎯 Start a session</h3>
+        <h3>${ICONS.target} Start a session</h3>
         <label class="label">Palace
           <select class="field" name="palace">${palaces
             .map((p) => `<option value="${p.id}" ${p.id === selected?.id ? 'selected' : ''}>${esc(p.name)} (${p.loci.length} spots)</option>`)
@@ -51,8 +52,8 @@ async function renderHome(el, rerender, ctx) {
         </label>
         <div class="label">Type</div>
         <div class="chips small" role="group">
-          <button type="button" class="chip" data-mode="practice" aria-pressed="${prefs.mode === 'practice'}">✏️ Practice</button>
-          <button type="button" class="chip" data-mode="test" aria-pressed="${prefs.mode === 'test'}">🏆 Weekly test</button>
+          <button type="button" class="chip" data-mode="practice" aria-pressed="${prefs.mode === 'practice'}">Practice</button>
+          <button type="button" class="chip" data-mode="test" aria-pressed="${prefs.mode === 'test'}">Weekly test</button>
         </div>
         <p class="muted small" data-mode-hint>${
           prefs.mode === 'test'
@@ -66,8 +67,8 @@ async function renderHome(el, rerender, ctx) {
           </div>
           <div class="label" style="margin-top:10px">List</div>
           <div class="chips small" role="group">
-            <button type="button" class="chip" data-source="random" aria-pressed="${prefs.source === 'random'}">🎲 Random words</button>
-            <button type="button" class="chip" data-source="custom" aria-pressed="${prefs.source === 'custom'}">📝 My own list</button>
+            <button type="button" class="chip" data-source="random" aria-pressed="${prefs.source === 'random'}">Random words</button>
+            <button type="button" class="chip" data-source="custom" aria-pressed="${prefs.source === 'custom'}">My own list</button>
           </div>
           <textarea class="field" name="custom" rows="5" placeholder="One item per line: Spanish vocab, definitions, a shopping list…" ${prefs.source === 'custom' ? '' : 'hidden'} style="margin-top:10px">${esc(prefs.custom ?? '')}</textarea>
         </div>
@@ -75,7 +76,7 @@ async function renderHome(el, rerender, ctx) {
       </form>`
     : `<div class="card m-mint" style="background:var(--soft)">
         <div class="stack">
-          <div class="shape s-squircle" style="width:64px;height:64px;font-size:30px" aria-hidden="true">🏰</div>
+          <div class="shape s-squircle" style="width:64px;height:64px" aria-hidden="true">${ICONS.castle}</div>
           <h3>Build your first palace</h3>
           <p>Pick a route you know really well, like your home or your walk to campus. List 10 to 20 spots along it, in the order you’d pass them.</p>
           <a class="btn" href="#/palace/edit/new">Build a palace</a>
@@ -104,8 +105,8 @@ async function renderHome(el, rerender, ctx) {
         <p class="page-sub">Place a weird, vivid image at each spot on a route you know, then walk it to recall.</p>
       </div>
       <div class="hero-stats">
-        <div class="stat-card"><span class="emoji" aria-hidden="true" style="font-size:26px">🏰</span><div><div class="stat-label">This week</div><div class="stat-big num">${thisWeek} session${thisWeek === 1 ? '' : 's'}</div></div></div>
-        <div class="stat-card flame"><span class="emoji" aria-hidden="true">🏆</span><div><div class="stat-label">Last weekly test</div><div class="stat-big num">${lastTest ? `${lastTest.recalled}/${lastTest.total}` : '–'}</div></div></div>
+        <div class="stat-card"><span class="chipico" aria-hidden="true">${ICONS.castle}</span><div><div class="stat-label">This week</div><div class="stat-big num">${thisWeek} session${thisWeek === 1 ? '' : 's'}</div></div></div>
+        <div class="stat-card flame"><span class="chipico" aria-hidden="true">${ICONS.trophy}</span><div><div class="stat-label">Last weekly test</div><div class="stat-big num">${lastTest ? `${lastTest.recalled}/${lastTest.total}` : '–'}</div></div></div>
       </div>
     </section>
 
@@ -124,7 +125,7 @@ async function renderHome(el, rerender, ctx) {
                   .map(
                     (s) => `<tr data-href="#/palace/result/${s.id}" class="clickable">
                       <td>${esc(prettyDate(s.date).replace(/^\w+ /, ''))}</td>
-                      <td>${s.is_weekly_test ? '🏆 Test' : s.list_type === 'custom' ? '📝 Own list' : '✏️ Practice'}</td>
+                      <td>${s.is_weekly_test ? 'Weekly test' : s.list_type === 'custom' ? 'Own list' : 'Practice'}</td>
                       <td><strong>${s.recalled}/${s.total}</strong></td>
                       <td class="muted">${s.in_order}</td></tr>`
                   )
@@ -139,7 +140,7 @@ async function renderHome(el, rerender, ctx) {
         ${palaces.length ? `<ul class="plain-list">${palaceCards}</ul>` : ''}
         <a class="btn secondary block" href="#/palace/edit/new">＋ New palace</a>
         <div class="card top-grape">
-          <h3>💡 How to make it stick</h3>
+          <h3>${ICONS.bulb} How to make it stick</h3>
           <ul class="tips">
             <li>Make each image big, silly and moving: a giant banana kicking down your front door.</li>
             <li>Engage senses: smell, sound, mess.</li>
@@ -240,7 +241,7 @@ async function renderEditor(el, id) {
         ${palace ? '<button class="btn secondary block" type="button" id="delete">Delete palace</button>' : ''}
       </form>
       <div class="card top-sun">
-        <h3>🗺️ Picking good spots</h3>
+        <h3>${ICONS.map} Picking good spots</h3>
         <ul class="tips">
           <li>Use a place you can walk through in your head with your eyes shut.</li>
           <li>Pick distinct spots: a door, a radiator, a fridge. Avoid ten bits of the same wall.</li>
@@ -290,7 +291,7 @@ async function renderSession(el, rerender, ctx) {
   const header = (title, sub) => `
     <a class="back" href="#/palace">← Memory palace</a>
     <div class="session-head">
-      <div><div class="eyebrow">${esc(active.palace_name)} · ${active.items.length} ${active.list_type === 'custom' ? 'items' : 'words'}${active.mode === 'test' ? ' · 🏆 weekly test' : ''}</div>
+      <div><div class="eyebrow">${esc(active.palace_name)} · ${active.items.length} ${active.list_type === 'custom' ? 'items' : 'words'}${active.mode === 'test' ? ' · weekly test' : ''}</div>
       <h1 class="page-title">${title}</h1>
       <p class="page-sub">${sub}</p></div>
     </div>`;
@@ -436,11 +437,11 @@ async function renderResult(el, id) {
   const score = scoreRecall(s.items, s.answers);
   const pct = s.total ? s.recalled / s.total : 0;
   const message =
-    pct === 1 ? 'Perfect recall. 🎉' : pct >= 0.8 ? 'Brilliant. Nearly all of them.' : pct >= 0.5 ? 'Solid. The weird images are working.' : 'Good start. Make the images bigger and sillier next time.';
+    pct === 1 ? 'Perfect recall.' : pct >= 0.8 ? 'Brilliant. Nearly all of them.' : pct >= 0.5 ? 'Solid. The weird images are working.' : 'Good start. Make the images bigger and sillier next time.';
 
   el.innerHTML = `
     <a class="back" href="#/palace">← Memory palace</a>
-    <div class="eyebrow">${esc(prettyDate(s.date))} · ${esc(s.palace_name)}${s.is_weekly_test ? ' · 🏆 weekly test' : ''}</div>
+    <div class="eyebrow">${esc(prettyDate(s.date))} · ${esc(s.palace_name)}${s.is_weekly_test ? ' · weekly test' : ''}</div>
     <h1 class="page-title">${s.recalled} / ${s.total}</h1>
     <p class="page-sub">${message} ${s.in_order} in the right spot${s.study_seconds ? ` · studied for ${clock(s.study_seconds)}` : ''}.</p>
     <div class="cols" style="margin-top:20px">

@@ -572,7 +572,7 @@ input[type=date].field, input[type=time].field {
 input[type=date].field::-webkit-date-and-time-value, input[type=time].field::-webkit-date-and-time-value { text-align: left; margin: 0; }
 input[type=date].field::-webkit-calendar-picker-indicator, input[type=time].field::-webkit-calendar-picker-indicator { margin-left: auto; opacity: .7; }
 .grid2 > *, .grid2 .field, label.stack, .card form, .card .stack > * { min-width: 0; }
-.card { overflow-wrap: anywhere; }
+.card { overflow-wrap: break-word; }
 .grid2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .confirm-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }
 
@@ -582,3 +582,38 @@ input[type=date].field::-webkit-calendar-picker-indicator, input[type=time].fiel
 .week-head .page-sub { margin-top: 2px; }
 .month-nav .icon-btn { font: 600 22px/1 var(--body); color: var(--ink); text-decoration: none; display: grid; place-items: center; }
 .month-nav .icon-btn[aria-disabled="true"] { opacity: .35; pointer-events: none; }
+
+/* ---------- Reset tab: line icons instead of emoji ---------- */
+.card h3 svg { width: 18px; height: 18px; flex: none; color: var(--accent-deep); }
+.shape { color: var(--accent-deep); }
+.shape svg { width: 26px; height: 26px; }
+.mission .shape { background: rgba(255, 255, 255, 0.85); }
+.mission.done .shape { background: var(--accent); color: #fff; }
+.chip .ico { color: var(--accent-deep); }
+.chip .ico svg { width: 20px; height: 20px; }
+.chip[aria-pressed="true"] .ico { background: rgba(255, 255, 255, 0.95); color: var(--accent); }
+.stat-card { gap: 12px; }
+.stat-card .chipico { width: 44px; height: 44px; border-radius: 14px; }
+.stat-card .chipico svg { width: 22px; height: 22px; }
+.stat-card.flame { background: var(--accent) !important; color: #fff; border-color: rgba(255, 255, 255, 0.3) !important; box-shadow: 0 16px 36px rgba(120, 35, 20, 0.28); }
+.stat-card.flame .stat-label, .stat-card.flame .stat-big, .stat-card.flame .muted { color: #fff !important; }
+.stat-card.flame .stat-label { color: rgba(255, 255, 255, 0.92) !important; }
+.stat-card.flame .chipico { background: rgba(255, 255, 255, 0.18); color: #fff; }
+.level-chip { min-height: 64px; align-content: center; }
+.level-chip .lv-num { font: 700 18px var(--body); color: var(--ink); }
+.level-chip[aria-pressed="true"] .lv-num { color: #fff; opacity: 1; }
+.level-chip .lv-name { font: 500 12px var(--body); }
+.btn svg { width: 17px; height: 17px; }
+/* Sub-tabs fit a phone: tighter pills, and they scroll if they still don't fit. */
+@media (max-width: 520px) {
+  .subnav { width: 100%; justify-content: space-between; }
+  .subnav a { padding: 0 11px; font-size: 13px; flex: 1 0 auto; justify-content: center; }
+}
+@media (max-width: 520px) {
+  .stat-card { padding: 12px; gap: 10px; }
+  .stat-card .chipico { width: 36px; height: 36px; border-radius: 12px; }
+  .stat-card .chipico svg { width: 18px; height: 18px; }
+  .stat-card .stat-big { font-size: 21px; }
+  .stat-card > div { min-width: 0; }
+  .level-chip .lv-name { font-size: 10.5px; letter-spacing: -0.01em; }
+}

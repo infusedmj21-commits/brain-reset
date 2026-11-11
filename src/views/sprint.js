@@ -1,3 +1,4 @@
+import { ICONS } from './icons.js';
 import { getMeta, getRow, live, logRound, setMeta } from '../db.js';
 import { prettyDate, today } from '../logic/dates.js';
 import {
@@ -21,7 +22,7 @@ const durationLabel = (s) => (s >= 60 ? `${s / 60} min` : `${s} s`);
 const secs = (ms) => (ms == null ? '–' : `${(ms / 1000).toFixed(1)} s`);
 const levelName = (settings) => {
   const d = DIFFICULTIES.find((x) => x.level === levelOf(settings));
-  return d ? `${d.emoji} ${d.name}` : '✏️ Custom';
+  return d ? d.name : 'Custom';
 };
 /** Best earlier score for rounds comparable with this one (same level and duration). */
 function bestFor(key, rounds, excludeId, before = null) {
@@ -71,8 +72,8 @@ async function renderSetup(el, rerender, ctx) {
         <p class="page-sub">Type the answer and it moves on by itself, no Enter needed. Two rounds a day.</p>
       </div>
       <div class="hero-stats">
-        <div class="stat-card flame"><span class="emoji" aria-hidden="true">🧮</span><div><div class="stat-label">Best today</div><div class="stat-big num">${bestToday ?? '–'}</div></div></div>
-        <div class="stat-card"><span class="emoji" aria-hidden="true" style="font-size:26px">🏆</span><div><div class="stat-label">Best ever</div><div class="stat-big num">${allTimeBest ?? '–'}</div></div></div>
+        <div class="stat-card flame"><span class="chipico" aria-hidden="true">${ICONS.calc}</span><div><div class="stat-label">Best today</div><div class="stat-big num">${bestToday ?? '–'}</div></div></div>
+        <div class="stat-card"><span class="chipico" aria-hidden="true">${ICONS.trophy}</span><div><div class="stat-label">Best ever</div><div class="stat-big num">${allTimeBest ?? '–'}</div></div></div>
       </div>
     </section>
 
@@ -84,7 +85,7 @@ async function renderSetup(el, rerender, ctx) {
           <div class="level-chips" role="group" aria-label="Difficulty">
             ${DIFFICULTIES.map(
               (d) => `<button type="button" class="level-chip" data-level="${d.level}" title="${esc(d.hint)}">
-                <span class="lv-emoji" aria-hidden="true">${d.emoji}</span><span class="lv-num num">${d.level}</span><span class="lv-name">${esc(d.name)}</span></button>`
+                <span class="lv-num num">${d.level}</span><span class="lv-name">${esc(d.name)}</span></button>`
             ).join('')}
           </div>
           <p class="muted small" data-level-hint></p>
@@ -128,11 +129,11 @@ async function renderSetup(el, rerender, ctx) {
             : '<div class="empty-hint">No rounds yet today. Two rounds on the standard settings is the daily goal.</div>'
         }
         <div class="card top-sun">
-          <h3>🏆 Your bests <span class="muted small" data-bests-dur></span></h3>
+          <h3>${ICONS.trophy} Your bests <span class="muted small" data-bests-dur></span></h3>
           <table class="bests"><tbody data-bests></tbody></table>
         </div>
         <div class="card top-grape">
-          <h3>⌨️ Tips</h3>
+          <h3>${ICONS.keyboard} Tips</h3>
           <ul class="tips">
             <li>On a computer, just type. On a phone the number pad opens by itself.</li>
             <li>Wrong answers don’t cost anything; fix the digits and keep going.</li>
@@ -180,12 +181,12 @@ async function renderSetup(el, rerender, ctx) {
 
     note.className = `standard-note ${errors.length ? 'custom' : std ? 'ok' : preset ? 'level' : 'custom'}`;
     const noteHTML = errors.length
-      ? `⚠️ ${esc(errors[0])}`
+      ? `${esc(errors[0])}`
       : std
-        ? `✓ Standard at 2 minutes: this counts towards your daily sprint score.`
+        ? `Standard at 2 minutes: this counts towards your daily sprint score.`
         : preset
-          ? `${preset.emoji} ${esc(preset.name)} · ${durationLabel(s.duration)}: tracked as its own best. Your daily sprint score uses Standard at 2 minutes.`
-          : `✏️ Custom settings: practice only, no best is tracked. <button type="button" class="link-inline" id="reset">Reset to Standard</button>`;
+          ? `${esc(preset.name)} · ${durationLabel(s.duration)}: tracked as its own best. Your daily sprint score uses Standard at 2 minutes.`
+          : `Custom settings: practice only, no best is tracked. <button type="button" class="link-inline" id="reset">Reset to Standard</button>`;
     // Only redraw when the text changes: leaving a field fires another refresh, and
     // replacing the note then would remove the Reset button just as it's tapped.
     if (note.dataset.html !== noteHTML) {
@@ -209,7 +210,7 @@ async function renderSetup(el, rerender, ctx) {
       let best = bestFor(`${d.level}:${s.duration}`, rounds, null);
       // Zetamac scores logged by hand count as Standard, 2 min.
       if (d.level === 3 && s.duration === 120 && sprints.length) best = Math.max(best ?? 0, ...sprints.map((x) => x.best));
-      return `<tr class="${d.level === level ? 'current' : ''}"><td>${d.emoji} ${esc(d.name)}</td><td class="num"><strong>${best ?? '–'}</strong></td></tr>`;
+      return `<tr class="${d.level === level ? 'current' : ''}"><td>${esc(d.name)}</td><td class="num"><strong>${best ?? '–'}</strong></td></tr>`;
     }).join('');
 
     if (!errors.length) setMeta(SETTINGS_KEY, s);
@@ -375,13 +376,13 @@ function renderResults(el, rerender, ctx, round, before, { saved }) {
 
   el.innerHTML = `
     ${saved ? '<a class="back" href="#/sprint">← Sprint</a>' : ''}
-    <div class="eyebrow">${esc(prettyDate(date))} · ${round.standard ? `Round ${roundNo} · ` : ''}${level ? `${level.emoji} ${esc(level.name)}` : '✏️ Custom'} · ${durationLabel(round.duration ?? round.settings.duration)}</div>
+    <div class="eyebrow">${esc(prettyDate(date))} · ${round.standard ? `Round ${roundNo} · ` : ''}${level ? esc(level.name) : 'Custom'} · ${durationLabel(round.duration ?? round.settings.duration)}</div>
     <h1 class="page-title result-score num">${round.score}</h1>
     <p class="page-sub">${
       !key
         ? 'Custom settings, so this one is practice only.'
         : isNewBest
-          ? `New best for ${esc(level.name)} · ${durationLabel(round.settings.duration)}! 🎉 Previous: ${prevBest}.`
+          ? `New best for ${esc(level.name)} · ${durationLabel(round.settings.duration)}! Previous: ${prevBest}.`
           : prevBest != null
             ? `Your best on ${esc(level.name)} · ${durationLabel(round.settings.duration)} is ${prevBest}.`
             : `First ${esc(level.name)} · ${durationLabel(round.settings.duration)} score. This is your baseline.`
@@ -396,7 +397,7 @@ function renderResults(el, rerender, ctx, round, before, { saved }) {
 
     <div class="cols" style="margin-top:20px">
       <div class="card top-sun">
-        <h3>⚡ Speed by operation</h3>
+        <h3>${ICONS.zap} Speed by operation</h3>
         ${
           opsRows
             ? `<table style="margin-top:10px"><thead><tr><th>Operation</th><th>Solved</th><th>Average</th></tr></thead><tbody>${opsRows}</tbody></table>`
@@ -404,7 +405,7 @@ function renderResults(el, rerender, ctx, round, before, { saved }) {
         }
       </div>
       <div class="card top-gum">
-        <h3>🐢 Slowest answers</h3>
+        <h3>${ICONS.clock} Slowest answers</h3>
         ${
           stats.slowest.length
             ? `<ol class="slow-list">${stats.slowest
