@@ -12,7 +12,7 @@ import { esc, toast } from '../ui.js';
 import { verdictChip } from './scorer.js';
 import { ICONS } from './icons.js';
 import { nextShift } from './money.js';
-import { gbp } from '../logic/money.js';
+import { fmtHours, gbp } from '../logic/money.js';
 
 // Picker state survives re-renders while choosing today's 3.
 let picking = false;
@@ -209,7 +209,7 @@ export async function renderHome(el, rerender) {
           shift
             ? `<a class="card top-sky reset-card" href="#/money"><div class="ico-badge sky">${ICONS.shift}</div>
                 <div><div class="stat-label">Next shift · ${shift.date === date ? 'today' : esc(prettyDate(shift.date))}</div><h3>${esc(shift.venue)}</h3>
-                <p class="muted small" style="margin:2px 0 0">${esc(shift.roleName)} · ${shift.hours}h · ${gbp(shift.pay)}</p></div></a>`
+                <p class="muted small" style="margin:2px 0 0">${esc(shift.roleName)} · ${fmtHours(shift.hours)} · ${gbp(shift.pay)}</p></div></a>`
             : `<a class="card top-sky reset-card" href="#/money"><div class="ico-badge sky">${ICONS.shift}</div>
                 <div><h3>No shift booked</h3><p class="muted small" style="margin:2px 0 0">Log your next one in Money.</p></div></a>`
         }

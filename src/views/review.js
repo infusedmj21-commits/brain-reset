@@ -7,7 +7,7 @@ import { addDays, prettyDate, today, weekStart } from '../logic/dates.js';
 import { GAP_REASONS, bestStreak, countingDays, missedDays, reviewWeek } from '../logic/review.js';
 import { streak } from '../logic/routine.js';
 import { formatScore, score } from '../logic/scoring.js';
-import { gbp, pennies, shiftPay } from '../logic/money.js';
+import { fmtHours, gbp, pennies, shiftPay } from '../logic/money.js';
 import { esc, toast } from '../ui.js';
 
 const short = (d) => prettyDate(d).replace(/^(\w{3})\w*/, '$1');
@@ -76,7 +76,7 @@ export async function renderReview(el, rerender) {
 
     <div class="tiles four" style="margin-top:16px">
       <div class="tile t-mint"><div class="stat-label">Days that counted</div><div class="stat-big num">${active} / 7</div><div class="tile-note">${esc(delta(active, first && first <= prevEnd ? activePrev : null))}</div></div>
-      <div class="tile t-sky"><div class="stat-label">Worked</div><div class="stat-big num">${gbp(worked)}</div><div class="tile-note">${hours}h${received ? ` · ${gbp(received)} paid in` : ''}</div></div>
+      <div class="tile t-sky"><div class="stat-label">Worked</div><div class="stat-big num">${gbp(worked)}</div><div class="tile-note">${fmtHours(hours)}${received ? ` · ${gbp(received)} paid in` : ''}</div></div>
       <div class="tile t-grape"><div class="stat-label">Gym sessions</div><div class="stat-big num">${sessions.length} / 4</div><div class="tile-note">${[`${workSets(sessions)} working sets`, delta(workSets(sessions), sessionsPrev.length ? workSets(sessionsPrev) : null)].filter(Boolean).map(esc).join(' · ')}</div></div>
       <div class="tile t-sun"><div class="stat-label">Sprint best</div><div class="stat-big num">${sprintBest ?? '–'}</div><div class="tile-note">${esc(delta(sprintBest, sprintPrev))}</div></div>
     </div>

@@ -20,6 +20,7 @@ import {
   incomingPayees,
   orderRoles,
   parseMonzo,
+  fmtHours,
   shiftPay,
   spendingByCategory,
   unpaidBalance,
@@ -43,7 +44,7 @@ function shiftRow(s, roles, actions) {
   const role = roles.find((r) => r.id === s.role_id);
   return `<li class="vrow card">
     <span class="vmain"><strong>${esc(s.venue)}</strong>
-      <span class="muted small">${esc(shortDate(s.date))} · ${esc(role?.name ?? 'Role')} · ${s.hours}h @ ${gbp(Number(s.rate))}</span></span>
+      <span class="muted small">${esc(shortDate(s.date))} · ${esc(role?.name ?? 'Role')} · ${fmtHours(s.hours)} @ ${gbp(Number(s.rate))}</span></span>
     <span class="vside"><span class="vscore num">${gbp(shiftPay(s))}</span>${actions}</span>
   </li>`;
 }
@@ -141,7 +142,7 @@ export async function renderMoney(el, rerender) {
     <h1 class="page-title">Money</h1>
 
     <div class="tiles four">
-      <div class="tile t-sky"><div class="stat-label">This week</div><div class="stat-big num">${gbp0(thisWeek.worked + thisWeek.booked)}</div><div class="tile-note">${thisWeek.hours}h · ${gbp0(thisWeek.worked)} worked</div></div>
+      <div class="tile t-sky"><div class="stat-label">This week</div><div class="stat-big num">${gbp0(thisWeek.worked + thisWeek.booked)}</div><div class="tile-note">${fmtHours(thisWeek.hours)} · ${gbp0(thisWeek.worked)} worked</div></div>
       <div class="tile t-mint"><div class="stat-label">Paid this month</div><div class="stat-big num">${payments.length ? gbp0(receivedMonth) : '–'}</div><div class="tile-note">${payments.length ? 'From Monzo' : 'Import Monzo to see'}</div></div>
       <div class="tile t-sun"><div class="stat-label">Spent this month</div><div class="stat-big num">${transactions.length ? gbp0(spentMonth) : '–'}</div><div class="tile-note">${transactions.length ? `Last month ${gbp0(spentLast)}` : 'Import Monzo to see'}</div></div>
       <div class="tile t-grape"><div class="stat-label">Worked, not paid yet</div><div class="stat-big num">${balance == null ? '–' : balance <= 0 ? 'Up to date' : gbp0(balance)}</div><div class="tile-note">${balance == null ? 'Needs a Monzo import' : balance <= 0 ? 'Pay covers every shift logged' : 'About a week’s pay is normal'}</div></div>
@@ -168,7 +169,7 @@ export async function renderMoney(el, rerender) {
         <form class="card stack" id="shift-form" autocomplete="off">
           <div class="grid2">
             <label class="stack" style="gap:4px"><span class="stat-label">Date</span><input class="field" type="date" name="date" value="${date}" required></label>
-            <label class="stack" style="gap:4px"><span class="stat-label">Hours</span><input class="field" type="number" name="hours" min="0.5" max="24" step="0.25" value="${defaultHours(shifts, firstVenue)}" required></label>
+            <label class="stack" style="gap:4px"><span class="stat-label">Hours</span><input class="field" type="number" name="hours" min="0.5" max="24" step="0.25" value="${Math.round(defaultHours(shifts, firstVenue) * 4) / 4}" required></label>
           </div>
           <label class="stack" style="gap:4px"><span class="stat-label">Venue</span>
             <input class="field" name="venue" list="venues" value="${esc(firstVenue)}" required maxlength="40">
@@ -242,7 +243,7 @@ export async function renderMoney(el, rerender) {
     })
   );
   form.venue.addEventListener('change', () => {
-    form.hours.value = defaultHours(shifts, form.venue.value.trim());
+    form.hours.value = Math.round(defaultHours(shifts, form.venue.value.trim()) * 4) / 4;
     updatePay();
   });
   form.hours.addEventListener('input', updatePay);
