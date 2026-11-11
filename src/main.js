@@ -9,10 +9,11 @@ import { registerSW } from 'virtual:pwa-register';
 import { renderToday } from './views/today.js';
 import { renderHome } from './views/home.js';
 import { renderVentures } from './views/ventures.js';
-import { soon } from './views/soon.js';
 import { seedVentures } from './data/ventures.js';
 import { seedRoles } from './data/money.js';
 import { renderMoney } from './views/money.js';
+import { renderHealth } from './views/health.js';
+import { seedHealth } from './data/health.js';
 import { renderSettings } from './views/settings.js';
 import { renderProgress } from './views/progress.js';
 import { renderPalace } from './views/palace.js';
@@ -24,7 +25,7 @@ const routes = {
   home: renderHome,
   ventures: renderVentures,
   money: renderMoney,
-  health: soon('Health', 'Routines, live workout logging, PRs and progress.'),
+  health: renderHealth,
   today: renderToday,
   palace: renderPalace,
   unprompted: renderUnprompted,
@@ -91,7 +92,7 @@ document.addEventListener('visibilitychange', () => {
 
 applyTheme();
 registerSW({ immediate: true });
-Promise.allSettled([seedVentures(), seedRoles()]).finally(render);
+Promise.allSettled([seedVentures(), seedRoles(), seedHealth()]).finally(render);
 
 // Changes pulled from another device redraw the current screen, unless the
 // person is typing in a field, where a redraw would wipe what they entered.
