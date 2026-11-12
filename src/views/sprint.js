@@ -1,6 +1,7 @@
 import { ICONS } from './icons.js';
+import { weakSpots } from '../logic/weakspots.js';
 import { getMeta, getRow, live, logRound, setMeta } from '../db.js';
-import { prettyDate, today } from '../logic/dates.js';
+import { addDays, prettyDate, today } from '../logic/dates.js';
 import {
   DEFAULT_SETTINGS,
   DIFFICULTIES,
@@ -35,6 +36,7 @@ function bestFor(key, rounds, excludeId, before = null) {
 
 export async function renderSprint(el, rerender, ctx) {
   const [section, id] = ctx.params;
+  if (section === 'weak') return renderWeak(el, rerender, ctx, id === '30' ? 30 : null);
   if (section === 'result') {
     const round = await getRow('sprint_rounds', id);
     if (!round) return (location.hash = '#/sprint');
@@ -48,6 +50,95 @@ async function context(date) {
   const rounds = (await live('sprint_rounds')).sort((a, b) => (a.finished_at ?? '').localeCompare(b.finished_at ?? ''));
   const sprints = await live('sprint_scores');
   return { rounds, todayRounds: rounds.filter((r) => r.date === date), sprints };
+}
+
+// ---------------------------------------------------------------- Weak spots
+
+const MIN_ANSWERS = 30;
+const slowerBy = (x) => `${Math.round((x - 1) * 100)}% slower than usual`;
+
+function weakCard(w) {
+  if (w.answers < MIN_ANSWERS) {
+    return `<div class="card"><h3>${ICONS.target} Weak spots</h3>
+      <p class="muted small" style="margin:6px 0 0">Every answer is saved. After about ${MIN_ANSWERS} answers this shows which tables and skills slow you down (${w.answers} so far).</p></div>`;
+  }
+  return `<div class="card stack">
+    <h3>${ICONS.target} Weak spots</h3>
+    ${
+      w.weakest.length
+        ? `<ul class="weak-list">${w.weakest
+            .map((s) => `<li><span><strong>${esc(s.label)}</strong><span class="muted small">${secs(s.medianMs)} · ${slowerBy(s.slowness)}</span></span></li>`)
+            .join('')}</ul>`
+        : '<p class="muted small">Nothing stands out yet: every skill is close to your usual speed.</p>'
+    }
+    <a class="btn secondary block" href="#/sprint/weak">See all weak spots</a>
+  </div>`;
+}
+
+async function renderWeak(el, rerender, ctx, days) {
+  const rounds = await live('sprint_rounds');
+  const since = days ? addDays(today(), -days) : null;
+  const w = weakSpots(rounds, { since });
+  const maxSlow = Math.max(1.5, ...w.skills.map((s) => s.slowness));
+  el.innerHTML = `
+    <a class="back" href="#/sprint">← Sprint</a>
+    <h1 class="page-title" style="margin-top:8px">Weak spots</h1>
+    <p class="page-sub">${w.answers} answers from ${w.rounds} round${w.rounds === 1 ? '' : 's'}. Each skill is compared with your usual speed for that operation.</p>
+    <div class="subnav inline" role="group" aria-label="Period" style="margin:14px 0 0">
+      <a href="#/sprint/weak"${days ? '' : ' aria-current="page"'}>All time</a>
+      <a href="#/sprint/weak/30"${days ? ' aria-current="page"' : ''}>Last 30 days</a>
+    </div>
+    ${
+      w.answers < MIN_ANSWERS
+        ? `<div class="empty-hint" style="margin-top:18px">Not enough answers yet (${w.answers}). Play a few more rounds and this fills in.</div>`
+        : `<div class="layout">
+      <section>
+        <div class="sec"><h2>Slower than your usual</h2><span class="aside">Median time per answer</span></div>
+        <div class="card">
+          ${(() => {
+            const row = (s) => `<li title="${esc(s.label)}: ${secs(s.medianMs)} median over ${s.count} answers">
+                <span class="sk-label">${esc(s.label)}</span>
+                <span class="sk-bar"><i style="width:${Math.min(100, (s.slowness / maxSlow) * 100).toFixed(1)}%" class="${s.slowness >= 1.15 ? 'slow' : ''}"></i></span>
+                <span class="sk-val num">${secs(s.medianMs)}</span>
+                <span class="sk-note muted small">${s.slowness >= 1.15 ? slowerBy(s.slowness) : s.slowness <= 0.87 ? 'faster than usual' : 'about usual'} · ${s.count} answers${s.missRate >= 0.15 ? ` · wrong first try ${Math.round(s.missRate * 100)}%` : ''}</span>
+              </li>`;
+            const slow = w.skills.filter((x) => x.slowness >= 1.15);
+            const rest = w.skills.filter((x) => x.slowness < 1.15);
+            return `${slow.length ? `<ul class="skill-bars">${slow.map(row).join('')}</ul>` : '<p class="muted small">Nothing is more than 15% slower than your usual speed. Nice.</p>'}
+              ${rest.length ? `<details class="fold"><summary class="btn secondary block" style="margin-top:14px">Show the other ${rest.length} skills</summary><ul class="skill-bars" style="margin-top:14px">${rest.map(row).join('')}</ul></details>` : ''}`;
+          })()}
+        </div>
+      </section>
+      <aside class="side">
+        <div class="sec"><h2>By operation</h2></div>
+        <div class="card"><table class="num"><tbody>${w.ops
+          .map((o) => `<tr><td>${esc(o.label)}</td><td>${secs(o.medianMs)}</td><td class="muted">${o.count}</td></tr>`)
+          .join('')}</tbody></table></div>
+        <div class="sec"><h2>Slowest facts</h2><span class="aside">× and ÷ together</span></div>
+        ${
+          w.facts.length
+            ? `<div class="card"><table class="num"><tbody>${w.facts
+                .map((f) => `<tr><td><strong>${esc(f.fact)}</strong></td><td>${secs(f.medianMs)}</td><td class="muted">seen ${f.count}×</td></tr>`)
+                .join('')}</tbody></table></div>`
+            : '<div class="empty-hint">Facts show once you’ve met them a couple of times.</div>'
+        }
+        ${
+          w.stuck.length
+            ? `<div class="sec"><h2>Stuck when time ran out</h2></div>
+              <div class="card"><table class="num"><tbody>${Object.values(
+                w.stuck.reduce((acc, x) => {
+                  (acc[x.text] ??= { text: x.text, n: 0, last: x.date }).n += 1;
+                  return acc;
+                }, {})
+              )
+                .map((x) => `<tr><td><strong>${esc(x.text)}</strong></td><td class="muted">${x.n}×</td><td class="muted">last ${esc(prettyDate(x.last).replace(/^\w+ /, ''))}</td></tr>`)
+                .join('')}</tbody></table></div>`
+            : ''
+        }
+        <p class="muted small">Saved for later: these per-answer times are what a future practice mode will use to drill your slowest facts more often.</p>
+      </aside>
+    </div>`
+    }`;
 }
 
 // ---------------------------------------------------------------- Setup
@@ -128,6 +219,7 @@ async function renderSetup(el, rerender, ctx) {
                 .join('')}</ul>`
             : '<div class="empty-hint">No rounds yet today. Two rounds on the standard settings is the daily goal.</div>'
         }
+        ${weakCard(weakSpots(rounds))}
         <div class="card top-sun">
           <h3>${ICONS.trophy} Your bests <span class="muted small" data-bests-dur></span></h3>
           <table class="bests"><tbody data-bests></tbody></table>
@@ -263,6 +355,9 @@ function playRound(el, rerender, ctx, settings) {
   let problem = makeProblem(settings);
   let shownAt = Date.now();
   let finished = false;
+  // Wrong answers typed before the right one (each distinct wrong answer counts once).
+  let misses = 0;
+  let lastWrong = '';
 
   document.body.classList.add('focus-mode');
   ctx.onCleanup(() => document.body.classList.remove('focus-mode'));
@@ -294,9 +389,16 @@ function playRound(el, rerender, ctx, settings) {
     if (finished) return;
     const digits = input.value.replace(/[^0-9]/g, '');
     if (digits !== input.value) input.value = digits;
-    if (digits === String(problem.answer)) {
+    const target = String(problem.answer);
+    if (digits.length >= target.length && digits !== target && digits !== lastWrong) {
+      misses += 1;
+      lastWrong = digits;
+    }
+    if (digits === target) {
       const now = Date.now();
-      solved.push({ op: problem.op, text: problem.text, answer: problem.answer, ms: now - shownAt });
+      solved.push({ op: problem.op, text: problem.text, a: problem.a, b: problem.b, answer: problem.answer, ms: now - shownAt, misses });
+      misses = 0;
+      lastWrong = '';
       problem = makeProblem(settings, Math.random, problem);
       shownAt = now;
       input.value = '';
@@ -327,6 +429,8 @@ function playRound(el, rerender, ctx, settings) {
       settings,
       duration: settings.duration,
       problems: solved,
+      // The problem on screen when time ran out: often the one you were stuck on.
+      stuck: problem ? { op: problem.op, text: problem.text, a: problem.a, b: problem.b, answer: problem.answer, ms: Date.now() - shownAt, misses } : null,
       stats: roundStats(solved),
       started_at: new Date(startedAt).toISOString(),
       finished_at: new Date().toISOString()
