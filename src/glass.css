@@ -630,3 +630,17 @@ input[type=date].field::-webkit-calendar-picker-indicator, input[type=time].fiel
 .tk-offer { display: grid; gap: 6px; margin-top: 14px; padding: 14px; border-radius: 16px; background: var(--blush); }
 .tk-offer p { margin: 0; }
 .tiktok-card details.manual { margin-top: 12px; }
+
+/* Sprint weak spots */
+.weak-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.weak-list li { padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.72); }
+.weak-list li > span { display: flex; flex-direction: column; }
+.skill-bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.skill-bars li { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "label val" "bar bar" "note note"; gap: 4px 10px; }
+.sk-label { grid-area: label; font: 600 13.5px var(--body); }
+.sk-val { grid-area: val; font: 700 13.5px var(--body); }
+.sk-bar { grid-area: bar; height: 10px; border-radius: 6px; background: rgba(255, 255, 255, 0.6); overflow: hidden; }
+.sk-bar i { display: block; height: 100%; border-radius: 6px; background: var(--accent-soft); }
+.sk-bar i.slow { background: var(--accent); }
+.sk-note { grid-area: note; }
+.subnav.inline { margin-left: 0; }
