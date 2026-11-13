@@ -644,3 +644,30 @@ input[type=date].field::-webkit-calendar-picker-indicator, input[type=time].fiel
 .sk-bar i.slow { background: var(--accent); }
 .sk-note { grid-area: note; }
 .subnav.inline { margin-left: 0; }
+
+/* Review: your days, with backfill ticks */
+.day-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.day-row { background: var(--card); border: 1px solid var(--outline); border-radius: 18px; box-shadow: var(--shadow-soft); }
+.day-row > summary {
+  list-style: none; cursor: pointer; display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; align-items: center; gap: 10px;
+  padding: 10px 14px; min-height: 52px;
+}
+.day-row > summary::-webkit-details-marker { display: none; }
+.day-row[open] > summary { border-bottom: 1px solid var(--hairline); }
+.day-row > :not(summary) { padding: 0 14px; }
+.day-row > p:last-child { padding-bottom: 14px; }
+.dr-date strong { font: 600 14px var(--body); }
+.dr-dots { display: flex; gap: 4px; min-width: 0; }
+.hd { width: 24px; height: 24px; border-radius: 8px; display: grid; place-items: center; color: rgba(94, 64, 55, 0.35); background: rgba(255, 255, 255, 0.5); }
+.hd svg { width: 14px; height: 14px; }
+.hd.on { background: var(--accent); color: #fff; }
+.dr-ticks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.dr-tick { display: flex; align-items: center; gap: 8px; justify-content: flex-start; padding: 8px 10px; text-align: left; position: relative; }
+.dr-tick small { margin-left: auto; font-size: 10.5px; }
+.dr-tick .ico { width: 28px; height: 28px; flex: none; display: grid; place-items: center; }
+.dr-tick .ico svg { width: 16px; height: 16px; }
+@media (max-width: 520px) {
+  .day-row > summary { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "date chip" "dots dots"; row-gap: 6px; }
+  .dr-date { grid-area: date; } .dr-dots { grid-area: dots; } .day-row > summary .vchip { grid-area: chip; }
+  .dr-ticks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

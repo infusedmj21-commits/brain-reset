@@ -1,14 +1,51 @@
-import { doneByDate, firstActiveDate, live } from '../db.js';
+import { doneByDate, firstActiveDate, live, setHabit } from '../db.js';
 import { getCheckin, listGaps, saveReview } from '../data/checkins.js';
 import { listPayments, listShifts } from '../data/money.js';
 import { listScores, listTasks, listVentures } from '../data/ventures.js';
 import { listSets, listWorkouts } from '../data/health.js';
 import { addDays, daysBetween, prettyDate, today, weekStart } from '../logic/dates.js';
 import { GAP_REASONS, bestStreak, countingDays, missedDays, reviewWeek } from '../logic/review.js';
-import { streak } from '../logic/routine.js';
+import { HABITS, MINIMUM_HABITS, dayStatus, streak } from '../logic/routine.js';
+import { HABIT_LOOK } from './look.js';
 import { formatScore, score } from '../logic/scoring.js';
 import { fmtHours, gbp, pennies, shiftPay } from '../logic/money.js';
 import { esc, toast } from '../ui.js';
+
+const HABIT_SHORT = { sprint: 'Sprint', spanish: 'Spanish', reading: 'Reading', unprompted: 'Unprompted', palace: 'Palace', recall: 'Recall' };
+
+/** One day of the week: whether it counted, and ticks to fill in anything forgotten. */
+function dayRow(d, done, missedReason, beforeTracking, isToday) {
+  const status = dayStatus(done);
+  const chip =
+    status === 'full'
+      ? '<span class="vchip v-mint">Counted</span>'
+      : status === 'min'
+        ? '<span class="vchip v-mint">Counted · minimum</span>'
+        : isToday
+          ? '<span class="vchip v-none">Today</span>'
+          : beforeTracking
+            ? '<span class="vchip v-none">Not tracked</span>'
+            : `<span class="vchip v-sun">Missed${missedReason ? ` · ${esc(GAP_REASONS[missedReason])}` : ''}</span>`;
+  const dots = Object.keys(HABITS)
+    .map((h) => `<i class="hd${done?.has(h) ? ' on' : ''}" title="${HABIT_SHORT[h]}">${HABIT_LOOK[h].icon}</i>`)
+    .join('');
+  return `<li><details class="day-row${status === 'none' && !beforeTracking && !isToday ? ' missed' : ''}">
+    <summary>
+      <span class="dr-date"><strong>${esc(prettyDate(d).replace(/^(\w{3})\w*/, '$1'))}</strong></span>
+      <span class="dr-dots" aria-hidden="true">${dots}</span>
+      ${chip}
+    </summary>
+    <div class="dr-ticks" role="group" aria-label="What you did on ${esc(prettyDate(d))}">
+      ${Object.keys(HABITS)
+        .map(
+          (h) => `<button type="button" class="chip dr-tick" data-day="${d}" data-habit="${h}" aria-pressed="${Boolean(done?.has(h))}">
+            <span class="ico" aria-hidden="true">${HABIT_LOOK[h].icon}</span>${HABIT_SHORT[h]}${MINIMUM_HABITS.includes(h) ? '<small>counts</small>' : ''}</button>`
+        )
+        .join('')}
+    </div>
+    <p class="muted small" style="margin:8px 2px 0">Sprint and Spanish make a day count. Forgot to tick something? Tick it here and your streak updates.</p>
+  </details></li>`;
+}
 
 const short = (d) => prettyDate(d).replace(/^(\w{3})\w*/, '$1');
 const inRange = (d, a, b) => d >= a && d <= b;
@@ -28,6 +65,9 @@ function weekLabel(start, current) {
   if (start === addDays(current, -7)) return 'Last week';
   return `${short(start).replace(/^\w+ /, '')} – ${short(addDays(start, 6)).replace(/^\w+ /, '')}`;
 }
+
+// Keeps a day open after ticking, across the redraw.
+let openDay = null;
 
 export async function renderReview(el, rerender, ctx) {
   const date = today();
@@ -112,14 +152,10 @@ export async function renderReview(el, rerender, ctx) {
 
     <div class="layout">
       <section>
-        <div class="sec" style="--dot:var(--tomato)"><span class="dot"></span><h2>Missed days</h2><span class="aside">${missed.length}</span></div>
-        ${
-          missed.length
-            ? `<ul class="vlist">${missed
-                .map((m) => `<li class="vrow card"><span class="vmain"><strong>${esc(prettyDate(m.date))}</strong></span><span class="vchip ${m.reason ? 'v-sun' : 'v-none'}">${m.reason ? esc(GAP_REASONS[m.reason]) : 'No reason given'}</span></li>`)
-                .join('')}</ul>`
-            : `<div class="empty-hint">${!first || first > lastDay ? 'Nothing tracked yet this week.' : active === daysSoFar ? 'Every day counted. That’s the whole game.' : 'No missed days yet.'}</div>`
-        }
+        <div class="sec" style="--dot:var(--tomato)"><span class="dot"></span><h2>Your days</h2><span class="aside">${missed.length ? `${missed.length} missed · tap a day to fill it in` : 'Tap a day to fill it in'}</span></div>
+        <ul class="day-list">${Array.from({ length: daysSoFar }, (_, i) => addDays(week.start, i))
+          .map((d) => dayRow(d, doneMap[d], missed.find((m) => m.date === d)?.reason, !first || d < first, d === date))
+          .join('')}</ul>
 
         <div class="sec" style="--dot:var(--mint)"><span class="dot"></span><h2>Ventures</h2><span class="aside">${tasksDone.length} task${tasksDone.length === 1 ? '' : 's'} done</span></div>
         <ul class="vlist">${ventureRows
@@ -153,6 +189,23 @@ export async function renderReview(el, rerender, ctx) {
         }
       </aside>
     </div>`;
+
+  // Filling in a past day: the streak, "missed yesterday" and welcome-back all read from these ticks.
+  el.querySelectorAll('.dr-tick').forEach((b) =>
+    b.addEventListener('click', async () => {
+      const { day, habit } = b.dataset;
+      const on = b.getAttribute('aria-pressed') !== 'true';
+      openDay = day;
+      await setHabit(day, habit, on);
+      toast(`${HABIT_SHORT[habit]} ${on ? 'ticked' : 'unticked'} for ${prettyDate(day)}`);
+      rerender();
+    })
+  );
+  if (openDay) {
+    const row = el.querySelector(`.dr-tick[data-day="${openDay}"]`)?.closest('details');
+    if (row) row.open = true;
+    openDay = null;
+  }
 
   el.querySelector('#review-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
