@@ -1,0 +1,2071 @@
+{
+ "id": "es",
+ "name": "Spanish (Spain)",
+ "order": 1,
+ "lang": "es-ES",
+ "source": "Stage plan from the deep research report (15 Nov 2026). Word choice: report categories, ordered by wordfreq (CC BY-SA 4.0) frequency; Spain vocabulary throughout.",
+ "stages": [
+  {
+   "id": 1,
+   "name": "Sounds + survival"
+  },
+  {
+   "id": 2,
+   "name": "Sentence building"
+  },
+  {
+   "id": 3,
+   "name": "Everyday situations"
+  },
+  {
+   "id": 4,
+   "name": "Conversation"
+  },
+  {
+   "id": 5,
+   "name": "Personal layer"
+  }
+ ],
+ "notes": [
+  {
+   "id": "es:hola",
+   "stage": 1,
+   "es": "hola",
+   "en": "hello",
+   "cards": [
+    "recog",
+    "prod",
+    "audio"
+   ],
+   "note": "The h is always silent: “ola”."
+  },
+  {
+   "id": "es:buenos-dias",
+   "stage": 1,
+   "es": "buenos días",
+   "en": "good morning",
+   "cards": [
+    "recog",
+    "prod"
+   ]
+  },
+  {
+   "id": "es:buenas-tardes",
+   "stage": 1,
+   "es": "buenas tardes",
+   "en": "good afternoon / good evening",
+   "cards": [
+    "recog"
+   ],
+   "note": "Used from about 2pm until it gets dark."
+  },
+  {
+   "id": "es:buenas-noches",
+   "stage": 1,
+   "es": "buenas noches",
+   "en": "good evening / good night",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:adios",
+   "stage": 1,
+   "es": "adiós",
+   "en": "goodbye",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:hasta-luego",
+   "stage": 1,
+   "es": "hasta luego",
+   "en": "see you later / bye",
+   "cards": [
+    "recog"
+   ],
+   "note": "In Spain this is the everyday “bye”, even if you won’t see them later."
+  },
+  {
+   "id": "es:por-favor",
+   "stage": 1,
+   "es": "por favor",
+   "en": "please",
+   "cards": [
+    "recog",
+    "prod"
+   ]
+  },
+  {
+   "id": "es:gracias",
+   "stage": 1,
+   "es": "gracias",
+   "en": "thank you",
+   "cards": [
+    "recog",
+    "prod",
+    "audio"
+   ],
+   "note": "Spain: the c sounds like English “th”: “grathias”."
+  },
+  {
+   "id": "es:de-nada",
+   "stage": 1,
+   "es": "de nada",
+   "en": "you’re welcome",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:perdon",
+   "stage": 1,
+   "es": "perdón",
+   "en": "sorry / excuse me",
+   "cards": [
+    "recog",
+    "prod"
+   ],
+   "example": {
+    "es": "Perdón, ¿dónde está el baño?",
+    "en": "Excuse me, where’s the toilet?"
+   }
+  },
+  {
+   "id": "es:lo-siento",
+   "stage": 1,
+   "es": "lo siento",
+   "en": "I’m sorry",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:vale",
+   "stage": 1,
+   "es": "vale",
+   "en": "OK",
+   "cards": [
+    "recog",
+    "prod"
+   ],
+   "note": "Spain’s everyday “OK”. You’ll hear it constantly."
+  },
+  {
+   "id": "es:si",
+   "stage": 1,
+   "es": "sí",
+   "en": "yes",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:no",
+   "stage": 1,
+   "es": "no",
+   "en": "no / not",
+   "cards": [
+    "recog"
+   ],
+   "example": {
+    "es": "No, gracias.",
+    "en": "No, thank you."
+   }
+  },
+  {
+   "id": "es:que-tal",
+   "stage": 1,
+   "es": "¿qué tal?",
+   "en": "how’s it going?",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:bien",
+   "stage": 1,
+   "es": "bien",
+   "en": "well / fine",
+   "cards": [
+    "recog"
+   ],
+   "example": {
+    "es": "Estoy bien, gracias.",
+    "en": "I’m fine, thanks."
+   }
+  },
+  {
+   "id": "es:encantado",
+   "stage": 1,
+   "es": "encantado",
+   "en": "pleased to meet you",
+   "cards": [
+    "recog"
+   ],
+   "note": "A woman says “encantada”."
+  },
+  {
+   "id": "es:me-llamo",
+   "stage": 1,
+   "es": "me llamo…",
+   "en": "my name is…",
+   "cards": [
+    "recog",
+    "prod"
+   ],
+   "say": "me llamo",
+   "example": {
+    "es": "Me llamo Michael.",
+    "en": "My name is Michael."
+   }
+  },
+  {
+   "id": "es:como-te-llamas",
+   "stage": 1,
+   "es": "¿cómo te llamas?",
+   "en": "what’s your name?",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:no-entiendo",
+   "stage": 1,
+   "es": "no entiendo",
+   "en": "I don’t understand",
+   "cards": [
+    "recog",
+    "prod"
+   ]
+  },
+  {
+   "id": "es:puedes-repetir",
+   "stage": 1,
+   "es": "¿puedes repetir?",
+   "en": "can you repeat that?",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:mas-despacio-por-favor",
+   "stage": 1,
+   "es": "más despacio, por favor",
+   "en": "more slowly, please",
+   "cards": [
+    "recog",
+    "prod"
+   ]
+  },
+  {
+   "id": "es:como-se-dice",
+   "stage": 1,
+   "es": "¿cómo se dice…?",
+   "en": "how do you say…?",
+   "cards": [
+    "recog"
+   ],
+   "say": "cómo se dice"
+  },
+  {
+   "id": "es:no-se",
+   "stage": 1,
+   "es": "no sé",
+   "en": "I don’t know",
+   "cards": [
+    "recog",
+    "prod"
+   ]
+  },
+  {
+   "id": "es:claro",
+   "stage": 1,
+   "es": "claro",
+   "en": "of course / sure",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:venga",
+   "stage": 1,
+   "es": "venga",
+   "en": "come on / OK then",
+   "cards": [
+    "recog"
+   ],
+   "note": "Very Spain. Also used to wrap up: “Venga, hasta luego.”"
+  },
+  {
+   "id": "es:que-bien",
+   "stage": 1,
+   "es": "¡qué bien!",
+   "en": "great! / how nice!",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:un-momento",
+   "stage": 1,
+   "es": "un momento",
+   "en": "one moment",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:que",
+   "stage": 1,
+   "es": "¿qué?",
+   "en": "what?",
+   "cards": [
+    "recog",
+    "prod"
+   ],
+   "example": {
+    "es": "¿Qué es esto?",
+    "en": "What is this?"
+   }
+  },
+  {
+   "id": "es:quien",
+   "stage": 1,
+   "es": "¿quién?",
+   "en": "who?",
+   "cards": [
+    "recog",
+    "prod"
+   ],
+   "example": {
+    "es": "¿Quién es?",
+    "en": "Who is it?"
+   }
+  },
+  {
+   "id": "es:donde",
+   "stage": 1,
+   "es": "¿dónde?",
+   "en": "where?",
+   "cards": [
+    "recog",
+    "prod"
+   ],
+   "example": {
+    "es": "¿Dónde está el baño?",
+    "en": "Where is the toilet?"
+   }
+  },
+  {
+   "id": "es:cuando",
+   "stage": 1,
+   "es": "¿cuándo?",
+   "en": "when?",
+   "cards": [
+    "recog",
+    "prod"
+   ]
+  },
+  {
+   "id": "es:como",
+   "stage": 1,
+   "es": "¿cómo?",
+   "en": "how?",
+   "cards": [
+    "recog",
+    "prod"
+   ],
+   "example": {
+    "es": "¿Cómo estás?",
+    "en": "How are you?"
+   }
+  },
+  {
+   "id": "es:cuanto",
+   "stage": 1,
+   "es": "¿cuánto?",
+   "en": "how much?",
+   "cards": [
+    "recog",
+    "prod"
+   ],
+   "example": {
+    "es": "¿Cuánto es?",
+    "en": "How much is it?"
+   }
+  },
+  {
+   "id": "es:cuantos",
+   "stage": 1,
+   "es": "¿cuántos?",
+   "en": "how many?",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:por-que",
+   "stage": 1,
+   "es": "¿por qué?",
+   "en": "why?",
+   "cards": [
+    "recog",
+    "prod"
+   ],
+   "note": "“Porque” (one word, no accent) means “because”."
+  },
+  {
+   "id": "es:cual",
+   "stage": 1,
+   "es": "¿cuál?",
+   "en": "which? / what?",
+   "cards": [
+    "recog"
+   ],
+   "example": {
+    "es": "¿Cuál quieres?",
+    "en": "Which one do you want?"
+   }
+  },
+  {
+   "id": "es:y",
+   "stage": 1,
+   "es": "y",
+   "en": "and",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:o",
+   "stage": 1,
+   "es": "o",
+   "en": "or",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:pero",
+   "stage": 1,
+   "es": "pero",
+   "en": "but",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:porque",
+   "stage": 1,
+   "es": "porque",
+   "en": "because",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:tambien",
+   "stage": 1,
+   "es": "también",
+   "en": "also / too",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:muy",
+   "stage": 1,
+   "es": "muy",
+   "en": "very",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:mas",
+   "stage": 1,
+   "es": "más",
+   "en": "more",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:con",
+   "stage": 1,
+   "es": "con",
+   "en": "with",
+   "cards": [
+    "recog"
+   ],
+   "example": {
+    "es": "Un café con leche.",
+    "en": "A coffee with milk."
+   }
+  },
+  {
+   "id": "es:sin",
+   "stage": 1,
+   "es": "sin",
+   "en": "without",
+   "cards": [
+    "recog"
+   ],
+   "example": {
+    "es": "Sin hielo, por favor.",
+    "en": "Without ice, please."
+   }
+  },
+  {
+   "id": "es:para",
+   "stage": 1,
+   "es": "para",
+   "en": "for / in order to",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:en",
+   "stage": 1,
+   "es": "en",
+   "en": "in / on / at",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:de",
+   "stage": 1,
+   "es": "de",
+   "en": "of / from",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:aqui",
+   "stage": 1,
+   "es": "aquí",
+   "en": "here",
+   "cards": [
+    "recog"
+   ],
+   "example": {
+    "es": "Estoy aquí.",
+    "en": "I’m here."
+   }
+  },
+  {
+   "id": "es:alli",
+   "stage": 1,
+   "es": "allí",
+   "en": "there",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:ahora",
+   "stage": 1,
+   "es": "ahora",
+   "en": "now",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:hoy",
+   "stage": 1,
+   "es": "hoy",
+   "en": "today",
+   "cards": [
+    "recog"
+   ],
+   "note": "Silent h: “oy”."
+  },
+  {
+   "id": "es:manana",
+   "stage": 1,
+   "es": "mañana",
+   "en": "tomorrow",
+   "cards": [
+    "recog"
+   ],
+   "note": "“La mañana” means “the morning”."
+  },
+  {
+   "id": "es:ayer",
+   "stage": 1,
+   "es": "ayer",
+   "en": "yesterday",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:siempre",
+   "stage": 1,
+   "es": "siempre",
+   "en": "always",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:nunca",
+   "stage": 1,
+   "es": "nunca",
+   "en": "never",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:yo",
+   "stage": 1,
+   "es": "yo",
+   "en": "I",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:tu-you",
+   "stage": 1,
+   "es": "tú",
+   "en": "you (friendly)",
+   "cards": [
+    "recog"
+   ],
+   "note": "With an accent it’s “you”; without, “tu” means “your”."
+  },
+  {
+   "id": "es:usted",
+   "stage": 1,
+   "es": "usted",
+   "en": "you (polite)",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:el",
+   "stage": 1,
+   "es": "él",
+   "en": "he",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:ella",
+   "stage": 1,
+   "es": "ella",
+   "en": "she",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:nosotros",
+   "stage": 1,
+   "es": "nosotros",
+   "en": "we",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:mucho",
+   "stage": 1,
+   "es": "mucho",
+   "en": "a lot / much",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:poco",
+   "stage": 1,
+   "es": "poco",
+   "en": "a little / not much",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:todo",
+   "stage": 1,
+   "es": "todo",
+   "en": "everything / all",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:nada",
+   "stage": 1,
+   "es": "nada",
+   "en": "nothing",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:algo",
+   "stage": 1,
+   "es": "algo",
+   "en": "something",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:otro",
+   "stage": 1,
+   "es": "otro",
+   "en": "another / other",
+   "cards": [
+    "recog"
+   ],
+   "example": {
+    "es": "Otra cerveza, por favor.",
+    "en": "Another beer, please."
+   },
+   "form": "otra"
+  },
+  {
+   "id": "es:esto",
+   "stage": 1,
+   "es": "esto",
+   "en": "this (thing)",
+   "cards": [
+    "recog"
+   ],
+   "example": {
+    "es": "¿Qué es esto?",
+    "en": "What is this?"
+   }
+  },
+  {
+   "id": "es:eso",
+   "stage": 1,
+   "es": "eso",
+   "en": "that (thing)",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:mi",
+   "stage": 1,
+   "es": "mi",
+   "en": "my",
+   "cards": [
+    "recog"
+   ],
+   "example": {
+    "es": "Mi casa.",
+    "en": "My house."
+   }
+  },
+  {
+   "id": "es:tu",
+   "stage": 1,
+   "es": "tu",
+   "en": "your (friendly)",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:uno",
+   "stage": 1,
+   "es": "uno",
+   "en": "one",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:dos",
+   "stage": 1,
+   "es": "dos",
+   "en": "two",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:tres",
+   "stage": 1,
+   "es": "tres",
+   "en": "three",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:cuatro",
+   "stage": 1,
+   "es": "cuatro",
+   "en": "four",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:cinco",
+   "stage": 1,
+   "es": "cinco",
+   "en": "five",
+   "cards": [
+    "recog",
+    "audio"
+   ],
+   "note": "Spain: “thinco”."
+  },
+  {
+   "id": "es:seis",
+   "stage": 1,
+   "es": "seis",
+   "en": "six",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:siete",
+   "stage": 1,
+   "es": "siete",
+   "en": "seven",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:ocho",
+   "stage": 1,
+   "es": "ocho",
+   "en": "eight",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:nueve",
+   "stage": 1,
+   "es": "nueve",
+   "en": "nine",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:diez",
+   "stage": 1,
+   "es": "diez",
+   "en": "ten",
+   "cards": [
+    "recog"
+   ],
+   "note": "Spain: “dieth”."
+  },
+  {
+   "id": "es:once",
+   "stage": 1,
+   "es": "once",
+   "en": "eleven",
+   "cards": [
+    "recog"
+   ],
+   "note": "Spain: “onthe”."
+  },
+  {
+   "id": "es:doce",
+   "stage": 1,
+   "es": "doce",
+   "en": "twelve",
+   "cards": [
+    "recog",
+    "audio"
+   ],
+   "note": "Spain: “dothe”."
+  },
+  {
+   "id": "es:quince",
+   "stage": 1,
+   "es": "quince",
+   "en": "fifteen",
+   "cards": [
+    "recog"
+   ],
+   "note": "Spain: “kinthe”."
+  },
+  {
+   "id": "es:veinte",
+   "stage": 1,
+   "es": "veinte",
+   "en": "twenty",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:treinta",
+   "stage": 1,
+   "es": "treinta",
+   "en": "thirty",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:cincuenta",
+   "stage": 1,
+   "es": "cincuenta",
+   "en": "fifty",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:cien",
+   "stage": 1,
+   "es": "cien",
+   "en": "a hundred",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:mil",
+   "stage": 1,
+   "es": "mil",
+   "en": "a thousand",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:lunes",
+   "stage": 1,
+   "es": "lunes",
+   "en": "Monday",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:martes",
+   "stage": 1,
+   "es": "martes",
+   "en": "Tuesday",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:miercoles",
+   "stage": 1,
+   "es": "miércoles",
+   "en": "Wednesday",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:jueves",
+   "stage": 1,
+   "es": "jueves",
+   "en": "Thursday",
+   "cards": [
+    "recog",
+    "audio"
+   ],
+   "note": "The j is a throaty sound, like the ch in “loch”."
+  },
+  {
+   "id": "es:viernes",
+   "stage": 1,
+   "es": "viernes",
+   "en": "Friday",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:sabado",
+   "stage": 1,
+   "es": "sábado",
+   "en": "Saturday",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:domingo",
+   "stage": 1,
+   "es": "domingo",
+   "en": "Sunday",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:que-hora-es",
+   "stage": 1,
+   "es": "¿qué hora es?",
+   "en": "what time is it?",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:dia",
+   "stage": 1,
+   "es": "el día",
+   "en": "the day",
+   "cards": [
+    "recog"
+   ],
+   "note": "Ends in -a but it’s masculine: el día."
+  },
+  {
+   "id": "es:semana",
+   "stage": 1,
+   "es": "la semana",
+   "en": "the week",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:fin-de-semana",
+   "stage": 1,
+   "es": "el fin de semana",
+   "en": "the weekend",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:manana-morning",
+   "stage": 1,
+   "es": "la mañana",
+   "en": "the morning",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:tarde",
+   "stage": 1,
+   "es": "la tarde",
+   "en": "the afternoon / evening",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:noche",
+   "stage": 1,
+   "es": "la noche",
+   "en": "the night",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:ser",
+   "stage": 1,
+   "es": "ser",
+   "en": "to be (who or what something is)",
+   "cards": [
+    "recog"
+   ],
+   "example": {
+    "es": "Soy inglés.",
+    "en": "I’m English."
+   },
+   "form": "soy"
+  },
+  {
+   "id": "es:estar",
+   "stage": 1,
+   "es": "estar",
+   "en": "to be (where, or how something is now)",
+   "cards": [
+    "recog"
+   ],
+   "example": {
+    "es": "Estoy cansado.",
+    "en": "I’m tired."
+   },
+   "form": "estoy"
+  },
+  {
+   "id": "es:tener",
+   "stage": 1,
+   "es": "tener",
+   "en": "to have",
+   "cards": [
+    "recog"
+   ],
+   "example": {
+    "es": "Tengo un perro.",
+    "en": "I have a dog."
+   },
+   "form": "tengo"
+  },
+  {
+   "id": "es:hacer",
+   "stage": 1,
+   "es": "hacer",
+   "en": "to do / to make",
+   "cards": [
+    "recog"
+   ],
+   "note": "Silent h, and in Spain the c is a “th”: “ather”."
+  },
+  {
+   "id": "es:ir",
+   "stage": 1,
+   "es": "ir",
+   "en": "to go",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:querer",
+   "stage": 1,
+   "es": "querer",
+   "en": "to want",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:poder",
+   "stage": 1,
+   "es": "poder",
+   "en": "to be able to / can",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:saber",
+   "stage": 1,
+   "es": "saber",
+   "en": "to know (a fact, how to)",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:decir",
+   "stage": 1,
+   "es": "decir",
+   "en": "to say / to tell",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:hablar",
+   "stage": 1,
+   "es": "hablar",
+   "en": "to speak / to talk",
+   "cards": [
+    "recog"
+   ],
+   "example": {
+    "es": "Hablo un poco de español.",
+    "en": "I speak a little Spanish."
+   }
+  },
+  {
+   "id": "es:comer",
+   "stage": 1,
+   "es": "comer",
+   "en": "to eat",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:beber",
+   "stage": 1,
+   "es": "beber",
+   "en": "to drink",
+   "cards": [
+    "recog"
+   ],
+   "note": "b and v sound the same in Spanish."
+  },
+  {
+   "id": "es:vivir",
+   "stage": 1,
+   "es": "vivir",
+   "en": "to live",
+   "cards": [
+    "recog"
+   ],
+   "example": {
+    "es": "Vivo en Birmingham.",
+    "en": "I live in Birmingham."
+   },
+   "form": "vivo"
+  },
+  {
+   "id": "es:trabajar",
+   "stage": 1,
+   "es": "trabajar",
+   "en": "to work",
+   "cards": [
+    "recog"
+   ],
+   "example": {
+    "es": "Trabajo en un bar.",
+    "en": "I work in a bar."
+   }
+  },
+  {
+   "id": "es:necesitar",
+   "stage": 1,
+   "es": "necesitar",
+   "en": "to need",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:ver",
+   "stage": 1,
+   "es": "ver",
+   "en": "to see / to watch",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:venir",
+   "stage": 1,
+   "es": "venir",
+   "en": "to come",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:dar",
+   "stage": 1,
+   "es": "dar",
+   "en": "to give",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:salir",
+   "stage": 1,
+   "es": "salir",
+   "en": "to go out / to leave",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:llegar",
+   "stage": 1,
+   "es": "llegar",
+   "en": "to arrive",
+   "cards": [
+    "recog"
+   ],
+   "note": "ll sounds like the y in “yes”."
+  },
+  {
+   "id": "es:entender",
+   "stage": 1,
+   "es": "entender",
+   "en": "to understand",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:pagar",
+   "stage": 1,
+   "es": "pagar",
+   "en": "to pay",
+   "cards": [
+    "recog"
+   ],
+   "example": {
+    "es": "¿Puedo pagar con tarjeta?",
+    "en": "Can I pay by card?"
+   }
+  },
+  {
+   "id": "es:comprar",
+   "stage": 1,
+   "es": "comprar",
+   "en": "to buy",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:coger",
+   "stage": 1,
+   "es": "coger",
+   "en": "to take / to catch (a bus, train)",
+   "cards": [
+    "recog"
+   ],
+   "note": "Normal in Spain. Avoid it in Latin America, where it’s rude."
+  },
+  {
+   "id": "es:hay",
+   "stage": 1,
+   "es": "hay",
+   "en": "there is / there are",
+   "cards": [
+    "recog",
+    "prod"
+   ],
+   "say": "hay",
+   "note": "Sounds like English “eye”.",
+   "example": {
+    "es": "¿Hay agua?",
+    "en": "Is there any water?"
+   }
+  },
+  {
+   "id": "es:soy",
+   "stage": 1,
+   "es": "soy",
+   "en": "I am",
+   "cards": [
+    "recog",
+    "prod"
+   ],
+   "hint": "who or what you are"
+  },
+  {
+   "id": "es:estoy",
+   "stage": 1,
+   "es": "estoy",
+   "en": "I am (right now, here)",
+   "cards": [
+    "recog",
+    "prod"
+   ]
+  },
+  {
+   "id": "es:tengo",
+   "stage": 1,
+   "es": "tengo",
+   "en": "I have",
+   "cards": [
+    "recog",
+    "prod"
+   ]
+  },
+  {
+   "id": "es:quiero",
+   "stage": 1,
+   "es": "quiero",
+   "en": "I want",
+   "cards": [
+    "recog",
+    "prod"
+   ],
+   "example": {
+    "es": "Quiero un café.",
+    "en": "I want a coffee."
+   }
+  },
+  {
+   "id": "es:puedo",
+   "stage": 1,
+   "es": "puedo",
+   "en": "I can",
+   "cards": [
+    "recog",
+    "prod"
+   ]
+  },
+  {
+   "id": "es:voy",
+   "stage": 1,
+   "es": "voy",
+   "en": "I go / I’m going",
+   "cards": [
+    "recog",
+    "prod"
+   ],
+   "example": {
+    "es": "Voy a casa.",
+    "en": "I’m going home."
+   }
+  },
+  {
+   "id": "es:me-gusta",
+   "stage": 1,
+   "es": "me gusta",
+   "en": "I like (it)",
+   "cards": [
+    "recog",
+    "prod"
+   ],
+   "example": {
+    "es": "Me gusta el fútbol.",
+    "en": "I like football."
+   }
+  },
+  {
+   "id": "es:queria",
+   "stage": 1,
+   "es": "quería…",
+   "en": "I’d like… (when ordering)",
+   "cards": [
+    "recog",
+    "prod"
+   ],
+   "say": "quería",
+   "note": "The polite way to order in Spain.",
+   "example": {
+    "es": "Quería una cerveza, por favor.",
+    "en": "I’d like a beer, please."
+   }
+  },
+  {
+   "id": "es:agua",
+   "stage": 1,
+   "es": "el agua",
+   "en": "water",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "note": "Feminine (el agua fría), but it takes el because it starts with a stressed a.",
+   "image": true,
+   "example": {
+    "es": "Un vaso de agua, por favor.",
+    "en": "A glass of water, please."
+   }
+  },
+  {
+   "id": "es:cafe",
+   "stage": 1,
+   "es": "el café",
+   "en": "coffee",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "image": true,
+   "example": {
+    "es": "Un café con leche, por favor.",
+    "en": "A white coffee, please."
+   }
+  },
+  {
+   "id": "es:cerveza",
+   "stage": 1,
+   "es": "la cerveza",
+   "en": "beer",
+   "cards": [
+    "recog",
+    "image",
+    "audio"
+   ],
+   "note": "Spain: “therbetha”.",
+   "image": true,
+   "example": {
+    "es": "Una cerveza, por favor.",
+    "en": "A beer, please."
+   }
+  },
+  {
+   "id": "es:vino",
+   "stage": 1,
+   "es": "el vino",
+   "en": "wine",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "image": true
+  },
+  {
+   "id": "es:zumo",
+   "stage": 1,
+   "es": "el zumo",
+   "en": "juice",
+   "cards": [
+    "recog",
+    "image",
+    "audio"
+   ],
+   "note": "Spain says zumo; Latin America says jugo.",
+   "image": true
+  },
+  {
+   "id": "es:leche",
+   "stage": 1,
+   "es": "la leche",
+   "en": "milk",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "image": true
+  },
+  {
+   "id": "es:pan",
+   "stage": 1,
+   "es": "el pan",
+   "en": "bread",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "image": true
+  },
+  {
+   "id": "es:hielo",
+   "stage": 1,
+   "es": "el hielo",
+   "en": "ice",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "image": true,
+   "example": {
+    "es": "Con hielo, por favor.",
+    "en": "With ice, please."
+   }
+  },
+  {
+   "id": "es:vaso",
+   "stage": 1,
+   "es": "el vaso",
+   "en": "glass (for drinking)",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "image": true
+  },
+  {
+   "id": "es:botella",
+   "stage": 1,
+   "es": "la botella",
+   "en": "bottle",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "image": true
+  },
+  {
+   "id": "es:casa",
+   "stage": 1,
+   "es": "la casa",
+   "en": "house / home",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "image": true
+  },
+  {
+   "id": "es:coche",
+   "stage": 1,
+   "es": "el coche",
+   "en": "car",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "note": "Spain says coche; Latin America says carro or auto.",
+   "image": true
+  },
+  {
+   "id": "es:movil",
+   "stage": 1,
+   "es": "el móvil",
+   "en": "mobile phone",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "note": "Spain says móvil; Latin America says celular.",
+   "image": true
+  },
+  {
+   "id": "es:ordenador",
+   "stage": 1,
+   "es": "el ordenador",
+   "en": "computer",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "note": "Spain says ordenador; Latin America says computadora.",
+   "image": true
+  },
+  {
+   "id": "es:mesa",
+   "stage": 1,
+   "es": "la mesa",
+   "en": "table",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "image": true
+  },
+  {
+   "id": "es:silla",
+   "stage": 1,
+   "es": "la silla",
+   "en": "chair",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "image": true
+  },
+  {
+   "id": "es:puerta",
+   "stage": 1,
+   "es": "la puerta",
+   "en": "door",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "image": true
+  },
+  {
+   "id": "es:llave",
+   "stage": 1,
+   "es": "la llave",
+   "en": "key",
+   "cards": [
+    "recog",
+    "image",
+    "audio"
+   ],
+   "note": "ll sounds like the y in “yes”.",
+   "image": true
+  },
+  {
+   "id": "es:dinero",
+   "stage": 1,
+   "es": "el dinero",
+   "en": "money",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "image": true
+  },
+  {
+   "id": "es:bano",
+   "stage": 1,
+   "es": "el baño",
+   "en": "toilet / bathroom",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "image": true,
+   "example": {
+    "es": "¿Dónde está el baño?",
+    "en": "Where is the toilet?"
+   }
+  },
+  {
+   "id": "es:calle",
+   "stage": 1,
+   "es": "la calle",
+   "en": "street",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "image": true
+  },
+  {
+   "id": "es:tren",
+   "stage": 1,
+   "es": "el tren",
+   "en": "train",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "image": true
+  },
+  {
+   "id": "es:autobus",
+   "stage": 1,
+   "es": "el autobús",
+   "en": "bus",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "image": true
+  },
+  {
+   "id": "es:billete",
+   "stage": 1,
+   "es": "el billete",
+   "en": "ticket",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "note": "Spain says billete for a ticket; in Latin America it’s usually boleto.",
+   "image": true
+  },
+  {
+   "id": "es:tienda",
+   "stage": 1,
+   "es": "la tienda",
+   "en": "shop",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "image": true
+  },
+  {
+   "id": "es:perro",
+   "stage": 1,
+   "es": "el perro",
+   "en": "dog",
+   "cards": [
+    "recog",
+    "image",
+    "audio"
+   ],
+   "note": "Rolled rr. A single r between vowels is a quick tap.",
+   "image": true
+  },
+  {
+   "id": "es:gato",
+   "stage": 1,
+   "es": "el gato",
+   "en": "cat",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "image": true
+  },
+  {
+   "id": "es:libro",
+   "stage": 1,
+   "es": "el libro",
+   "en": "book",
+   "cards": [
+    "recog",
+    "image"
+   ],
+   "image": true
+  },
+  {
+   "id": "es:comida",
+   "stage": 1,
+   "es": "la comida",
+   "en": "food / lunch",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:cuenta",
+   "stage": 1,
+   "es": "la cuenta",
+   "en": "the bill",
+   "cards": [
+    "recog",
+    "prod"
+   ],
+   "example": {
+    "es": "La cuenta, por favor.",
+    "en": "The bill, please."
+   }
+  },
+  {
+   "id": "es:trabajo",
+   "stage": 1,
+   "es": "el trabajo",
+   "en": "work / job",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:amigo",
+   "stage": 1,
+   "es": "el amigo",
+   "en": "friend (male)",
+   "cards": [
+    "recog"
+   ],
+   "note": "A female friend is “la amiga”."
+  },
+  {
+   "id": "es:familia",
+   "stage": 1,
+   "es": "la familia",
+   "en": "family",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:madre",
+   "stage": 1,
+   "es": "la madre",
+   "en": "mother",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:padre",
+   "stage": 1,
+   "es": "el padre",
+   "en": "father",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:hermano",
+   "stage": 1,
+   "es": "el hermano",
+   "en": "brother",
+   "cards": [
+    "recog"
+   ],
+   "note": "A sister is “la hermana”. Silent h."
+  },
+  {
+   "id": "es:nombre",
+   "stage": 1,
+   "es": "el nombre",
+   "en": "name",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:gente",
+   "stage": 1,
+   "es": "la gente",
+   "en": "people",
+   "cards": [
+    "recog"
+   ],
+   "note": "Singular in Spanish: “la gente es simpática”."
+  },
+  {
+   "id": "es:tiempo",
+   "stage": 1,
+   "es": "el tiempo",
+   "en": "time / weather",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:ano",
+   "stage": 1,
+   "es": "el año",
+   "en": "year",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:cosa",
+   "stage": 1,
+   "es": "la cosa",
+   "en": "thing",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:problema",
+   "stage": 1,
+   "es": "el problema",
+   "en": "problem",
+   "cards": [
+    "recog"
+   ],
+   "note": "Ends in -a but it’s masculine.",
+   "example": {
+    "es": "No hay problema.",
+    "en": "No problem."
+   }
+  },
+  {
+   "id": "es:bueno",
+   "stage": 1,
+   "es": "bueno",
+   "en": "good",
+   "cards": [
+    "recog",
+    "prod"
+   ]
+  },
+  {
+   "id": "es:malo",
+   "stage": 1,
+   "es": "malo",
+   "en": "bad",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:grande",
+   "stage": 1,
+   "es": "grande",
+   "en": "big",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:pequeno",
+   "stage": 1,
+   "es": "pequeño",
+   "en": "small",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:nuevo",
+   "stage": 1,
+   "es": "nuevo",
+   "en": "new",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:viejo",
+   "stage": 1,
+   "es": "viejo",
+   "en": "old",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:caro",
+   "stage": 1,
+   "es": "caro",
+   "en": "expensive",
+   "cards": [
+    "recog"
+   ],
+   "example": {
+    "es": "Es muy caro.",
+    "en": "It’s very expensive."
+   }
+  },
+  {
+   "id": "es:barato",
+   "stage": 1,
+   "es": "barato",
+   "en": "cheap",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:bonito",
+   "stage": 1,
+   "es": "bonito",
+   "en": "pretty / nice",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:contento",
+   "stage": 1,
+   "es": "contento",
+   "en": "happy / pleased",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:cansado",
+   "stage": 1,
+   "es": "cansado",
+   "en": "tired",
+   "cards": [
+    "recog",
+    "prod"
+   ]
+  },
+  {
+   "id": "es:abierto",
+   "stage": 1,
+   "es": "abierto",
+   "en": "open",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:cerrado",
+   "stage": 1,
+   "es": "cerrado",
+   "en": "closed",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:frio",
+   "stage": 1,
+   "es": "frío",
+   "en": "cold",
+   "cards": [
+    "recog"
+   ]
+  },
+  {
+   "id": "es:caliente",
+   "stage": 1,
+   "es": "caliente",
+   "en": "hot (temperature)",
+   "cards": [
+    "recog"
+   ]
+  }
+ ]
+}

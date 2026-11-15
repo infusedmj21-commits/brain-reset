@@ -67,6 +67,31 @@ const endOfDay = (now) => {
   return d;
 };
 
+/**
+ * New cards that may be introduced today. Recognition comes first: a note's later cards
+ * (production, picture, listening) only arrive on a day after one of its cards was introduced,
+ * and never two new cards from the same note on one day.
+ */
+export function introducible(fresh, states, date) {
+  const introducedBefore = new Set();
+  const introducedToday = new Set();
+  for (const s of states) {
+    if (!s.introduced) continue;
+    const note = s.note ?? s.id.split(':').slice(0, -1).join(':');
+    (s.introduced === date ? introducedToday : introducedBefore).add(note);
+  }
+  const firstOfNote = new Map();
+  for (const d of fresh) if (!firstOfNote.has(d.noteId)) firstOfNote.set(d.noteId, d.id);
+  const picked = new Set();
+  return fresh.filter((d) => {
+    if (introducedToday.has(d.noteId) || picked.has(d.noteId)) return false;
+    const isFirst = !introducedBefore.has(d.noteId) && firstOfNote.get(d.noteId) === d.id;
+    if (!isFirst && !introducedBefore.has(d.noteId)) return false;
+    picked.add(d.noteId);
+    return true;
+  });
+}
+
 /** Cards that need doing: learning steps due now, reviews due today, and fresh cards available. */
 export function dueSummary(defs, states, now) {
   const byId = new Map(states.map((s) => [s.id, s]));

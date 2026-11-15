@@ -66,3 +66,27 @@ describe('flashcards', () => {
     expect(parseCloze('¿Dónde [está] el baño?')).toEqual({ before: '¿Dónde ', answer: 'está', after: ' el baño?' });
   });
 });
+
+describe('sibling cards', () => {
+  it('introduces recognition first, and the other cards of a word only on a later day', async () => {
+    const { introducible, cardsFromDeck } = await import('../src/logic/cards.js');
+    const defs = cardsFromDeck({ id: 't', notes: [{ id: 't:agua', es: 'el agua', en: 'water', cards: ['recog', 'image'] }, { id: 't:pan', es: 'el pan', en: 'bread', cards: ['recog', 'image'] }] });
+    expect(introducible(defs, [], '2026-11-16').map((d) => d.id)).toEqual(['t:agua:recog', 't:pan:recog']);
+    const today = [{ id: 't:agua:recog', note: 't:agua', introduced: '2026-11-16' }];
+    expect(introducible(defs.filter((d) => d.id !== 't:agua:recog'), today, '2026-11-16').map((d) => d.id)).toEqual(['t:pan:recog']);
+    expect(introducible(defs.filter((d) => d.id !== 't:agua:recog'), today, '2026-11-17').map((d) => d.id)).toEqual(['t:agua:image', 't:pan:recog']);
+  });
+});
+
+describe('shipped decks', () => {
+  it('every deck builds into cards with unique ids', async () => {
+    const { DECKS } = await import('../src/decks/index.js');
+    expect(DECKS.length).toBeGreaterThan(0);
+    for (const deck of DECKS) {
+      const ids = cardsFromDeck(deck).map((c) => c.id);
+      expect(new Set(ids).size).toBe(ids.length);
+    }
+    const es = DECKS.find((d) => d.id === 'es');
+    expect(es.notes.every((n) => n.stage === 1 && !n.cards.includes('cloze'))).toBe(true);
+  });
+});
