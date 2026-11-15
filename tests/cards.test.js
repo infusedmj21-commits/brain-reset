@@ -86,6 +86,8 @@ describe('shipped decks', () => {
       const ids = cardsFromDeck(deck).map((c) => c.id);
       expect(new Set(ids).size).toBe(ids.length);
     }
+    const bar = DECKS.find((d) => d.id === 'bar');
+    expect(bar.notes.every((n) => n.q && n.a && n.cards.join() === 'qa')).toBe(true);
     const es = DECKS.find((d) => d.id === 'es');
     expect(es.notes.every((n) => n.stage === 1 && !n.cards.includes('cloze'))).toBe(true);
   });

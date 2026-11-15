@@ -16,7 +16,8 @@ export const CARD_TYPES = {
   audio: 'Listen',
   image: 'Picture',
   cloze: 'Fill the gap',
-  typed: 'Type it'
+  typed: 'Type it',
+  qa: 'Question'
 };
 
 /** Every card a deck defines, in introduction order (stage, then note order, then type order). */
