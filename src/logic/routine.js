@@ -85,11 +85,13 @@ export function suggestUnprompted({ date, dayType, unpromptedDates }) {
 }
 
 /** Build today's checklist. rotation: 'unprompted' | 'palace' | null (auto). */
-export function buildChecklist({ date, dayType, unpromptedDates, rotation = null }) {
+export function buildChecklist({ date, dayType, unpromptedDates, rotation = null, enabled = null }) {
   const slots = SLOTS[dayType] ?? SLOTS.off;
+  const on = enabled ?? rules.enabledOn(date);
   const items = [];
-  const add = (habit, extra = {}) =>
-    items.push({ habit, ...HABITS[habit], slot: slots[habit], ...extra });
+  const add = (habit, extra = {}) => {
+    if (on.has(habit)) items.push({ habit, ...HABITS[habit], slot: slots[habit], ...extra });
+  };
 
   add('sprint');
   add('spanish', dayType === 'minimum' || dayType === 'early' ? { minutes: 10 } : {});
@@ -100,21 +102,63 @@ export function buildChecklist({ date, dayType, unpromptedDates, rotation = null
 
   add('reading');
   const suggestion = suggestUnprompted({ date, dayType, unpromptedDates });
-  const rotating = rotation ?? (suggestion.suggested ? 'unprompted' : 'palace');
-  add(rotating, { rotating: true });
+  let rotating = rotation ?? (suggestion.suggested ? 'unprompted' : 'palace');
+  // If one of the pair is switched off, the other takes the slot.
+  if (!on.has(rotating)) rotating = rotating === 'unprompted' ? 'palace' : 'unprompted';
+  if (!on.has(rotating)) rotating = null;
+  if (rotating) add(rotating, { rotating: true });
   return { items, suggestion, rotating };
 }
 
-/** A day counts when its minimum habits are done. doneByDate: { 'YYYY-MM-DD': Set<habit> } */
-export function dayCounts(done) {
-  return MINIMUM_HABITS.every((h) => done?.has(h));
+// ---- Task switches ----
+// Every daily task can be switched off. A switch applies from the day it's flipped:
+// past days keep the rule they had, so history and streaks don't get recalculated.
+export const DAILY_TICKS = { creatine: 'Creatine', protein: 'Protein' };
+export const SWITCHABLE = [...Object.keys(HABITS), ...Object.keys(DAILY_TICKS)];
+
+/** Rules from a list of switch events [{ habit, enabled, from }]. */
+export function makeRules(events = []) {
+  const sorted = [...events].sort((a, b) => a.from.localeCompare(b.from));
+  const enabledOn = (date) => {
+    const on = new Set(SWITCHABLE);
+    for (const e of sorted) {
+      if (e.from > date) break;
+      if (e.enabled) on.add(e.habit);
+      else on.delete(e.habit);
+    }
+    return on;
+  };
+  return { events: sorted, enabledOn };
+}
+
+let rules = makeRules([]);
+/** Set by the data layer whenever the switches load or change. */
+export function setRules(next) {
+  rules = next;
+}
+export const currentRules = () => rules;
+
+/**
+ * A day counts when the minimum habits that were switched on that day are done.
+ * If both minimum habits were off, any switched-on habit counts the day; if every habit was
+ * off, the day can't count against you. Without a date, the plain minimum rule applies.
+ */
+export function dayCounts(done, date) {
+  if (!date) return MINIMUM_HABITS.every((h) => done?.has(h));
+  const on = rules.enabledOn(date);
+  const required = MINIMUM_HABITS.filter((h) => on.has(h));
+  if (required.length) return required.every((h) => done?.has(h));
+  const others = Object.keys(HABITS).filter((h) => on.has(h));
+  return others.length ? others.some((h) => done?.has(h)) : true;
 }
 
 /** Consecutive counting days ending today (or yesterday, if today isn't done yet). */
 export function streak(date, doneByDate) {
-  let cursor = dayCounts(doneByDate[date]) ? date : addDays(date, -1);
+  let cursor = dayCounts(doneByDate[date], date) ? date : addDays(date, -1);
   let count = 0;
-  while (dayCounts(doneByDate[cursor])) {
+  // Stop at the first logged day so a run of switched-off days can't stretch back forever.
+  const first = Object.keys(doneByDate).sort()[0] ?? date;
+  while (cursor >= first && dayCounts(doneByDate[cursor], cursor)) {
     count += 1;
     cursor = addDays(cursor, -1);
   }
@@ -126,7 +170,7 @@ export function missedYesterday(date, doneByDate, firstActiveDate) {
   if (!firstActiveDate) return false;
   const yesterday = addDays(date, -1);
   if (daysBetween(firstActiveDate, yesterday) < 0) return false;
-  return !dayCounts(doneByDate[yesterday]);
+  return !dayCounts(doneByDate[yesterday], yesterday);
 }
 
 // TikTok daily limit: a staggered plan you step down through yourself.
@@ -196,9 +240,10 @@ export function bestSprint(r1, r2) {
 const DAILY_CORE = ['sprint', 'spanish', 'reading'];
 
 /** 'full' (sprint, Spanish and reading), 'min' (just the minimum) or 'none'. */
-export function dayStatus(done) {
-  if (!dayCounts(done)) return 'none';
-  return DAILY_CORE.every((h) => done.has(h)) ? 'full' : 'min';
+export function dayStatus(done, date) {
+  if (!dayCounts(done, date)) return 'none';
+  const core = date ? DAILY_CORE.filter((h) => rules.enabledOn(date).has(h)) : DAILY_CORE;
+  return core.every((h) => done?.has(h)) ? 'full' : 'min';
 }
 
 /**

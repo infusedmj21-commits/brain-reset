@@ -1,3 +1,4 @@
+import { currentRules } from '../logic/routine.js';
 import {
   TICKS,
   addExercise,
@@ -116,7 +117,7 @@ async function renderOverview(el, rerender) {
         <div class="card top-sun stack">
           <h3>Today</h3>
           <div class="chips small two">
-            ${Object.entries(TICKS).map(([k, label]) => `<button type="button" class="chip" data-tick="${k}" aria-pressed="${ticks[k]}">${ticks[k] ? '✓ ' : ''}${label}</button>`).join('')}
+            ${Object.entries(TICKS).filter(([k]) => currentRules().enabledOn(date).has(k)).map(([k, label]) => `<button type="button" class="chip" data-tick="${k}" aria-pressed="${ticks[k]}">${ticks[k] ? '✓ ' : ''}${label}</button>`).join('')}
           </div>
         </div>
 

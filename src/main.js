@@ -1,3 +1,4 @@
+import { loadSwitches } from './data/switches.js';
 import '@fontsource/inter/latin-400.css';
 import '@fontsource/inter/latin-500.css';
 import '@fontsource/inter/latin-600.css';
@@ -58,6 +59,7 @@ function runCleanups() {
 
 async function render() {
   runCleanups();
+  await loadSwitches().catch(() => {});
   // Routes look like #/palace or #/unprompted/session/<id>.
   const [name = 'home', ...params] = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
   const route = routes[name] ? name : 'home';

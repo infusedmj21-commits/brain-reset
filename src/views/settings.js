@@ -2,6 +2,8 @@ import { exportAll, importAll } from '../db.js';
 import { today } from '../logic/dates.js';
 import { esc, toast } from '../ui.js';
 import { getName, setName } from '../theme.js';
+import { DAILY_TICKS, HABITS, MINIMUM_HABITS, SWITCHABLE, currentRules } from '../logic/routine.js';
+import { setSwitch } from '../data/switches.js';
 import { createAccount, onSyncStatus, signIn, signOut, syncNow, syncStatus } from '../sync.js';
 
 async function persistenceStatus() {
@@ -83,11 +85,24 @@ export async function renderSettings(el, rerender) {
   const status = await persistenceStatus();
   const sync = await syncStatus();
 
+  const date = today();
+  const rules = currentRules();
   el.innerHTML = `
     <h1 class="page-title">Settings</h1>
 
     <div class="cols">
       <section>
+        <div class="sec" style="--dot:var(--grape)"><span class="dot"></span><h2>Daily tasks</h2><span class="aside">From today on</span></div>
+        <div class="card stack">
+          <ul class="switch-list">${SWITCHABLE.map((h) => {
+            const on = rules.enabledOn(date).has(h);
+            const label = HABITS[h]?.label ?? DAILY_TICKS[h];
+            return `<li><span><strong>${esc(label)}</strong>${MINIMUM_HABITS.includes(h) ? '<span class="muted small">Makes a day count</span>' : h in DAILY_TICKS ? '<span class="muted small">Health tick</span>' : ''}</span>
+              <button type="button" class="switch" role="switch" aria-checked="${on}" data-switch="${h}" aria-label="${esc(label)}"><i></i></button></li>`;
+          }).join('')}</ul>
+          <p class="muted small" style="margin:0">Switching a task off hides it from today onwards. Past days keep their record, and hidden tasks never count as missed.</p>
+        </div>
+
         <div class="sec" style="--dot:var(--grape)"><span class="dot"></span><h2>You</h2></div>
         <div class="card top-grape stack">
           <form id="name-form" class="inputs" style="grid-template-columns:1fr auto;margin-top:0" autocomplete="off">
@@ -130,6 +145,16 @@ export async function renderSettings(el, rerender) {
 
   bindSync(el.querySelector('#sync-card'), rerender);
 
+
+  el.querySelectorAll('[data-switch]').forEach((b) =>
+    b.addEventListener('click', async () => {
+      const habit = b.dataset.switch;
+      const on = b.getAttribute('aria-checked') !== 'true';
+      await setSwitch(habit, on, date);
+      toast(`${HABITS[habit]?.label ?? DAILY_TICKS[habit]} ${on ? 'back on from today' : 'hidden from today'}`);
+      rerender();
+    })
+  );
 
   el.querySelector('#name-form').addEventListener('submit', (e) => {
     e.preventDefault();

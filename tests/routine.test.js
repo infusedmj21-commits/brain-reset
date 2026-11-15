@@ -169,3 +169,33 @@ describe('sprintSummary', () => {
     expect(r.allTimeBest).toBe(47);
   });
 });
+
+describe('task switches', () => {
+  it('hides a task from the day it is switched off, and keeps past days as they were', async () => {
+    const { makeRules, setRules, dayCounts, buildChecklist, streak } = await import('../src/logic/routine.js');
+    setRules(makeRules([{ habit: 'sprint', enabled: false, from: '2026-11-15' }]));
+    const onlySpanish = new Set(['spanish']);
+    // Before the switch, Spanish alone didn't count; after it, it does.
+    expect(dayCounts(onlySpanish, '2026-11-14')).toBe(false);
+    expect(dayCounts(onlySpanish, '2026-11-15')).toBe(true);
+    const list = buildChecklist({ date: '2026-11-15', dayType: 'off', unpromptedDates: [] });
+    expect(list.items.map((i) => i.habit)).not.toContain('sprint');
+    expect(buildChecklist({ date: '2026-11-14', dayType: 'off', unpromptedDates: [] }).items.map((i) => i.habit)).toContain('sprint');
+    const done = { '2026-11-13': new Set(['sprint', 'spanish']), '2026-11-14': new Set(['sprint', 'spanish']), '2026-11-15': onlySpanish };
+    expect(streak('2026-11-15', done)).toBe(3);
+    setRules(makeRules([]));
+  });
+  it('switching back on restores it from that day', async () => {
+    const { makeRules } = await import('../src/logic/routine.js');
+    const r = makeRules([{ habit: 'palace', enabled: false, from: '2026-11-10' }, { habit: 'palace', enabled: true, from: '2026-11-20' }]);
+    expect(r.enabledOn('2026-11-09').has('palace')).toBe(true);
+    expect(r.enabledOn('2026-11-15').has('palace')).toBe(false);
+    expect(r.enabledOn('2026-11-20').has('palace')).toBe(true);
+  });
+  it('the other rotating session takes the slot when one is off', async () => {
+    const { makeRules, buildChecklist } = await import('../src/logic/routine.js');
+    const enabled = makeRules([{ habit: 'unprompted', enabled: false, from: '2026-11-01' }]).enabledOn('2026-11-15');
+    const list = buildChecklist({ date: '2026-11-15', dayType: 'off', unpromptedDates: [], rotation: 'unprompted', enabled });
+    expect(list.rotating).toBe('palace');
+  });
+});

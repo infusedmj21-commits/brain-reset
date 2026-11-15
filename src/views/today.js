@@ -117,7 +117,7 @@ export async function renderToday(el, rerender) {
 
   const week = weekDates(date)
     .map((d, i) => {
-      const cls = [d > date ? 'future' : dayStatus(doneMap[d]), d === date ? 'today' : ''].join(' ');
+      const cls = [d > date ? 'future' : dayStatus(doneMap[d], d), d === date ? 'today' : ''].join(' ');
       return `<b class="${cls}" title="${d}">${DOW[i]}</b>`;
     })
     .join('');

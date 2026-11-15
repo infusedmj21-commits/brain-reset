@@ -15,7 +15,7 @@ const HABIT_SHORT = { sprint: 'Sprint', spanish: 'Spanish', reading: 'Reading', 
 
 /** One day of the week: whether it counted, and ticks to fill in anything forgotten. */
 function dayRow(d, done, missedReason, beforeTracking, isToday) {
-  const status = dayStatus(done);
+  const status = dayStatus(done, d);
   const chip =
     status === 'full'
       ? '<span class="vchip v-mint">Counted</span>'

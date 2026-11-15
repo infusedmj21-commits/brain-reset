@@ -9,7 +9,7 @@ import { listWorkouts, ticksFor } from './health.js';
 import { addDays, daysBetween, prettyDate, today, weekStart } from '../logic/dates.js';
 import { activeDates, gapBefore, reviewWeek } from '../logic/review.js';
 import { needsRescore, rankTasks, scoreHistory } from '../logic/scoring.js';
-import { DAY_TYPES } from '../logic/routine.js';
+import { DAY_TYPES, currentRules } from '../logic/routine.js';
 
 const short = (d) => prettyDate(d).replace(/^(\w{3})\w*/, '$1');
 
@@ -128,7 +128,8 @@ export async function openTasks(database = db) {
     });
   }
 
-  if (!ticks.creatine || !ticks.protein) tasks.push({ kind: 'ticks', id: 'ticks', ticks });
+  const onTicks = ['creatine', 'protein'].filter((k) => currentRules().enabledOn(date).has(k));
+  if (onTicks.some((k) => !ticks[k])) tasks.push({ kind: 'ticks', id: 'ticks', ticks });
 
   return tasks;
 }
