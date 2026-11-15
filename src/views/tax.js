@@ -73,16 +73,6 @@ export async function renderTax(el, rerender) {
                 }
               </div>
 
-              ${
-                t.gain
-                  ? `<div class="sec" style="--dot:var(--grape)"><span class="dot"></span><h2>Or get it back sooner</h2></div>
-                    <div class="card top-grape stack">
-                      <p>If HMRC moved ${t.allowance >= PERSONAL_ALLOWANCE * 0.85 ? 'the last of' : 'your whole'} allowance to Compass (code ${esc(settings.fixedCode)}), your next payslip would hand back about <strong class="num">${gbp0(t.gain.lump)}</strong>, then take about <strong class="num">${gbp(t.gain.weekly)}</strong> less tax in a ${gbp0(t.weeklyAssumption)} week.</p>
-                      <p class="muted small">In the HMRC app: PAYE → your other jobs → update estimated income to what you really expect (near £0). HMRC then reissues codes. It’s the same money either way: sooner, or as a refund after April.</p>
-                    </div>`
-                  : ''
-              }
-
               <div class="sec" style="--dot:var(--sky)"><span class="dot"></span><h2>Coming paydays</h2><span class="aside">Estimated take-home</span></div>
               ${
                 upcoming.length
