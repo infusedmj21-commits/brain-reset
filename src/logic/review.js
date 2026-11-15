@@ -36,7 +36,7 @@ export function gapBefore(date, dates) {
 
 /** Longest run of counting days ever. doneByDate: { date: Set(habits) } */
 export function bestStreak(doneByDate) {
-  const dates = Object.keys(doneByDate).filter((d) => dayCounts(doneByDate[d])).sort();
+  const dates = Object.keys(doneByDate).filter((d) => dayCounts(doneByDate[d], d)).sort();
   let best = 0;
   let run = 0;
   let prev = null;
@@ -51,7 +51,7 @@ export function bestStreak(doneByDate) {
 /** Counting days between start and end inclusive. */
 export function countingDays(doneByDate, start, end) {
   let n = 0;
-  for (let d = start; d <= end; d = addDays(d, 1)) if (dayCounts(doneByDate[d])) n += 1;
+  for (let d = start; d <= end; d = addDays(d, 1)) if (dayCounts(doneByDate[d], d)) n += 1;
   return n;
 }
 
@@ -59,7 +59,7 @@ export function countingDays(doneByDate, start, end) {
 export function missedDays(doneByDate, start, end, gaps, firstActive) {
   const out = [];
   for (let d = start; d <= end; d = addDays(d, 1)) {
-    if (!firstActive || d < firstActive || dayCounts(doneByDate[d])) continue;
+    if (!firstActive || d < firstActive || dayCounts(doneByDate[d], d)) continue;
     const gap = gaps.find((g) => g.from <= d && d <= g.to);
     out.push({ date: d, reason: gap?.reason ?? null });
   }

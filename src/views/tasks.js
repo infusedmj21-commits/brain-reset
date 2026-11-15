@@ -1,3 +1,4 @@
+import { currentRules } from '../logic/routine.js';
 import { TICKS, setTick } from '../data/health.js';
 import { listRoles, saveShift } from '../data/money.js';
 import { openTasks } from '../data/tasks.js';
@@ -42,6 +43,7 @@ function ticksTask(t) {
     <div class="task-top"><span class="ico-dot mint" aria-hidden="true"></span>
       <div class="vmain"><strong>Today’s ticks</strong><span class="muted small">Health</span></div></div>
     <div class="chips small two">${Object.entries(TICKS)
+      .filter(([k]) => currentRules().enabledOn(today()).has(k))
       .map(([k, label]) => `<button type="button" class="chip" data-tick="${k}" aria-pressed="${t.ticks[k]}">${t.ticks[k] ? '✓ ' : ''}${label}</button>`)
       .join('')}</div>
   </li>`;

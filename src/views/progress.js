@@ -10,12 +10,12 @@ export async function renderProgress(el) {
   const [doneMap, sprints, gaps] = await Promise.all([doneByDate(), live('sprint_scores'), listGaps()]);
   const start = addDays(weekStart(date), -21);
   const days = Array.from({ length: 28 }, (_, i) => addDays(start, i));
-  const counted = days.filter((d) => d <= date && dayStatus(doneMap[d]) !== 'none').length;
+  const counted = days.filter((d) => d <= date && dayStatus(doneMap[d], d) !== 'none').length;
   const elapsed = days.filter((d) => d <= date).length;
 
   const cells = days
     .map((d) => {
-      const cls = ['cell', d > date ? 'future' : dayStatus(doneMap[d]), d === date ? 'today' : ''].join(' ');
+      const cls = ['cell', d > date ? 'future' : dayStatus(doneMap[d], d), d === date ? 'today' : ''].join(' ');
       const gap = gaps.find((g) => g.from <= d && d <= g.to);
       return `<div class="${cls}${gap ? ' away' : ''}" title="${d}${gap ? ` · away: ${GAP_REASONS[gap.reason] ?? ''}` : ''}"></div>`;
     })
