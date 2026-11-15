@@ -132,3 +132,61 @@ describe('every payslip this year', () => {
     for (const p of slips) expect(Math.abs(niFor(p.gross) - p.ni)).toBeLessThan(0.011);
   });
 });
+
+describe('a payslip with a tax refund (new code 1163L)', () => {
+  // The 11 Nov payslip, moved on a week with £300 pay and every penny of tax so far refunded.
+  const refundSlip = (taxLine, deductions) =>
+    fixture('1111')
+      .replace('11.11.2026 32/2026', '18.11.2026 33/2026')
+      .replace('Tax Code 597L', 'Tax Code 1163L')
+      .replace('410.16 0.00 410.16 72.45 337.71 Payroll - BACS 337.71', `300.00 0.00 300.00 ${deductions} 849.56 Payroll - BACS 849.56`)
+      .replace('Gross to date 6,451.31 Taxable Pay to date 6,451.31', 'Gross to date 6,751.31 Taxable Pay to date 6,751.31')
+      .replace('Tax Paid to date 554.20 NI Paid to date 131.29', 'Tax Paid to date 0.00 NI Paid to date 135.93')
+      .replace('Tax paid 59.00 National Insurance 13.45', `${taxLine} National Insurance 4.64`)
+      .replace(/Constellation (Basic|Holiday) Hours[^C]*/g, '')
+      .concat(' Constellation Basic Hours 13.45 22.30 300.00');
+
+  it.each([
+    ['minus in front', 'Tax paid -554.20', '-549.56'],
+    ['minus behind', 'Tax paid 554.20-', '549.56-'],
+    ['printed as positive', 'Tax paid 554.20', '-549.56'],
+    ['its own line', 'Tax refund 554.20', '-549.56']
+  ])('reads it as money back (%s)', (_, line, ded) => {
+    const p = parsePayslipText(refundSlip(line, ded));
+    expect(p).toMatchObject({ payDate: '2026-11-18', taxCode: '1163L', gross: 300, tax: -554.2, taxBack: 554.2, ni: 4.64, net: 849.56, taxToDate: 0 });
+  });
+
+  it('drops the April refund estimate once uploaded', () => {
+    const slip = parsePayslipText(refundSlip('Tax paid -554.20', '-549.56'));
+    const periods = [{ payday: '2026-11-25', expected: 250 }];
+    const before = projectYear({ payslips: [sep, nov], periods, today: '2026-11-19', allowance: allowanceFromCode('597L') });
+    const after = projectYear({ payslips: [sep, nov, slip], periods, today: '2026-11-19', allowance: allowanceFromCode('1163L') });
+    const r0 = refundEstimate({ year: before, otherIncome: 665.84 }).refund;
+    const r1 = refundEstimate({ year: after, otherIncome: 665.84 }).refund;
+    expect(r0).toBeGreaterThan(500);
+    expect(r1).toBeLessThan(5);
+    expect(after.weeks.find((w) => w.payday === '2026-11-18')).toMatchObject({ source: 'payslip', tax: -554.2, net: 849.56 });
+  });
+
+  it('shows the refund on the next payday as soon as the new code is entered', () => {
+    const periods = [{ payday: '2026-11-18', expected: 300 }];
+    const year = projectYear({ payslips: [sep, nov], periods, today: '2026-11-15', allowance: allowanceFromCode('1163L') });
+    const next = year.weeks.find((w) => w.payday === '2026-11-18');
+    expect(next.tax).toBeLessThan(-500);
+    expect(next.net).toBeGreaterThan(800);
+  });
+});
+
+describe('which tax code is used', async () => {
+  const { codeInUse } = await import('../src/data/tax.js');
+  const slip = (payDate, taxCode) => ({ payDate, taxCode });
+  it('uses a newly entered code while payslips still show the old one', () => {
+    const s = { taxCode: '1163L', taxCodeSetOn: '2026-11-15', taxCodeWas: '597L' };
+    expect(codeInUse(s, slip('2026-11-11', '597L')).code).toBe('1163L');
+    expect(codeInUse(s, slip('2026-11-18', '597L')).code).toBe('1163L');
+  });
+  it('hands back to payslips once payroll switches code', () => {
+    const s = { taxCode: '1163L', taxCodeSetOn: '2026-11-15', taxCodeWas: '597L' };
+    expect(codeInUse(s, slip('2026-11-25', '1150L'))).toMatchObject({ code: '1150L', source: 'payslip' });
+  });
+});
