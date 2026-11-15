@@ -16,7 +16,7 @@ function payslipRow(p) {
   return `<li class="vrow card">
     <span class="vmain"><strong>${esc(shortDate(p.payDate))} · week ${p.taxWeek ?? '?'}</strong>
       <span class="muted small">${gbp(p.gross)} gross${p.holiday ? ` (incl. ${gbp(p.holiday)} holiday)` : ''} · ${fmtHours(p.basicHours || 0)} basic</span>
-      <span class="muted small">Tax ${gbp(p.tax)} · NI ${gbp(p.ni)} · code ${esc(p.taxCode ?? '–')}</span></span>
+      <span class="muted small">${p.tax < 0 ? `<strong>${gbp(-p.tax)} tax refunded</strong>` : `Tax ${gbp(p.tax)}`} · NI ${gbp(p.ni)} · code ${esc(p.taxCode ?? '–')}</span></span>
     <span class="vside"><span class="vscore num">${gbp(p.net)}</span><button class="btn-mini" type="button" data-remove="${esc(p.id)}">Remove</button></span>
   </li>`;
 }
@@ -61,14 +61,23 @@ export async function renderTax(el, rerender) {
                   <tr><td>Tax you’ll have paid by April</td><td><strong>${gbp(r.paid)}</strong></td></tr>
                   <tr class="total"><td>Difference</td><td><strong>${r.refund >= 0 ? gbp(r.refund) + ' back' : gbp(-r.refund) + ' to pay'}</strong></td></tr>
                 </tbody></table>
-                <p class="muted small">Compass uses code <strong>${esc(t.code)}</strong>, so it only lets ${gbp0(t.allowance / 52)} a week through tax-free. Your other two agency jobs hold the rest of the allowance, and you rarely work them, so most of it goes unused and comes back after the year ends.</p>
+                ${
+                  t.allowance >= PERSONAL_ALLOWANCE * 0.85
+                    ? `<p class="muted small">Compass uses code <strong>${esc(t.code)}</strong>${t.codeSource === 'manual' ? ' (the new code you entered)' : ''}, so ${gbp0(t.allowance / 52)} a week goes through tax-free. ${(() => {
+                        const back = t.payslips.filter((p) => !p.deleted && p.tax < 0).sort((x, y) => y.payDate.localeCompare(x.payDate))[0];
+                        return back
+                          ? `Your ${esc(shortDate(back.payDate))} payslip handed back <strong>${gbp(-back.tax)}</strong> of tax taken earlier in the year.`
+                          : 'Because the code is cumulative, the first payday on it hands back any tax taken earlier in the year that the new code says you didn’t owe.';
+                      })()}</p>`
+                    : `<p class="muted small">Compass uses code <strong>${esc(t.code)}</strong>, so it only lets ${gbp0(t.allowance / 52)} a week through tax-free. Your other two agency jobs hold the rest of the allowance, and you rarely work them, so most of it goes unused and comes back after the year ends.</p>`
+                }
               </div>
 
               ${
                 t.gain
                   ? `<div class="sec" style="--dot:var(--grape)"><span class="dot"></span><h2>Or get it back sooner</h2></div>
                     <div class="card top-grape stack">
-                      <p>If HMRC moved your whole allowance to Compass (code ${esc(settings.fixedCode)}), your next payslip would hand back about <strong class="num">${gbp0(t.gain.lump)}</strong>, then take about <strong class="num">${gbp(t.gain.weekly)}</strong> less tax in a ${gbp0(t.weeklyAssumption)} week.</p>
+                      <p>If HMRC moved ${t.allowance >= PERSONAL_ALLOWANCE * 0.85 ? 'the last of' : 'your whole'} allowance to Compass (code ${esc(settings.fixedCode)}), your next payslip would hand back about <strong class="num">${gbp0(t.gain.lump)}</strong>, then take about <strong class="num">${gbp(t.gain.weekly)}</strong> less tax in a ${gbp0(t.weeklyAssumption)} week.</p>
                       <p class="muted small">In the HMRC app: PAYE → your other jobs → update estimated income to what you really expect (near £0). HMRC then reissues codes. It’s the same money either way: sooner, or as a refund after April.</p>
                     </div>`
                   : ''
@@ -113,7 +122,8 @@ export async function renderTax(el, rerender) {
             <span class="muted small"><strong class="num" id="weekly-out">${gbp0(t.weeklyAssumption)}</strong> a week${t.usual ? ` · your average so far is ${gbp0(t.usual)}` : ''}</span>
           </label>
           <label class="stack" style="gap:4px"><span class="stat-label">Compass tax code</span>
-            <input class="field" name="code" value="${esc(settings.taxCode)}" placeholder="${esc(t.latest?.taxCode ?? '1257L')} (from payslip)" maxlength="8"></label>
+            <input class="field" name="code" value="${t.codeSource === 'manual' ? esc(settings.taxCode) : ''}" placeholder="${esc(t.latest?.taxCode ?? '1257L')} (from payslip)" maxlength="8">
+            <span class="muted small">New code from HMRC that payroll hasn’t used yet? Enter it here. The next payslip takes over once it arrives.</span></label>
           <div class="grid2">
             <label class="stack" style="gap:4px"><span class="stat-label">Other jobs: pay</span><input class="field" name="otherIncome" type="number" step="0.01" min="0" value="${esc(settings.otherIncome)}"></label>
             <label class="stack" style="gap:4px"><span class="stat-label">Other jobs: tax</span><input class="field" name="otherTax" type="number" step="0.01" min="0" value="${esc(settings.otherTax)}"></label>
@@ -142,7 +152,8 @@ export async function renderTax(el, rerender) {
       toast('Artemis can’t use that code yet (L, T, M, N or BR codes work)');
       return;
     }
-    await setTaxSettings({ taxCode: code, otherIncome: Number(f.otherIncome.value) || 0, otherTax: Number(f.otherTax.value) || 0, weeklyAssumption: Number(range.value) });
+    const codeChanged = code !== (t.codeSource === 'manual' ? settings.taxCode : '');
+    await setTaxSettings({ taxCode: code, ...(codeChanged ? { taxCodeSetOn: date, taxCodeWas: t.latest?.taxCode ?? null } : {}), otherIncome: Number(f.otherIncome.value) || 0, otherTax: Number(f.otherTax.value) || 0, weeklyAssumption: Number(range.value) });
     toast('Saved');
     rerender();
   });

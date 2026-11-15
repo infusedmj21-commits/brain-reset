@@ -12,7 +12,7 @@ export const listPayslips = (database = db) => live('payslips', database);
 
 const KEEP = [
   'payDate', 'taxWeek', 'taxCode', 'basis', 'lines', 'basic', 'holiday', 'basicHours', 'gross', 'nonTaxable',
-  'tax', 'ni', 'pension', 'net', 'deductions', 'grossToDate', 'taxableToDate', 'taxToDate', 'niToDate', 'pensionToDate'
+  'tax', 'taxBack', 'ni', 'pension', 'net', 'deductions', 'grossToDate', 'taxableToDate', 'taxToDate', 'niToDate', 'pensionToDate'
 ];
 
 /** Save a parsed payslip. One per pay date: re-uploading replaces it. */
@@ -37,10 +37,17 @@ export async function setTaxSettings(values, database = db) {
   return save('checkins', { id: SETTINGS_ID, kind: 'setting', date: '', values: { ...current, ...values } }, database);
 }
 
-/** Tax code to use: the one set by hand, else the latest payslip's, else 1257L. */
+/**
+ * Tax code to use. One typed in by hand (a new code from HMRC that payroll hasn't used yet)
+ * wins until payroll moves: a payslip dated on or after the day it was typed, showing a
+ * different code from the one payslips had then. A payslip that still shows the old code
+ * (payroll hasn't caught up) doesn't cancel it. Otherwise the latest payslip's, else 1257L.
+ */
 export function codeInUse(settings, latest) {
-  const code = settings.taxCode || latest?.taxCode || '1257L';
-  return { code, allowance: allowanceFromCode(code) ?? 12579 };
+  const moved = latest && settings.taxCodeSetOn && latest.payDate >= settings.taxCodeSetOn && latest.taxCode !== settings.taxCodeWas;
+  const manual = Boolean(settings.taxCode) && !moved;
+  const code = (manual ? settings.taxCode : latest?.taxCode) || settings.taxCode || '1257L';
+  return { code, allowance: allowanceFromCode(code) ?? 12579, source: manual ? 'manual' : latest?.taxCode ? 'payslip' : 'default' };
 }
 
 /**
@@ -59,7 +66,7 @@ export async function loadTaxPicture(date, database = db) {
 
 export function taxPicture({ shifts, payments, payslips, settings, date }) {
   const latest = latestPayslip(payslips, date);
-  const { code, allowance } = codeInUse(settings, latest);
+  const { code, allowance, source: codeSource } = codeInUse(settings, latest);
   const usual = latest ? Math.round((latest.taxableToDate ?? latest.grossToDate) / (latest.taxWeek || taxWeek(latest.payDate)) / 10) * 10 : 0;
   const weeklyAssumption = settings.weeklyAssumption ?? usual;
   const back = Math.ceil(daysBetween(taxYearStart(date), date) / 7) + 1;
@@ -70,5 +77,5 @@ export function taxPicture({ shifts, payments, payslips, settings, date }) {
   const fixed = allowanceFromCode(settings.fixedCode) ?? 12579;
   const gain = latest && allowance < fixed ? codeFixGain({ payslip: latest, today: date, currentAllowance: allowance, fixedAllowance: fixed, weeklyGross: weeklyAssumption }) : null;
   const byPayday = new Map(year.weeks.map((w) => [w.payday, w]));
-  return { latest, code, allowance, usual, weeklyAssumption, year, refund, gain, byPayday, settings, payslips, periods };
+  return { latest, code, allowance, codeSource, usual, weeklyAssumption, year, refund, gain, byPayday, settings, payslips, periods };
 }

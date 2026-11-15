@@ -1,8 +1,13 @@
 // Reads the figures Artemis needs from a Compass Group pay advice (text extracted from the PDF).
 // Deliberately ignores personal details (name, address, NI number, employee ref).
 
-const num = (s) => (s == null ? null : Number(String(s).replace(/,/g, '')));
-const money = String.raw`(-?[\d,]+\.\d{2})`;
+// Amounts can be negative either way round: "-554.20" or "554.20-" (how refunds are often printed).
+const num = (s) => {
+  if (s == null) return null;
+  const t = String(s).replace(/,/g, '');
+  return t.endsWith('-') ? -Number(t.slice(0, -1)) : Number(t);
+};
+const money = String.raw`(-?[\d,]+\.\d{2}-?)`;
 
 function first(text, re) {
   const m = text.match(re);
@@ -69,7 +74,18 @@ export function parsePayslipText(raw) {
   // Compass leaves the Tax and NI lines off entirely in weeks where none was deducted.
   out.tax ??= 0;
   out.ni ??= 0;
+
+  // Tax refunds: a "Tax refund/rebate" line, or a tax line whose sign doesn't fit the pay.
+  // Net pay settles it: gross + non-taxable − NI − pension − net is what tax must have been.
+  const labelled = pick(new RegExp(String.raw`Tax (?:refund(?:ed)?|rebate) ${money}`, 'i'));
+  if (labelled != null && out.tax === 0) out.tax = -Math.abs(labelled);
+  if (out.net != null) {
+    const implied = Math.round((out.gross + (out.nonTaxable || 0) - out.ni - out.pension - out.net) * 100) / 100;
+    const near = (a, b) => Math.abs(a - b) <= 0.02;
+    if (implied < 0 && (out.tax === 0 || near(-out.tax, implied))) out.tax = implied;
+  }
   out.net ??= Math.round((out.gross - out.tax - out.ni - out.pension) * 100) / 100;
+  out.taxBack = out.tax < 0 ? -out.tax : 0;
   return out;
 }
 
