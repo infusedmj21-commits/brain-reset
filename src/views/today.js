@@ -2,7 +2,6 @@ import { ICONS } from './icons.js';
 import {
   doneByDate,
   firstActiveDate,
-  getDayPlan,
   live,
   logSprint,
   setDayPlan,
@@ -11,7 +10,6 @@ import {
 } from '../db.js';
 import { addDays, prettyDate, today, weekDates, weekStart } from '../logic/dates.js';
 import {
-  DAY_TYPES,
   TIKTOK_LEVELS,
   bestSprint,
   buildChecklist,
@@ -24,25 +22,37 @@ import {
 } from '../logic/routine.js';
 import { getName } from '../theme.js';
 import { esc, toast } from '../ui.js';
-import { DAY_LOOK, HABIT_LINKS, HABIT_LOOK } from './look.js';
+import { HABIT_LINKS, HABIT_LOOK } from './look.js';
+import { OVERRIDE_REASONS, TIERS, TIER_ORDER, checklistDayType } from '../logic/dayload.js';
+import { loadDay, overrideDay } from '../data/dayload.js';
 import { holdTiktok, loadTiktok, logTiktokDay, restartTiktok, stepTiktok } from '../data/tiktok.js';
 
 const shortDay = (d) => prettyDate(d).replace(/^(\w{3})\w*/, '$1');
 
 const DOW = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-function dayChips(selected, attr, small = false) {
-  return `<div class="chips${small ? ' small' : ''}" role="group">
-    ${Object.entries(DAY_TYPES)
-      .map(([key, t]) => {
-        const look = DAY_LOOK[key];
-        return `<button type="button" class="chip" ${attr}="${key}" aria-pressed="${selected === key}">
-          <span class="ico" style="--ico:${look.colour}" aria-hidden="true">${look.icon}</span>
-          <span>${small ? esc(look.short) : esc(t.label)}<small>${esc(t.hint)}</small></span>
-        </button>`;
-      })
-      .join('')}
-  </div>`;
+/** The day label: tier, why, and a tap to correct it. Overrides are logged for tuning. */
+function dayLabelHTML(day) {
+  const t = TIERS[day.tier];
+  return `<details class="day-label${day.overridden ? ' overridden' : ''}">
+    <summary>
+      <span class="dl-tier">${esc(t.label)}${day.overridden ? ' <span class="vchip v-none">You set this</span>' : ''}</span>
+      <span class="dl-why muted small">${esc(day.why)}${day.overridden && day.reason ? ` · ${esc(OVERRIDE_REASONS[day.reason] ?? '')}` : ''}</span>
+      <span class="dl-edit" aria-hidden="true">Change</span>
+    </summary>
+    <div class="dl-panel">
+      <div class="stat-label">How heavy is today really?</div>
+      <div class="chips small four" role="group" aria-label="Day load">
+        ${TIER_ORDER.map((k) => `<button type="button" class="chip" data-tier="${k}" aria-pressed="${day.tier === k}"><span>${esc(TIERS[k].short)}<small>${esc(TIERS[k].hint)}</small></span></button>`).join('')}
+      </div>
+      <div class="stat-label" style="margin-top:10px">Why? (helps tune the weights)</div>
+      <div class="chips small" role="group" aria-label="Reason">
+        ${Object.entries(OVERRIDE_REASONS).map(([k, l]) => `<button type="button" class="chip" data-reason="${k}" aria-pressed="${day.reason === k}">${esc(l)}</button>`).join('')}
+      </div>
+      ${day.overridden ? `<button type="button" class="btn-mini" data-auto style="margin-top:10px">Back to automatic (${esc(TIERS[day.computed].short)})</button>` : ''}
+      <p class="muted small" style="margin:8px 0 0">Worked out from your shifts: today, the two days before, and tomorrow’s start. Score ${day.score}.</p>
+    </div>
+  </details>`;
 }
 
 function missionHTML(item, done, suggestion, rotating) {
@@ -72,20 +82,21 @@ function missionHTML(item, done, suggestion, rotating) {
   </li>`;
 }
 
-function subline(dayType, doneCount, total) {
-  if (!dayType) return 'What kind of day is it? Pick one to get your missions.';
-  const label = DAY_TYPES[dayType].label;
+function subline(tier, doneCount, total) {
+  const label = TIERS[tier].label;
   if (doneCount === total) return `${label}. All ${total} done. Brilliant.`;
   if (doneCount === 0) return `${label}. ${total} missions lined up.`;
   return `${label}. ${doneCount} of ${total} done, keep going.`;
 }
 
+let dayLabelOpen = false;
+
 export async function renderToday(el, rerender) {
   const date = today();
   const tomorrow = addDays(date, 1);
-  const [plan, tomorrowPlan, doneMap, uDates, first, sprints] = await Promise.all([
-    getDayPlan(date),
-    getDayPlan(tomorrow),
+  const [day, tomorrowDay, doneMap, uDates, first, sprints] = await Promise.all([
+    loadDay(date),
+    loadDay(tomorrow, undefined, { log: false }),
     doneByDate(),
     unpromptedDates(),
     firstActiveDate(),
@@ -97,21 +108,18 @@ export async function renderToday(el, rerender) {
   const missed = missedYesterday(date, doneMap, first);
   const tk = await loadTiktok(date);
   const st = tk.state;
-  const dayType = plan?.day_type ?? null;
+  const plan = day.plan;
+  const dayType = checklistDayType(day.tier, day.timing);
   const sprint = sprintSummary(sprints, date, weekStart);
   const todaySprint = sprints.find((s) => s.date === date);
 
-  let items = [];
-  let suggestion = null;
-  let rotating = null;
-  if (dayType) {
-    ({ items, suggestion, rotating } = buildChecklist({
-      date,
-      dayType,
-      unpromptedDates: uDates,
-      rotation: plan.rotation ?? null
-    }));
-  }
+  const { items, suggestion, rotating } = buildChecklist({
+    date,
+    dayType,
+    tier: day.tier,
+    unpromptedDates: uDates,
+    rotation: plan?.rotation ?? null
+  });
   const doneCount = items.filter((i) => done.has(i.habit)).length;
   const pct = items.length ? Math.round((doneCount / items.length) * 100) : 0;
 
@@ -146,7 +154,7 @@ export async function renderToday(el, rerender) {
       <div>
         <div class="eyebrow">${esc(prettyDate(date))}</div>
         <h1 class="page-title">Hey${name ? ` ${esc(name)}` : ''}</h1>
-        <p class="page-sub">${esc(subline(dayType, doneCount, items.length))}</p>
+        <p class="page-sub">${esc(subline(day.tier, doneCount, items.length))}</p>
       </div>
       <div class="hero-stats">
         <div class="stat-card">
@@ -167,17 +175,16 @@ export async function renderToday(el, rerender) {
         : ''
     }
 
-    <div class="sec" style="--dot:var(--tomato)"><span class="dot"></span><h2>What kind of day?</h2></div>
-    ${dayChips(dayType, 'data-daytype')}
+    ${dayLabelHTML(day)}
 
     <div class="layout">
       <section>
         <div class="sec" style="--dot:var(--mint)"><span class="dot"></span><h2>Today’s missions</h2>
-          ${dayType === 'minimum' ? '<span class="aside">Sprint + Spanish keeps the streak alive</span>' : ''}</div>
+          ${day.tier === 'minimum' ? '<span class="aside">Sprint + Spanish keeps the streak alive</span>' : ''}</div>
         ${
           items.length
             ? `<ul class="missions">${items.map((i) => missionHTML(i, done.has(i.habit), suggestion, rotating)).join('')}</ul>`
-            : `<div class="empty-hint">Pick a day type above and your missions appear here.</div>`
+            : `<div class="empty-hint">Every task is switched off. Turn some back on in Settings.</div>`
         }
       </section>
 
@@ -262,21 +269,41 @@ export async function renderToday(el, rerender) {
 
         <div class="card top-gum">
           <h3>${ICONS.calendar} Tomorrow</h3>
-          <p class="muted small" style="margin:4px 0 12px">${
-            tomorrowPlan ? `Set: ${esc(DAY_TYPES[tomorrowPlan.day_type]?.label ?? '')}` : 'Set it tonight so tomorrow starts ready.'
-          }</p>
-          ${dayChips(tomorrowPlan?.day_type ?? null, 'data-tomorrow', true)}
+          <div class="row"><div class="big">${esc(TIERS[tomorrowDay.tier].short)}</div>${tomorrowDay.overridden ? '<span class="delta">You set this</span>' : ''}</div>
+          <p class="muted small" style="margin:6px 0 0">${esc(tomorrowDay.why)}. Worked out from your shifts, so there’s nothing to set.</p>
         </div>
       </aside>
     </div>
   `;
 
-  el.querySelectorAll('[data-daytype]').forEach((b) =>
+  // ---- Day load override ----
+  const keepOpen = () => {
+    dayLabelOpen = true;
+  };
+  el.querySelectorAll('[data-tier]').forEach((b) =>
     b.addEventListener('click', async () => {
-      await setDayPlan(date, { day_type: b.dataset.daytype });
+      keepOpen();
+      await overrideDay(date, b.dataset.tier === day.computed && !day.reason ? null : b.dataset.tier, day.reason);
+      toast(`Today: ${TIERS[b.dataset.tier].label}`);
       rerender();
     })
   );
+  el.querySelectorAll('[data-reason]').forEach((b) =>
+    b.addEventListener('click', async () => {
+      keepOpen();
+      await overrideDay(date, day.tier, b.dataset.reason);
+      rerender();
+    })
+  );
+  el.querySelector('[data-auto]')?.addEventListener('click', async () => {
+    await overrideDay(date, null);
+    toast(`Back to automatic: ${TIERS[day.computed].label}`);
+    rerender();
+  });
+  if (dayLabelOpen) {
+    el.querySelector('.day-label').open = true;
+    dayLabelOpen = false;
+  }
 
   // ---- TikTok plan ----
   el.querySelectorAll('[data-tk]').forEach((b) =>
@@ -313,13 +340,6 @@ export async function renderToday(el, rerender) {
     rerender();
   });
 
-  el.querySelectorAll('[data-tomorrow]').forEach((b) =>
-    b.addEventListener('click', async () => {
-      await setDayPlan(tomorrow, { day_type: b.dataset.tomorrow });
-      toast(`Tomorrow: ${DAY_TYPES[b.dataset.tomorrow].label}`);
-      rerender();
-    })
-  );
 
   el.querySelectorAll('[data-toggle]').forEach((b) =>
     b.addEventListener('click', async () => {

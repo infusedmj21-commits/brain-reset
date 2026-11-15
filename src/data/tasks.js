@@ -9,17 +9,10 @@ import { listWorkouts, ticksFor } from './health.js';
 import { addDays, daysBetween, prettyDate, today, weekStart } from '../logic/dates.js';
 import { activeDates, gapBefore, reviewWeek } from '../logic/review.js';
 import { needsRescore, rankTasks, scoreHistory } from '../logic/scoring.js';
-import { DAY_TYPES, currentRules } from '../logic/routine.js';
+import { currentRules } from '../logic/routine.js';
 
 const short = (d) => prettyDate(d).replace(/^(\w{3})\w*/, '$1');
 
-/** Day type that fits today's shifts: early before 2pm, late after, minimum for 10h+ days. */
-export function suggestDayType(todays) {
-  if (!todays.length) return 'off';
-  const hours = todays.reduce((t, x) => t + (Number(x.hours) || 0), 0);
-  if (hours >= 10 || todays.length > 1) return 'minimum';
-  return (todays[0].start ?? '09:00') < '14:00' ? 'early' : 'late';
-}
 
 // Everything Artemis needs Michael to put in by hand, in one list.
 
@@ -58,18 +51,6 @@ export async function openTasks(database = db) {
 
   for (const s of shiftsToConfirm(shifts, date)) tasks.push({ kind: 'shift', id: s.id, shift: s });
 
-  if (!plan?.day_type) {
-    const todays = liveShifts.filter((x) => x.date === date).sort(byWhen);
-    const pick = suggestDayType(todays);
-    tasks.push({
-      kind: 'link', id: 'daytype', href: '#/today',
-      title: `Pick today’s day type: ${DAY_TYPES[pick].label.toLowerCase()} fits`,
-      detail: todays.length
-        ? `You’re at ${todays.map((x) => `${x.venue} ${x.start ?? ''}`.trim()).join(' and ')} today.`
-        : 'No shift booked today.',
-      why: 'It sets which Brain Reset missions you get and when to do them, so today counts towards your streak.'
-    });
-  }
 
   if (!focus.length) {
     const active = ventures.filter((v) => v.status !== 'archived');
