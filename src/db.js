@@ -28,7 +28,9 @@ export const SYNCED_TABLES = [
   'workout_sets',
   'checkins',
   'payslips',
-  'day_logs'
+  'day_logs',
+  'fc_cards',
+  'fc_reviews'
 ];
 
 export function createDB(name = 'brain-reset') {
@@ -76,6 +78,13 @@ export function createDB(name = 'brain-reset') {
   // v6: one row per day for tuning the day-load weights (and, later, flashcard pacing).
   db.version(6).stores({
     day_logs: 'id, date, updated_at'
+  });
+  // v7: flashcards. fc_cards holds each card's FSRS memory state; fc_reviews logs every answer.
+  // fc_media caches audio/image lookups on this device only (not synced).
+  db.version(7).stores({
+    fc_cards: 'id, deck, updated_at',
+    fc_reviews: 'id, card_id, deck, date, updated_at',
+    fc_media: 'id'
   });
   return db;
 }
