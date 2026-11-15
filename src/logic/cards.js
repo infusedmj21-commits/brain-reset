@@ -199,3 +199,41 @@ export function parseCloze(text) {
   const m = String(text).match(/^(.*)\[(.+?)\](.*)$/);
   return m ? { before: m[1], answer: m[2], after: m[3] } : null;
 }
+
+// ---- Stage gate ----
+// A stage's new cards wait until most of the stage before it is settled: answered well enough
+// that its next review is at least a week away. Words marked known in the placement sweep
+// count as settled.
+export const GATE_SHARE = 0.85;
+export const SETTLED_DAYS = 7;
+
+export function isSettled(row) {
+  const c = toFsrs(row);
+  if (!c || c.state !== State.Review || !c.last_review) return false;
+  return (c.due - c.last_review) / 86400000 >= SETTLED_DAYS - 0.5;
+}
+
+/** Which stages may introduce new cards, and (if one is waiting) how close it is to opening. */
+export function stageGate(defs, byId, stages) {
+  const ids = (stages?.length ? stages : [{ id: 1 }]).map((s) => s.id);
+  const open = new Set([ids[0]]);
+  for (let i = 1; i < ids.length; i++) {
+    const prev = defs.filter((d) => d.stage === ids[i - 1]);
+    const settled = prev.filter((d) => isSettled(byId.get(d.id))).length;
+    const need = Math.ceil(prev.length * GATE_SHARE);
+    if (settled < need) return { open, waiting: { stage: ids[i], prev: ids[i - 1], settled, need, total: prev.length } };
+    open.add(ids[i]);
+  }
+  return { open, waiting: null };
+}
+
+// ---- Placement ----
+/**
+ * FSRS state for a word marked "I know this": a review card whose next check is `days` away
+ * (spread 21–45 days by the caller so they don't all land on one day). At 90% retention the
+ * interval equals stability, so stability = days keeps the model consistent.
+ */
+export function placedState(now, days) {
+  const base = scheduler.next(createEmptyCard(now), now, Rating.Easy).card;
+  return { ...base, state: State.Review, stability: days, scheduled_days: days, last_review: now, due: new Date(now.getTime() + days * 86400000) };
+}

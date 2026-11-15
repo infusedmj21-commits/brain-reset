@@ -1,9 +1,9 @@
 import { DECKS, deckById } from '../decks/index.js';
-import { answerCard, getDayLog, listReviews, listStates, logCardsDay } from '../data/cards.js';
+import { answerCard, getDayLog, listReviews, listStates, logCardsDay, placeNotes } from '../data/cards.js';
 import { loadDay } from '../data/dayload.js';
 import { pictogram, play } from '../data/media.js';
 import {
-  CARD_TYPES, Rating, adaptiveNew, introducible, cardsFromDeck, checkTyped, dueSummary, forecast, forgetRate, intervalLabel, parseCloze, preview, toFsrs
+  CARD_TYPES, Rating, adaptiveNew, introducible, cardsFromDeck, checkTyped, dueSummary, forecast, forgetRate, intervalLabel, parseCloze, preview, stageGate, toFsrs
 } from '../logic/cards.js';
 import { TIERS } from '../logic/dayload.js';
 import { today } from '../logic/dates.js';
@@ -33,10 +33,17 @@ async function planFor(deck, date, now, day) {
   // Only cards the deck still has: words that left a rebuilt deck stop counting.
   const [states, reviews] = await Promise.all([listStates(deck.id).then((s) => s.filter((r) => ids.has(r.id))), listReviews(deck.id)]);
   const due = dueSummary(defs, states, now);
-  due.fresh = introducible(due.fresh, states, date);
+  const gate = stageGate(defs, due.byId, deck.stages);
+  const unlocked = due.fresh.filter((d) => gate.open.has(d.stage));
+  due.fresh = introducible(unlocked, states, date);
   const doneToday = states.filter((s) => s.introduced === date).length;
   const rate = forgetRate(reviews, now);
   const plan = adaptiveNew({ tier: day.tier, reviewsDue: due.reviews.length, learningDue: due.learning.length, rate: rate.rate, available: due.fresh.length, doneToday });
+  const w = gate.waiting;
+  if (w && !unlocked.length && plan.count === 0 && w.total) {
+    plan.reasons = [`stage ${w.stage} opens once ${w.need} of stage ${w.prev}’s ${w.total} cards are settled (next review a week or more away). ${w.settled} so far`];
+  }
+  const placeable = defs.some((d) => gate.open.has(d.stage) && !due.byId.has(d.id) && !states.some((s) => s.note === d.noteId));
   const stageOf = (n) => defs.filter((d) => d.stage === n);
   const stages = (deck.stages ?? [{ id: 1, name: 'Stage 1' }]).map((s) => {
     const all = stageOf(s.id);
@@ -44,7 +51,7 @@ async function planFor(deck, date, now, day) {
     return { ...s, total: all.length, seen };
   });
   const current = stages.find((s) => s.seen < s.total) ?? stages.at(-1);
-  return { defs, states, reviews, due, plan, rate, stages, current, doneToday, forecast: forecast(states, now, 7) };
+  return { defs, states, reviews, due, plan, rate, stages, current, doneToday, gate, placeable, forecast: forecast(states, now, 7) };
 }
 
 // ------------------------------------------------------------------ Overview
@@ -52,6 +59,7 @@ async function planFor(deck, date, now, day) {
 export async function renderCards(el, rerender, ctx) {
   const [section, deckId] = ctx?.params ?? [];
   if (section === 'study' && deckById(deckId)) return renderStudy(el, rerender, deckById(deckId));
+  if (section === 'place' && deckById(deckId)) return renderPlace(el, rerender, deckById(deckId));
 
   const date = today();
   const now = new Date();
@@ -106,6 +114,7 @@ function deckCard(deck, p) {
       .map((s) => `<span title="${esc(s.name)}: ${s.seen} of ${s.total} seen"><i style="width:${s.total ? (s.seen / s.total) * 100 : 0}%"></i></span>`)
       .join('')}</div>
     ${todo ? `<a class="btn block" href="#/cards/study/${esc(deck.id)}">Study ${todo} card${todo === 1 ? '' : 's'}</a>` : '<div class="empty-hint">All done for today.</div>'}
+    ${p.placeable ? `<a class="place-link small" href="#/cards/place/${esc(deck.id)}">Already know some of these? Mark them</a>` : ''}
   </div>`;
 }
 
@@ -119,6 +128,62 @@ function forecastChart(counts) {
   return `<div class="fc-chart">${counts
     .map((n, i) => `<div class="fc-col" title="${days[i]}: ${n} review${n === 1 ? '' : 's'}"><span class="num">${n}</span><i style="height:${(n / max) * 100}%"></i><small>${days[i]}</small></div>`)
     .join('')}</div>`;
+}
+
+// ------------------------------------------------------------------ Placement sweep
+
+let picked = null;
+
+async function renderPlace(el, rerender, deck) {
+  const now = new Date();
+  const defs = cardsFromDeck(deck);
+  const ids = new Set(defs.map((d) => d.id));
+  const states = (await listStates(deck.id)).filter((r) => ids.has(r.id));
+  const byId = new Map(states.map((s) => [s.id, s]));
+  const touched = new Set(states.map((s) => s.note));
+  const gate = stageGate(defs, byId, deck.stages);
+  // Words in unlocked stages you haven't met yet, one row per word, in list order.
+  const notes = deck.notes.filter((n) => gate.open.has(n.stage ?? 1) && !touched.has(n.id));
+  if (!picked || picked.deck !== deck.id) picked = { deck: deck.id, ids: new Set() };
+  const count = picked.ids.size;
+  const cardCount = defs.filter((d) => picked.ids.has(d.noteId)).length;
+
+  el.innerHTML = `
+    <a class="back" href="#/cards">← Cards</a>
+    <h1 class="page-title">Words you already know</h1>
+    <p class="muted" style="max-width:56ch">Tap the ones you’d understand instantly, even in fast speech. They skip learning and come back in 3–6 weeks as a check. Anything you then get wrong drops back into normal reviews. Leave anything you’d hesitate on.</p>
+    ${
+      !notes.length
+        ? '<div class="empty-hint" style="margin-top:14px">Nothing left to mark in the unlocked stages.</div>'
+        : `<div class="place-bar card">
+            <span id="place-count"><b class="num">${count}</b> marked <span class="muted small">(${cardCount} card${cardCount === 1 ? '' : 's'})</span></span>
+            <button type="button" class="btn" id="place-save" ${count ? '' : 'disabled'}>Mark as known</button>
+          </div>
+          <div class="place-list">${notes
+            .map((n) => `<button type="button" class="place-row" data-note="${esc(n.id)}" aria-pressed="${picked.ids.has(n.id)}">
+                <span class="tick">${picked.ids.has(n.id) ? '✓' : ''}</span><b lang="es">${esc(n.es)}</b><span class="muted small">${esc(n.en)}</span></button>`)
+            .join('')}</div>`
+    }`;
+
+  el.querySelectorAll('.place-row').forEach((b) =>
+    b.addEventListener('click', () => {
+      const id = b.dataset.note;
+      picked.ids.has(id) ? picked.ids.delete(id) : picked.ids.add(id);
+      const on = picked.ids.has(id);
+      b.setAttribute('aria-pressed', String(on));
+      b.querySelector('.tick').textContent = on ? '✓' : '';
+      const cards = defs.filter((d) => picked.ids.has(d.noteId)).length;
+      el.querySelector('#place-count').innerHTML = `<b class="num">${picked.ids.size}</b> marked <span class="muted small">(${cards} card${cards === 1 ? '' : 's'})</span>`;
+      el.querySelector('#place-save').disabled = !picked.ids.size;
+    })
+  );
+  el.querySelector('#place-save')?.addEventListener('click', async (e) => {
+    e.target.disabled = true;
+    const n = await placeNotes(defs, [...picked.ids], byId, now);
+    toast(`${picked.ids.size} word${picked.ids.size === 1 ? '' : 's'} marked known (${n} cards)`);
+    picked = null;
+    location.hash = '#/cards';
+  });
 }
 
 // ------------------------------------------------------------------ Study session
