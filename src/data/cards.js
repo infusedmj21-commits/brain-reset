@@ -1,6 +1,6 @@
 import { db, live, save } from '../db.js';
 import { createEmptyCard } from 'ts-fsrs';
-import { fromFsrs, scheduler, toFsrs } from '../logic/cards.js';
+import { fromFsrs, placedState, scheduler, toFsrs } from '../logic/cards.js';
 
 // Card memory states and review logs (both synced), plus the per-day flashcard log.
 
@@ -55,3 +55,24 @@ export async function logCardsDay(date, fields, database = db) {
 }
 
 export const getDayLog = (date, database = db) => database.day_logs.get(`day:${date}`);
+
+/**
+ * Placement sweep: mark notes as already known. Every card of each note gets a review state
+ * 3–6 weeks out (spread so they don't pile up on one day). No review log rows are written,
+ * so stats and forgetting rates only ever reflect real answers. A known word you then get
+ * wrong comes back through normal reviews.
+ */
+export async function placeNotes(defs, noteIds, existing, now = new Date(), database = db) {
+  const ids = new Set(noteIds);
+  const date = localDate(now);
+  let n = 0;
+  for (const def of defs) {
+    if (!ids.has(def.noteId) || existing.has(def.id)) continue;
+    const days = 21 + Math.floor(Math.random() * 25);
+    await save('fc_cards', { id: def.id, deck: def.deck, stage: def.stage, type: def.type, note: def.noteId, placed: date, fsrs: fromFsrs(placedState(now, days)) }, database);
+    n++;
+  }
+  const log = await getDayLog(date, database);
+  await logCardsDay(date, { placed: (log?.cards?.placed ?? 0) + ids.size }, database);
+  return n;
+}

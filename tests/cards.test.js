@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   Rating, State, adaptiveNew, cardsFromDeck, checkTyped, dueSummary, forecast, forgetRate, fromFsrs,
-  intervalLabel, parseCloze, performanceFactor, preview
+  intervalLabel, isSettled, parseCloze, performanceFactor, placedState, preview, stageGate
 } from '../src/logic/cards.js';
 
 const deck = {
@@ -88,5 +88,30 @@ describe('shipped decks', () => {
     }
     const es = DECKS.find((d) => d.id === 'es');
     expect(es.notes.every((n) => n.stage === 1 && !n.cards.includes('cloze'))).toBe(true);
+  });
+
+  describe('stage gate and placement', () => {
+    const now = new Date('2026-11-15T10:00:00Z');
+    const big = { id: 'g', notes: [...Array.from({ length: 20 }, (_, i) => ({ id: `g:a${i}`, stage: 1, es: `a${i}`, en: 'x' })), { id: 'g:b0', stage: 2, es: 'b0', en: 'y' }] };
+    const defs = cardsFromDeck(big);
+    const stages = [{ id: 1 }, { id: 2 }];
+    const row = (card) => ({ fsrs: fromFsrs(card) });
+
+    it('a known word is a settled review card due weeks out', () => {
+      const c = placedState(now, 30);
+      expect(c.state).toBe(State.Review);
+      expect(Math.round((c.due - now) / 86400000)).toBe(30);
+      expect(isSettled(row(c))).toBe(true);
+      const fresh = preview(null, now)[Rating.Good].card;
+      expect(isSettled(row(fresh))).toBe(false);
+    });
+    it('keeps stage 2 shut until 85% of stage 1 is settled', () => {
+      const byId = new Map(defs.filter((d) => d.stage === 1).slice(0, 16).map((d) => [d.id, row(placedState(now, 25))]));
+      const shut = stageGate(defs, byId, stages);
+      expect(shut.open.has(2)).toBe(false);
+      expect(shut.waiting).toMatchObject({ stage: 2, settled: 16, need: 17, total: 20 });
+      byId.set('g:a16:recog', row(placedState(now, 25)));
+      expect(stageGate(defs, byId, stages).open.has(2)).toBe(true);
+    });
   });
 });
