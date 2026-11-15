@@ -29,7 +29,9 @@ const muted = () => {
 /** Today's plan for a deck: what's due, how many new, and why. */
 async function planFor(deck, date, now, day) {
   const defs = cardsFromDeck(deck);
-  const [states, reviews] = await Promise.all([listStates(deck.id), listReviews(deck.id)]);
+  const ids = new Set(defs.map((d) => d.id));
+  // Only cards the deck still has: words that left a rebuilt deck stop counting.
+  const [states, reviews] = await Promise.all([listStates(deck.id).then((s) => s.filter((r) => ids.has(r.id))), listReviews(deck.id)]);
   const due = dueSummary(defs, states, now);
   due.fresh = introducible(due.fresh, states, date);
   const doneToday = states.filter((s) => s.introduced === date).length;
@@ -80,6 +82,8 @@ export async function renderCards(el, rerender, ctx) {
                 <div class="stat-row"><span class="muted">New cards seen</span><strong class="num">${plans.reduce((t, p) => t + p.doneToday, 0)}</strong></div>
                 <div class="stat-row"><span class="muted">Time</span><strong class="num">${dayLog?.cards?.minutes_actual ?? 0} min</strong></div>
                 <p class="muted small" style="margin:0">Desired retention 90%. New cards adapt to your day load, your review pile and how much you’ve been forgetting this week.</p>
+              </div>
+              <div class="credits" style="margin-top:10px">${DECKS.flatMap((d) => d.credits ?? []).map((c) => `<span>${esc(c)}</span>`).join('')}
               </div>
             </aside>
           </div>`
@@ -369,6 +373,7 @@ function backHTML(def, cur) {
     def.type === 'recog'
       ? `<div class="study-answer">${esc(n.en)}</div>`
       : `<div class="study-answer" lang="es">${esc(n.es)} ${audioBtn('Hear it')}</div><div class="muted">${esc(n.en)}</div>`;
-  return `${typedNote}${main}${n.image && def.type !== 'image' ? '<img class="pic pic-small" hidden>' : def.type === 'image' ? '' : ''}${ex}${n.note ? `<div class="study-note">${esc(n.note)}</div>` : ''}
+  const forms = n.forms?.length ? `<div class="study-forms muted small">You’ll hear: <span lang="es">${n.forms.map(esc).join(', ')}</span></div>` : '';
+  return `${typedNote}${main}${forms}${n.image && def.type !== 'image' ? '<img class="pic pic-small" hidden>' : ''}${ex}${n.note ? `<div class="study-note">${esc(n.note)}</div>` : ''}
     <div class="credits"><span class="credit-audio"></span><span class="credit-img"></span></div>`;
 }
