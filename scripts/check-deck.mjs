@@ -32,7 +32,7 @@ for (const n of deck.notes) {
   if (n.example) {
     const target = fold(n.form ?? stem(n.say ?? n.es).split(' ')[0]).slice(0, 4);
     if (target.length >= 3 && !fold(n.example.es).includes(target)) problems.push(`${where}: example doesn’t use the word`);
-    if (!/[.?!]$/.test(n.example.es)) problems.push(`${where}: example should end with punctuation`);
+    if (!/[.?!…]$/.test(n.example.es)) problems.push(`${where}: example should end with punctuation`);
   }
 }
 const counts = {};
