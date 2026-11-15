@@ -3,7 +3,7 @@ import { answerCard, getDayLog, listReviews, listStates, logCardsDay } from '../
 import { loadDay } from '../data/dayload.js';
 import { pictogram, play } from '../data/media.js';
 import {
-  CARD_TYPES, Rating, adaptiveNew, cardsFromDeck, checkTyped, dueSummary, forecast, forgetRate, intervalLabel, parseCloze, preview, toFsrs
+  CARD_TYPES, Rating, adaptiveNew, introducible, cardsFromDeck, checkTyped, dueSummary, forecast, forgetRate, intervalLabel, parseCloze, preview, toFsrs
 } from '../logic/cards.js';
 import { TIERS } from '../logic/dayload.js';
 import { today } from '../logic/dates.js';
@@ -31,6 +31,7 @@ async function planFor(deck, date, now, day) {
   const defs = cardsFromDeck(deck);
   const [states, reviews] = await Promise.all([listStates(deck.id), listReviews(deck.id)]);
   const due = dueSummary(defs, states, now);
+  due.fresh = introducible(due.fresh, states, date);
   const doneToday = states.filter((s) => s.introduced === date).length;
   const rate = forgetRate(reviews, now);
   const plan = adaptiveNew({ tier: day.tier, reviewsDue: due.reviews.length, learningDue: due.learning.length, rate: rate.rate, available: due.fresh.length, doneToday });

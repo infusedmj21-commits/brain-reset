@@ -104,7 +104,9 @@ let current = null;
 /** Play a word or phrase: Lingua Libre if there's a recording, otherwise the device voice. */
 export async function play(text) {
   current?.pause();
-  const rec = await lingualibre(text).catch(() => null);
+  // "el agua" -> look up the recording for "agua"; the device voice still says the whole thing.
+  const word = String(text).replace(/^(el|la|los|las|un|una)\s+(?=\S+$)/i, '').replace(/[¿?¡!.,]/g, '');
+  const rec = await lingualibre(word).catch(() => null);
   if (rec) {
     current = new Audio(rec.url);
     try {
