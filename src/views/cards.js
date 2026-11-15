@@ -3,7 +3,7 @@ import { answerCard, getDayLog, listReviews, listStates, logCardsDay, placeNotes
 import { loadDay } from '../data/dayload.js';
 import { pictogram, play } from '../data/media.js';
 import {
-  CARD_TYPES, Rating, adaptiveNew, introducible, cardsFromDeck, checkTyped, dueSummary, forecast, forgetRate, intervalLabel, parseCloze, preview, stageGate, toFsrs
+  CARD_TYPES, Rating, adaptiveNew, introducible, cardsFromDeck, checkTyped, dueSummary, forecast, forgetRate, intervalLabel, parseCloze, preview, stageGate, toFsrs, SECONDS_PER_NEW, SECONDS_PER_REVIEW
 } from '../logic/cards.js';
 import { TIERS } from '../logic/dayload.js';
 import { today } from '../logic/dates.js';
@@ -38,7 +38,14 @@ async function planFor(deck, date, now, day) {
   due.fresh = introducible(unlocked, states, date);
   const doneToday = states.filter((s) => s.introduced === date).length;
   const rate = forgetRate(reviews, now);
-  const plan = adaptiveNew({ tier: day.tier, reviewsDue: due.reviews.length, learningDue: due.learning.length, rate: rate.rate, available: due.fresh.length, doneToday });
+  const plan =
+    deck.newPerDay === 'all'
+      ? (() => {
+          const count = due.fresh.length;
+          const estMinutes = Math.ceil(((due.reviews.length + due.learning.length) * SECONDS_PER_REVIEW + count * SECONDS_PER_NEW) / 60);
+          return { count, total: count + doneToday, estMinutes, reasons: [count ? 'short deck, so everything at once' : 'all cards met'] };
+        })()
+      : adaptiveNew({ tier: day.tier, reviewsDue: due.reviews.length, learningDue: due.learning.length, rate: rate.rate, available: due.fresh.length, doneToday });
   const w = gate.waiting;
   if (w && !unlocked.length && plan.count === 0 && w.total) {
     plan.reasons = [`stage ${w.stage} opens once ${w.need} of stage ${w.prev}’s ${w.total} cards are settled (next review a week or more away). ${w.settled} so far`];
@@ -103,7 +110,7 @@ function deckCard(deck, p) {
   const dueNow = p.due.learning.length + p.due.reviews.length;
   const todo = dueNow + p.plan.count;
   return `<div class="card deck-card stack">
-    <div class="deck-top"><span class="chipico">${ICONS.chat}</span><span><h3>${esc(deck.name)}</h3><span class="muted small">Stage ${p.current?.id ?? 1}: ${esc(p.current?.name ?? '')}</span></span></div>
+    <div class="deck-top"><span class="chipico">${ICONS[deck.icon] ?? ICONS.chat}</span><span><h3>${esc(deck.name)}</h3><span class="muted small">${p.stages.length > 1 ? `Stage ${p.current?.id ?? 1}: ` : ''}${esc(p.current?.name ?? '')}</span></span></div>
     <div class="deck-nums">
       <div><b class="num">${dueNow}</b><span>due</span></div>
       <div><b class="num">${p.plan.count}</b><span>new today</span></div>
@@ -161,7 +168,7 @@ async function renderPlace(el, rerender, deck) {
           </div>
           <div class="place-list">${notes
             .map((n) => `<button type="button" class="place-row" data-note="${esc(n.id)}" aria-pressed="${picked.ids.has(n.id)}">
-                <span class="tick">${picked.ids.has(n.id) ? '✓' : ''}</span><b lang="es">${esc(n.es)}</b><span class="muted small">${esc(n.en)}</span></button>`)
+                <span class="tick">${picked.ids.has(n.id) ? '✓' : ''}</span><b lang="${esc(deck.lang ?? 'es')}">${esc(n.es ?? n.q)}</b><span class="muted small">${esc(n.en ?? n.a)}</span></button>`)
             .join('')}</div>`
     }`;
 
@@ -254,7 +261,7 @@ async function renderStudy(el, rerender, deck) {
     <div class="study-top">
       <a class="back" href="#/cards">← Cards</a>
       <span class="muted small num">${session.done} done · ${left} left</span>
-      <button type="button" class="btn-mini" id="mute" aria-pressed="${muted()}">${muted() ? 'Sound off' : 'Sound on'}</button>
+      ${deck.audio === false ? '<span></span>' : `<button type="button" class="btn-mini" id="mute" aria-pressed="${muted()}">${muted() ? 'Sound off' : 'Sound on'}</button>`}
     </div>
     <div class="study-card card ${cur.revealed ? 'revealed' : ''}">
       <div class="study-type">${esc(CARD_TYPES[def.type])}${!row ? ' · <b>new</b>' : ''}</div>
@@ -298,7 +305,7 @@ async function renderStudy(el, rerender, deck) {
       if (credit) credit.textContent = r.source === 'lingualibre' ? `Audio: ${r.author}, Lingua Libre, ${r.license}` : 'Audio: this device’s Spanish voice';
     });
   el.querySelectorAll('[data-play]').forEach((b) => b.addEventListener('click', playIt));
-  const autoplay = !muted() && ((def.type === 'audio' && !cur.revealed) || (cur.revealed && def.type !== 'audio') || (def.type === 'recog' && !cur.revealed));
+  const autoplay = deck.audio !== false && !muted() && ((def.type === 'audio' && !cur.revealed) || (cur.revealed && def.type !== 'audio') || (def.type === 'recog' && !cur.revealed));
   if (autoplay && !cur.autoplayed?.[cur.revealed ? 'back' : 'front']) {
     cur.autoplayed = { ...(cur.autoplayed ?? {}), [cur.revealed ? 'back' : 'front']: true };
     playIt();
@@ -318,7 +325,7 @@ async function renderStudy(el, rerender, deck) {
     if (e.key === 'Enter') el.querySelector('#check').click();
   });
   if (input && !cur.revealed) setTimeout(() => input.focus(), 50);
-  el.querySelector('#mute').addEventListener('click', () => {
+  el.querySelector('#mute')?.addEventListener('click', () => {
     try {
       localStorage.setItem('artemis-cards-muted', muted() ? '0' : '1');
     } catch {}
@@ -404,6 +411,8 @@ const audioBtn = (label = 'Play') => `<button type="button" class="play-btn" dat
 function frontHTML(def, cur) {
   const n = def.note;
   switch (def.type) {
+    case 'qa':
+      return `<div class="study-prompt">${esc(n.q)}</div>`;
     case 'recog':
       return `<div class="study-word">${esc(n.es)}</div>${audioBtn('Hear it')}`;
     case 'prod':
@@ -434,6 +443,7 @@ function backHTML(def, cur) {
     def.type === 'typed' && cur.typed
       ? `<div class="muted small">${cur.typed.correct ? (cur.typed.accents ? 'Spot on.' : 'Right, but watch the accents.') : 'Not quite.'}</div>`
       : '';
+  if (def.type === 'qa') return `<div class="study-answer qa-answer">${esc(n.a)}</div>${n.note ? `<div class="study-note">${esc(n.note)}</div>` : ''}`;
   const main =
     def.type === 'recog'
       ? `<div class="study-answer">${esc(n.en)}</div>`

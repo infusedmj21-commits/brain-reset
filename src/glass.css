@@ -772,3 +772,4 @@ input[type=date].field::-webkit-calendar-picker-indicator, input[type=time].fiel
 .place-row[aria-pressed="true"] { background: rgba(255, 255, 255, 0.8); border-color: var(--accent); }
 .place-row[aria-pressed="true"] .tick { background: var(--accent); border-color: var(--accent); color: #fff; }
 .place-row .muted { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.study-answer.qa-answer { font-size: clamp(20px, 5vw, 26px); line-height: 1.3; }

@@ -1,0 +1,486 @@
+{
+ "id": "bar",
+ "name": "Bar basics",
+ "order": 2,
+ "lang": "en-GB",
+ "icon": "glass",
+ "audio": false,
+ "newPerDay": "all",
+ "credits": [
+  "Bar basics: general UK bar practice and law, written by Claude. Venue drinks and glassware come from your official sheet."
+ ],
+ "stages": [
+  {
+   "id": 1,
+   "name": "General UK bar rules (venue sheet to come)"
+  }
+ ],
+ "notes": [
+  {
+   "id": "bar:glass-glass-for-a-pint-of-lager-bitter-or-cide",
+   "stage": 1,
+   "q": "Glass for a pint of lager, bitter or cider?",
+   "a": "Pint glass (568 ml)",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Glassware"
+  },
+  {
+   "id": "bar:glass-glass-for-a-spirit-and-mixer-vodka-coke",
+   "stage": 1,
+   "q": "Glass for a spirit and mixer (vodka & coke, rum & coke)?",
+   "a": "Highball: tall and straight",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Glassware",
+   "note": "Ice first, then the spirit, then the mixer."
+  },
+  {
+   "id": "bar:glass-glass-for-a-spirit-neat-or-on-the-rocks",
+   "stage": 1,
+   "q": "Glass for a spirit neat or on the rocks?",
+   "a": "Rocks glass (short tumbler)",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Glassware"
+  },
+  {
+   "id": "bar:glass-glass-for-prosecco-or-champagne",
+   "stage": 1,
+   "q": "Glass for prosecco or champagne?",
+   "a": "Flute",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Glassware",
+   "note": "Tall and narrow so it keeps its bubbles."
+  },
+  {
+   "id": "bar:glass-glass-for-a-g-t-served-fancy",
+   "stage": 1,
+   "q": "Glass for a G&T “served fancy”?",
+   "a": "Copa / balloon glass",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Glassware",
+   "note": "A highball is fine too unless your bar says otherwise."
+  },
+  {
+   "id": "bar:glass-glass-for-red-white-or-ros",
+   "stage": 1,
+   "q": "Glass for red, white or rosé?",
+   "a": "Wine glass, filled to the line for the size ordered",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Glassware"
+  },
+  {
+   "id": "bar:glass-glass-for-a-shot",
+   "stage": 1,
+   "q": "Glass for a shot?",
+   "a": "Shot glass",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Glassware"
+  },
+  {
+   "id": "bar:glass-before-you-hand-over-any-glass-check",
+   "stage": 1,
+   "q": "Before you hand over any glass, check…",
+   "a": "It’s clean, dry and not chipped or cracked",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Glassware",
+   "note": "A chipped glass goes straight to the bin, not back in the rack."
+  },
+  {
+   "id": "bar:glass-why-are-most-stadium-drinks-served-in-pl",
+   "stage": 1,
+   "q": "Why are most stadium drinks served in plastic?",
+   "a": "Safety: no glass in crowds",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Glassware",
+   "note": "Use what your bar gives you; never carry glass onto the concourse."
+  },
+  {
+   "id": "bar:measure-how-many-ml-is-a-pint",
+   "stage": 1,
+   "q": "How many ml is a pint?",
+   "a": "568 ml",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Measures"
+  },
+  {
+   "id": "bar:measure-sizes-draught-beer-and-cider-can-be-sold",
+   "stage": 1,
+   "q": "Sizes draught beer and cider can be sold in?",
+   "a": "⅓, ½ or ⅔ pint, or multiples of ½ pint",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Measures",
+   "note": "UK law."
+  },
+  {
+   "id": "bar:measure-legal-single-spirit-measures-gin-vodka-r",
+   "stage": 1,
+   "q": "Legal single spirit measures (gin, vodka, rum, whisky)?",
+   "a": "25 ml or 35 ml: the bar picks one and must display it",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Measures"
+  },
+  {
+   "id": "bar:measure-a-double-at-a-25-ml-bar-is",
+   "stage": 1,
+   "q": "A double at a 25 ml bar is…",
+   "a": "50 ml",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Measures"
+  },
+  {
+   "id": "bar:measure-wine-by-the-glass-legal-sizes",
+   "stage": 1,
+   "q": "Wine by the glass: legal sizes?",
+   "a": "125 ml, 175 ml, or multiples (250 ml = large)",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Measures",
+   "note": "A 125 ml glass must always be available, and customers told so."
+  },
+  {
+   "id": "bar:measure-how-many-250-ml-glasses-in-a-750-ml-bott",
+   "stage": 1,
+   "q": "How many 250 ml glasses in a 750 ml bottle?",
+   "a": "3",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Measures"
+  },
+  {
+   "id": "bar:measure-how-many-125-ml-glasses-in-a-750-ml-bott",
+   "stage": 1,
+   "q": "How many 125 ml glasses in a 750 ml bottle?",
+   "a": "6",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Measures"
+  },
+  {
+   "id": "bar:measure-pouring-spirits-how",
+   "stage": 1,
+   "q": "Pouring spirits: how?",
+   "a": "Always with a measure (optic or jigger), never free-poured",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Measures"
+  },
+  {
+   "id": "bar:pour-pouring-a-pint-how-do-you-start",
+   "stage": 1,
+   "q": "Pouring a pint: how do you start?",
+   "a": "Glass at about 45°, beer aimed at the side",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Pouring"
+  },
+  {
+   "id": "bar:pour-pouring-a-pint-how-do-you-finish",
+   "stage": 1,
+   "q": "Pouring a pint: how do you finish?",
+   "a": "Straighten the glass as it fills to build a small head",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Pouring"
+  },
+  {
+   "id": "bar:pour-should-the-tap-touch-the-beer-or-the-gla",
+   "stage": 1,
+   "q": "Should the tap touch the beer or the glass?",
+   "a": "No: keep the nozzle out of the drink",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Pouring",
+   "note": "Hygiene, and it stops fobbing."
+  },
+  {
+   "id": "bar:pour-guinness-how-is-it-poured",
+   "stage": 1,
+   "q": "Guinness: how is it poured?",
+   "a": "Two parts: fill about ¾ at 45°, let it settle, then top up",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Pouring",
+   "note": "Don’t hand it over until it’s settled dark."
+  },
+  {
+   "id": "bar:pour-beer-comes-out-as-all-foam-fobbing-likel",
+   "stage": 1,
+   "q": "Beer comes out as all foam (fobbing). Likely causes?",
+   "a": "Keg running out, a warm or dirty glass, or a gas/line problem",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Pouring",
+   "note": "Tell the cellar team; don’t keep pouring foam away."
+  },
+  {
+   "id": "bar:pour-beer-spits-and-sputters-from-the-tap",
+   "stage": 1,
+   "q": "Beer spits and sputters from the tap?",
+   "a": "The keg is probably empty: call cellar to change it",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Pouring"
+  },
+  {
+   "id": "bar:order-a-shandy-is",
+   "stage": 1,
+   "q": "A shandy is…",
+   "a": "Beer topped with lemonade, roughly half and half",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Orders"
+  },
+  {
+   "id": "bar:order-a-lager-top-is",
+   "stage": 1,
+   "q": "A “lager top” is…",
+   "a": "A pint of lager with a splash of lemonade on top",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Orders"
+  },
+  {
+   "id": "bar:order-with-black-e-g-cider-and-black-means",
+   "stage": 1,
+   "q": "“With black” (e.g. cider and black) means…",
+   "a": "A dash of blackcurrant cordial",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Orders"
+  },
+  {
+   "id": "bar:order-lager-vs-ale-vs-stout",
+   "stage": 1,
+   "q": "Lager vs ale vs stout?",
+   "a": "Lager: pale, cold, fizzy. Ale/bitter: amber, less fizzy. Stout: dark and roasted (e.g. Guinness).",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Orders"
+  },
+  {
+   "id": "bar:order-usual-mixer-for-gin",
+   "stage": 1,
+   "q": "Usual mixer for gin?",
+   "a": "Tonic (slimline if asked)",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Orders"
+  },
+  {
+   "id": "bar:order-usual-mixers-for-vodka",
+   "stage": 1,
+   "q": "Usual mixers for vodka?",
+   "a": "Coke, lemonade, cranberry or orange",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Orders"
+  },
+  {
+   "id": "bar:order-which-wines-are-served-chilled",
+   "stage": 1,
+   "q": "Which wines are served chilled?",
+   "a": "White, rosé and prosecco. Red at room temperature.",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Orders"
+  },
+  {
+   "id": "bar:order-premixed-cocktail-what-do-you-do",
+   "stage": 1,
+   "q": "Premixed cocktail: what do you do?",
+   "a": "Shake or stir it if your bar says to, pour into the right glass, garnish",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Orders",
+   "note": "Your training said cocktails are premixed: no measuring needed."
+  },
+  {
+   "id": "bar:law-legal-age-to-buy-alcohol-in-the-uk",
+   "stage": 1,
+   "q": "Legal age to buy alcohol in the UK?",
+   "a": "18",
+   "cards": [
+    "qa"
+   ],
+   "topic": "ID and the law"
+  },
+  {
+   "id": "bar:law-challenge-25-means",
+   "stage": 1,
+   "q": "Challenge 25 means…",
+   "a": "Ask for ID from anyone who looks under 25",
+   "cards": [
+    "qa"
+   ],
+   "topic": "ID and the law"
+  },
+  {
+   "id": "bar:law-id-usually-accepted",
+   "stage": 1,
+   "q": "ID usually accepted?",
+   "a": "Passport, photo driving licence, or a PASS card (hologram)",
+   "cards": [
+    "qa"
+   ],
+   "topic": "ID and the law",
+   "note": "Check your venue’s list; no ID means no alcohol."
+  },
+  {
+   "id": "bar:law-someone-buying-for-a-friend-who-looks-un",
+   "stage": 1,
+   "q": "Someone buying for a friend who looks under 18?",
+   "a": "Refuse: that’s a proxy sale and it’s illegal",
+   "cards": [
+    "qa"
+   ],
+   "topic": "ID and the law"
+  },
+  {
+   "id": "bar:law-can-you-serve-someone-who-is-clearly-dru",
+   "stage": 1,
+   "q": "Can you serve someone who is clearly drunk?",
+   "a": "No: it’s an offence for you as well as the venue",
+   "cards": [
+    "qa"
+   ],
+   "topic": "ID and the law",
+   "note": "Refuse calmly, offer water or a soft drink, and tell your team leader."
+  },
+  {
+   "id": "bar:law-refusing-a-sale-how",
+   "stage": 1,
+   "q": "Refusing a sale: how?",
+   "a": "Polite, short, no arguing. “Sorry, I can’t serve you.” Get your team leader if it escalates.",
+   "cards": [
+    "qa"
+   ],
+   "topic": "ID and the law"
+  },
+  {
+   "id": "bar:law-can-fans-take-alcohol-to-their-seats-in",
+   "stage": 1,
+   "q": "Can fans take alcohol to their seats in view of the pitch?",
+   "a": "No: in England and Wales it’s banned in view of the pitch during the match",
+   "cards": [
+    "qa"
+   ],
+   "topic": "ID and the law",
+   "note": "Drinks stay on the concourse."
+  },
+  {
+   "id": "bar:safety-a-customer-asks-what-s-in-a-drink-becaus",
+   "stage": 1,
+   "q": "A customer asks what’s in a drink because of an allergy?",
+   "a": "Don’t guess: check the allergen sheet or ask your supervisor",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Safety",
+   "note": "Beer has gluten; wine and many ciders have sulphites."
+  },
+  {
+   "id": "bar:safety-broken-glass-behind-the-bar",
+   "stage": 1,
+   "q": "Broken glass behind the bar?",
+   "a": "Stop serving in that spot, warn others, use a dustpan and brush, never hands",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Safety"
+  },
+  {
+   "id": "bar:safety-spill-on-the-floor",
+   "stage": 1,
+   "q": "Spill on the floor?",
+   "a": "Wet floor sign, then clean it straight away",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Safety"
+  },
+  {
+   "id": "bar:safety-quiet-moment-during-service-what-should",
+   "stage": 1,
+   "q": "Quiet moment during service: what should you do?",
+   "a": "Clean as you go: wipe the bar, empty drip trays, restock",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Safety"
+  },
+  {
+   "id": "bar:till-13-40-paid-with-a-20-change",
+   "stage": 1,
+   "q": "£13.40 paid with a £20: change?",
+   "a": "£6.60",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Till",
+   "note": "Count up: 13.40 → 14 is 60p, → 20 is £6."
+  },
+  {
+   "id": "bar:till-8-75-paid-with-a-10-change",
+   "stage": 1,
+   "q": "£8.75 paid with a £10: change?",
+   "a": "£1.25",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Till"
+  },
+  {
+   "id": "bar:till-three-drinks-at-5-80-each-total",
+   "stage": 1,
+   "q": "Three drinks at £5.80 each: total?",
+   "a": "£17.40",
+   "cards": [
+    "qa"
+   ],
+   "topic": "Till"
+  }
+ ]
+}
