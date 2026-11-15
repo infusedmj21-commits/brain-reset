@@ -25,6 +25,7 @@ import { renderProgress } from './views/progress.js';
 import { renderPalace } from './views/palace.js';
 import { renderUnprompted } from './views/unprompted.js';
 import { renderSprint } from './views/sprint.js';
+import { renderCards } from './views/cards.js';
 import { onSyncStatus, setOnRemoteChange, startSync, syncStatus } from './sync.js';
 
 const routes = {
@@ -39,6 +40,7 @@ const routes = {
   unprompted: renderUnprompted,
   sprint: renderSprint,
   progress: renderProgress,
+  cards: renderCards,
   settings: renderSettings
 };
 
@@ -65,7 +67,7 @@ async function render() {
   const route = routes[name] ? name : 'home';
   const ctx = { params, onCleanup: (fn) => cleanups.push(fn) };
   // Brain Reset's screens live under the Reset tab; Settings sits beside To do under Tasks.
-  const RESET = ['today', 'sprint', 'palace', 'unprompted', 'progress'];
+  const RESET = ['today', 'sprint', 'palace', 'unprompted', 'progress', 'cards'];
   const tab = RESET.includes(route) ? 'today' : route === 'settings' ? 'tasks' : route === 'review' ? 'home' : route;
   // Phone tab bar: slide the pill under the active tab (Settings lives under Tasks there).
   const phoneTabs = [...document.querySelectorAll('.tabbar a:not(.side-only)')];
@@ -76,7 +78,7 @@ async function render() {
     else a.removeAttribute('aria-current');
   });
   const SUBNAVS = {
-    today: [['today', 'Today'], ['palace', 'Palace'], ['unprompted', 'Unprompted'], ['progress', 'Progress']],
+    today: [['today', 'Today'], ['cards', 'Cards'], ['palace', 'Palace'], ['unprompted', 'Unprompted'], ['progress', 'Progress']],
     tasks: [['tasks', 'To do'], ['settings', 'Settings']],
     money: [['money', 'Overview'], ['money/insights', 'Insights'], ['money/tax', 'Tax']]
   };
@@ -199,7 +201,7 @@ const updateSW = registerSW({
 function safeToReload() {
   const [name, ...params] = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
   if (name === 'sprint') return false;
-  if (['health', 'palace', 'unprompted'].includes(name) && params.length) return false;
+  if (['health', 'palace', 'unprompted', 'cards'].includes(name) && params.length) return false;
   const a = document.activeElement;
   return !(a && ['INPUT', 'TEXTAREA', 'SELECT'].includes(a.tagName));
 }

@@ -21,7 +21,7 @@ export const DAY_LOOK = {
 export const HABIT_LINKS = {
   sprint: [{ label: 'Play sprint →', href: '#/sprint' }],
   spanish: [
-    { label: 'Anki ↗', href: 'https://ankiweb.net/' },
+    { label: 'Cards →', href: '#/cards' },
     { label: 'Language Transfer ↗', href: 'https://www.languagetransfer.org/' }
   ],
   unprompted: [{ label: 'Start session →', href: '#/unprompted' }],
