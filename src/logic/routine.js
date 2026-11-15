@@ -58,7 +58,7 @@ const SLOTS = {
  * Should today be an unprompted.cool day?
  * done: dates this week with a completed unprompted session.
  */
-export function suggestUnprompted({ date, dayType, unpromptedDates }) {
+export function suggestUnprompted({ date, dayType, unpromptedDates, tier = null }) {
   if (dayType === 'minimum') return { suggested: false, reason: 'Minimum day: skip the long sessions.' };
   const week = weekDates(date);
   const doneThisWeek = unpromptedDates.filter((d) => week.includes(d) && d !== date).length;
@@ -73,8 +73,8 @@ export function suggestUnprompted({ date, dayType, unpromptedDates }) {
   const daysLeft = 7 - weekday(date); // including today
   // n non-consecutive sessions need at least 2n − 1 days.
   const mustDoToday = daysLeft <= 2 * needed - 1;
-  if (dayType === 'early' && !mustDoToday) {
-    return { suggested: false, reason: 'Early shift: save it for a late shift or day off.' };
+  if ((dayType === 'early' || tier === 'light') && !mustDoToday) {
+    return { suggested: false, reason: tier === 'light' ? 'Light day: save it for a fresher one.' : 'Early shift: save it for a late shift or day off.' };
   }
   return {
     suggested: true,
@@ -85,7 +85,7 @@ export function suggestUnprompted({ date, dayType, unpromptedDates }) {
 }
 
 /** Build today's checklist. rotation: 'unprompted' | 'palace' | null (auto). */
-export function buildChecklist({ date, dayType, unpromptedDates, rotation = null, enabled = null }) {
+export function buildChecklist({ date, dayType, unpromptedDates, rotation = null, enabled = null, tier = null }) {
   const slots = SLOTS[dayType] ?? SLOTS.off;
   const on = enabled ?? rules.enabledOn(date);
   const items = [];
@@ -94,14 +94,14 @@ export function buildChecklist({ date, dayType, unpromptedDates, rotation = null
   };
 
   add('sprint');
-  add('spanish', dayType === 'minimum' || dayType === 'early' ? { minutes: 10 } : {});
+  add('spanish', dayType === 'minimum' || dayType === 'early' || tier === 'light' ? { minutes: 10 } : {});
 
   if (unpromptedDates.includes(addDays(date, -1))) add('recall');
 
   if (dayType === 'minimum') return { items, suggestion: null, rotating: null };
 
   add('reading');
-  const suggestion = suggestUnprompted({ date, dayType, unpromptedDates });
+  const suggestion = suggestUnprompted({ date, dayType, unpromptedDates, tier });
   let rotating = rotation ?? (suggestion.suggested ? 'unprompted' : 'palace');
   // If one of the pair is switched off, the other takes the slot.
   if (!on.has(rotating)) rotating = rotating === 'unprompted' ? 'palace' : 'unprompted';

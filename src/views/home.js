@@ -1,11 +1,13 @@
-import { doneByDate, firstActiveDate, getDayPlan, live, unpromptedDates } from '../db.js';
+import { doneByDate, firstActiveDate, live, unpromptedDates } from '../db.js';
+import { loadDay } from '../data/dayload.js';
+import { TIERS, checklistDayType } from '../logic/dayload.js';
 import { focusFor, listScores, listTasks, listVentures, setFocus, toggleFocus } from '../data/ventures.js';
 import { addDays, daysBetween, prettyDate, today, weekDates, weekStart } from '../logic/dates.js';
 import { GAP_REASONS, activeDates, bestStreak, gapBefore, reviewWeek } from '../logic/review.js';
 import { getCheckin, saveGap } from '../data/checkins.js';
 import { listRoutines, listWorkouts, getMode } from '../data/health.js';
 import { weekPlan } from '../logic/health.js';
-import { DAY_TYPES, buildChecklist, formatMinutes, missedYesterday, streak } from '../logic/routine.js';
+import { buildChecklist, formatMinutes, missedYesterday, streak } from '../logic/routine.js';
 import { loadTiktok } from '../data/tiktok.js';
 import { formatScore, needsRescore, rankTasks, scoreHistory } from '../logic/scoring.js';
 import { getName } from '../theme.js';
@@ -130,8 +132,8 @@ function pickerHTML(ranked, ventures, dayType) {
 
 export async function renderHome(el, rerender) {
   const date = today();
-  const [plan, doneMap, uDates, first, sprints, focus, tasks, ventures, scores, shift, habitLogs, allFocus, workouts, routines, mode, payRaw] = await Promise.all([
-    getDayPlan(date),
+  const [day, doneMap, uDates, first, sprints, focus, tasks, ventures, scores, shift, habitLogs, allFocus, workouts, routines, mode, payRaw] = await Promise.all([
+    loadDay(date),
     doneByDate(),
     unpromptedDates(),
     firstActiveDate(),
@@ -152,8 +154,9 @@ export async function renderHome(el, rerender) {
   const pay = payRaw && payRaw.expected > 0 ? payRaw : null;
   const [shifts, roles, tax, todoCount] = await Promise.all([listShifts(), listRoles(), loadTaxPicture(date), openTaskCount()]);
 
-  const dayType = plan?.day_type ?? null;
-  const items = dayType ? buildChecklist({ date, dayType, unpromptedDates: uDates, rotation: plan.rotation ?? null }).items : [];
+  const plan = day.plan;
+  const dayType = checklistDayType(day.tier, day.timing);
+  const items = buildChecklist({ date, dayType, tier: day.tier, unpromptedDates: uDates, rotation: plan?.rotation ?? null }).items;
   const done = doneMap[date] ?? new Set();
   const doneCount = items.filter((i) => done.has(i.habit)).length;
   const nextItem = items.find((i) => !done.has(i.habit));
@@ -241,7 +244,7 @@ export async function renderHome(el, rerender) {
     <section class="home-head">
       <div>
         <h1 class="page-title">${greeting(getName())}</h1>
-        <div class="page-sub">${esc(prettyDate(date))}${dayType ? ` · ${esc(DAY_TYPES[dayType].label)}` : ''}${todoCount ? ` · <a href="#/tasks">${todoCount} thing${todoCount === 1 ? '' : 's'} need${todoCount === 1 ? 's' : ''} you</a>` : ''}</div>
+        <div class="page-sub">${esc(prettyDate(date))}${` · <a href="#/today">${esc(TIERS[day.tier].label)}</a>`}${todoCount ? ` · <a href="#/tasks">${todoCount} thing${todoCount === 1 ? '' : 's'} need${todoCount === 1 ? 's' : ''} you</a>` : ''}</div>
       </div>
       <div class="head-links">
         <a class="btn secondary" href="#/review">${I.clock}Weekly review</a>

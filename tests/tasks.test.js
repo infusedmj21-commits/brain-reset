@@ -21,7 +21,7 @@ describe('tasks', () => {
     await db.open();
     await saveShift({ date: '2020-01-01', venue: 'Molineux', role_id: 'role:till-operator', rate: 13.45, hours: 8, status: 'booked' }, db);
     const kinds = (await openTasks(db)).map((t) => t.id);
-    expect(kinds).toContain('daytype');
+    expect(kinds).not.toContain('daytype'); // day load is automatic now
     expect(kinds).toContain('monzo');
     expect((await openTasks(db)).filter((t) => t.kind === 'shift')).toHaveLength(1);
   });

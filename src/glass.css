@@ -683,3 +683,20 @@ input[type=date].field::-webkit-calendar-picker-indicator, input[type=time].fiel
 .switch i { position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(60, 25, 15, 0.25); transition: translate .3s var(--ease-in); }
 .switch[aria-checked="true"] { background: var(--accent); }
 .switch[aria-checked="true"] i { translate: 20px 0; }
+
+/* Today: automatic day label, tap to correct */
+.day-label { margin-top: 18px; background: var(--card); border: 1px solid var(--outline); border-radius: var(--r); box-shadow: var(--shadow-soft); }
+.day-label > summary {
+  list-style: none; cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "tier edit" "why edit";
+  align-items: center; gap: 2px 12px; padding: 14px 18px; min-height: 56px;
+}
+.day-label > summary::-webkit-details-marker { display: none; }
+.dl-tier { grid-area: tier; font: 700 18px var(--body); letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.dl-why { grid-area: why; }
+.dl-edit { grid-area: edit; font: 600 12.5px var(--body); color: var(--accent-ink); background: rgba(255, 255, 255, 0.8); padding: 6px 12px; border-radius: 999px; }
+.day-label[open] .dl-edit { visibility: hidden; }
+.dl-panel { padding: 0 18px 16px; border-top: 1px solid var(--hairline); padding-top: 14px; }
+.chips.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 520px) { .chips.four { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.load-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+.load-grid label { display: grid; gap: 4px; }

@@ -27,7 +27,8 @@ export const SYNCED_TABLES = [
   'workouts',
   'workout_sets',
   'checkins',
-  'payslips'
+  'payslips',
+  'day_logs'
 ];
 
 export function createDB(name = 'brain-reset') {
@@ -71,6 +72,10 @@ export function createDB(name = 'brain-reset') {
   // v5: pay figures read from uploaded payslips (no personal details are kept).
   db.version(5).stores({
     payslips: 'id, payDate, updated_at'
+  });
+  // v6: one row per day for tuning the day-load weights (and, later, flashcard pacing).
+  db.version(6).stores({
+    day_logs: 'id, date, updated_at'
   });
   return db;
 }

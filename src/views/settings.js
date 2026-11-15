@@ -4,6 +4,8 @@ import { esc, toast } from '../ui.js';
 import { getName, setName } from '../theme.js';
 import { DAILY_TICKS, HABITS, MINIMUM_HABITS, SWITCHABLE, currentRules } from '../logic/routine.js';
 import { setSwitch } from '../data/switches.js';
+import { getLoadSettings, setLoadSettings } from '../data/dayload.js';
+import { LOAD_DEFAULTS } from '../logic/dayload.js';
 import { createAccount, onSyncStatus, signIn, signOut, syncNow, syncStatus } from '../sync.js';
 
 async function persistenceStatus() {
@@ -87,6 +89,7 @@ export async function renderSettings(el, rerender) {
 
   const date = today();
   const rules = currentRules();
+  const load = await getLoadSettings();
   el.innerHTML = `
     <h1 class="page-title">Settings</h1>
 
@@ -102,6 +105,25 @@ export async function renderSettings(el, rerender) {
           }).join('')}</ul>
           <p class="muted small" style="margin:0">Switching a task off hides it from today onwards. Past days keep their record, and hidden tasks never count as missed.</p>
         </div>
+
+        <div class="sec"><h2>Day load</h2><span class="aside">How heavy each day is, from your shifts</span></div>
+        <form class="card stack" id="load-form">
+          <div class="stat-label">Weight of each day’s shift hours</div>
+          <div class="load-grid">
+            ${[['dayBefore', 'Two days ago'], ['yesterday', 'Yesterday'], ['today', 'Today'], ['tomorrow', 'Tomorrow'], ['tomorrowEarly', 'Tomorrow, early start']]
+              .map(([k, l]) => `<label><span class="muted small">${l}</span><input class="field" type="number" step="0.05" min="0" max="3" name="w-${k}" value="${load.weights[k]}"></label>`)
+              .join('')}
+          </div>
+          <div class="stat-label">Score where each tier starts</div>
+          <div class="load-grid">
+            ${[['normal', 'Normal'], ['light', 'Light'], ['minimum', 'Minimum']]
+              .map(([k, l]) => `<label><span class="muted small">${l} from</span><input class="field" type="number" step="0.5" min="0" max="40" name="t-${k}" value="${load.thresholds[k]}"></label>`)
+              .join('')}
+            <label><span class="muted small">Early start before</span><input class="field" type="time" name="earlyStart" value="${load.earlyStart}"></label>
+          </div>
+          <p class="muted small" style="margin:0">Score = hours × weight, added up. Below ${load.thresholds.normal} is a Full day. Your overrides on Today are logged, so these can be tuned against real days.</p>
+          <div class="row-btns"><button class="btn" type="submit">Save</button><button class="btn secondary" type="button" id="load-reset">Reset to defaults</button></div>
+        </form>
 
         <div class="sec" style="--dot:var(--grape)"><span class="dot"></span><h2>You</h2></div>
         <div class="card top-grape stack">
@@ -145,6 +167,26 @@ export async function renderSettings(el, rerender) {
 
   bindSync(el.querySelector('#sync-card'), rerender);
 
+
+  el.querySelector('#load-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = new FormData(e.currentTarget);
+    const num = (k, fallback) => (Number.isFinite(Number(f.get(k))) && f.get(k) !== '' ? Number(f.get(k)) : fallback);
+    const weights = Object.fromEntries(Object.keys(LOAD_DEFAULTS.weights).map((k) => [k, num(`w-${k}`, LOAD_DEFAULTS.weights[k])]));
+    const thresholds = Object.fromEntries(Object.keys(LOAD_DEFAULTS.thresholds).map((k) => [k, num(`t-${k}`, LOAD_DEFAULTS.thresholds[k])]));
+    if (!(thresholds.normal < thresholds.light && thresholds.light < thresholds.minimum)) {
+      toast('Tiers need to go up: Normal < Light < Minimum');
+      return;
+    }
+    await setLoadSettings({ weights, thresholds, earlyStart: String(f.get('earlyStart') || LOAD_DEFAULTS.earlyStart) });
+    toast('Day load saved');
+    rerender();
+  });
+  el.querySelector('#load-reset').addEventListener('click', async () => {
+    await setLoadSettings({});
+    toast('Day load back to defaults');
+    rerender();
+  });
 
   el.querySelectorAll('[data-switch]').forEach((b) =>
     b.addEventListener('click', async () => {
