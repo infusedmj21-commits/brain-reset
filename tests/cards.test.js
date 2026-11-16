@@ -116,4 +116,16 @@ describe('shipped decks', () => {
       expect(stageGate(defs, byId, stages).open.has(2)).toBe(true);
     });
   });
+
+  describe('imported decks', () => {
+    it('accepts a private deck and rejects broken or clashing ones', async () => {
+      const { checkDeck } = await import('../src/decks/index.js');
+      const drink = { id: 'dm:x', name: 'X', cards: ['spec', 'serve'], spec: [{ amount: '25 ml', type: 'vodka' }], glass: 'Coupe', ice: 'None', garnish: 'None', method: 'Shake' };
+      expect(checkDeck({ id: 'dm-menu', name: 'Menu', notes: [drink] }).id).toBe('dm-menu');
+      expect(() => checkDeck({ id: 'es', name: 'Fake Spanish', notes: [drink] })).toThrow(/built-in/);
+      expect(() => checkDeck({ id: 'dm-menu', name: 'Menu', notes: [] })).toThrow(/no cards/);
+      expect(() => checkDeck({ id: 'dm-menu', name: 'Menu', notes: [drink, drink] })).toThrow(/share/);
+      expect(() => checkDeck('nope')).toThrow();
+    });
+  });
 });

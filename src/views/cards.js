@@ -1,9 +1,9 @@
-import { DECKS, deckById } from '../decks/index.js';
+import { DECKS, deckById, importDeck, loadImportedDecks } from '../decks/index.js';
 import { answerCard, getDayLog, listReviews, listStates, logCardsDay, placeNotes } from '../data/cards.js';
 import { loadDay } from '../data/dayload.js';
 import { pictogram, play } from '../data/media.js';
 import {
-  CARD_TYPES, Rating, adaptiveNew, introducible, cardsFromDeck, checkTyped, dueSummary, forecast, forgetRate, intervalLabel, parseCloze, preview, stageGate, toFsrs, SECONDS_PER_NEW, SECONDS_PER_REVIEW
+  CARD_TYPES, Rating, adaptiveNew, introducible, cardsFromDeck, checkTyped, dueSummary, forecast, forgetRate, intervalLabel, deckSettled, parseCloze, preview, stageGate, toFsrs, SECONDS_PER_NEW, SECONDS_PER_REVIEW
 } from '../logic/cards.js';
 import { TIERS } from '../logic/dayload.js';
 import { today } from '../logic/dates.js';
@@ -38,13 +38,30 @@ async function planFor(deck, date, now, day) {
   due.fresh = introducible(unlocked, states, date);
   const doneToday = states.filter((s) => s.introduced === date).length;
   const rate = forgetRate(reviews, now);
+  // A deck can wait for another (classics wait for the menu): no new cards until that one is 85% settled.
+  let waitingFor = null;
+  const before = deck.after && deckById(deck.after);
+  if (before) {
+    const bDefs = cardsFromDeck(before);
+    const bStates = await listStates(before.id);
+    const s = deckSettled(bDefs, new Map(bStates.map((r) => [r.id, r])));
+    if (!s.open) {
+      waitingFor = { name: before.name, ...s };
+      due.fresh = [];
+    }
+  }
+  // Fixed daily allowance (bar decks) or the adaptive one (Spanish).
+  const fixed = (n) => {
+    const count = Math.min(due.fresh.length, n === 'all' ? Infinity : Math.max(0, n - doneToday));
+    const estMinutes = Math.ceil(((due.reviews.length + due.learning.length) * SECONDS_PER_REVIEW + count * SECONDS_PER_NEW) / 60);
+    const reasons = waitingFor
+      ? [`opens once ${waitingFor.need} of the ${waitingFor.total} ${waitingFor.name} cards are settled (next review a week or more away). ${waitingFor.settled} so far`]
+      : [count ? (n === 'all' ? 'short deck, so everything at once' : `up to ${n} new a day`) : due.fresh.length ? `today’s ${n} done` : 'all cards met'];
+    return { count, total: count + doneToday, estMinutes, reasons };
+  };
   const plan =
-    deck.newPerDay === 'all'
-      ? (() => {
-          const count = due.fresh.length;
-          const estMinutes = Math.ceil(((due.reviews.length + due.learning.length) * SECONDS_PER_REVIEW + count * SECONDS_PER_NEW) / 60);
-          return { count, total: count + doneToday, estMinutes, reasons: [count ? 'short deck, so everything at once' : 'all cards met'] };
-        })()
+    deck.newPerDay != null
+      ? fixed(deck.newPerDay)
       : adaptiveNew({ tier: day.tier, reviewsDue: due.reviews.length, learningDue: due.learning.length, rate: rate.rate, available: due.fresh.length, doneToday });
   const w = gate.waiting;
   if (w && !unlocked.length && plan.count === 0 && w.total) {
@@ -65,6 +82,7 @@ async function planFor(deck, date, now, day) {
 
 export async function renderCards(el, rerender, ctx) {
   const [section, deckId] = ctx?.params ?? [];
+  await loadImportedDecks();
   if (section === 'study' && deckById(deckId)) return renderStudy(el, rerender, deckById(deckId));
   if (section === 'place' && deckById(deckId)) return renderPlace(el, rerender, deckById(deckId));
 
@@ -100,10 +118,30 @@ export async function renderCards(el, rerender, ctx) {
               </div>
               <div class="credits" style="margin-top:10px">${DECKS.flatMap((d) => d.credits ?? []).map((c) => `<span>${esc(c)}</span>`).join('')}
               </div>
+              <label class="import-deck card">
+                <span><b>Import a deck</b><span class="muted small">A deck file Claude sent you. It’s saved to your account only, never the app’s code.</span></span>
+                <span class="btn-mini">Choose file</span>
+                <input type="file" accept=".json,application/json" id="deck-file" hidden>
+              </label>
             </aside>
           </div>`
         : ''
     }`;
+
+  el.querySelector('#deck-file')?.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const deck = JSON.parse(await file.text());
+      const had = deckById(deck?.id);
+      await importDeck(deck);
+      toast(`${had ? 'Updated' : 'Added'} “${deck.name}”`);
+      rerender();
+    } catch (err) {
+      toast(err instanceof SyntaxError ? 'That file isn’t a deck.' : err.message);
+    }
+    e.target.value = '';
+  });
 }
 
 function deckCard(deck, p) {
@@ -168,7 +206,7 @@ async function renderPlace(el, rerender, deck) {
           </div>
           <div class="place-list">${notes
             .map((n) => `<button type="button" class="place-row" data-note="${esc(n.id)}" aria-pressed="${picked.ids.has(n.id)}">
-                <span class="tick">${picked.ids.has(n.id) ? '✓' : ''}</span><b lang="${esc(deck.lang ?? 'es')}">${esc(n.es ?? n.q)}</b><span class="muted small">${esc(n.en ?? n.a)}</span></button>`)
+                <span class="tick">${picked.ids.has(n.id) ? '✓' : ''}</span><b lang="${esc(deck.lang ?? 'es')}">${esc(n.es ?? n.q ?? n.name)}</b><span class="muted small">${esc(n.en ?? n.a ?? n.section ?? n.spec?.map((l) => l.type).join(', ') ?? '')}</span></button>`)
             .join('')}</div>`
     }`;
 
@@ -413,6 +451,10 @@ function frontHTML(def, cur) {
   switch (def.type) {
     case 'qa':
       return `<div class="study-prompt">${esc(n.q)}</div>`;
+    case 'spec':
+      return `<div class="study-prompt">${esc(n.name)}</div><div class="muted small">What goes in it, and how much?</div>`;
+    case 'serve':
+      return `<div class="study-prompt">${esc(n.name)}</div><div class="muted small">Glass, ice, garnish and method?</div>`;
     case 'recog':
       return `<div class="study-word">${esc(n.es)}</div>${audioBtn('Hear it')}`;
     case 'prod':
@@ -443,6 +485,17 @@ function backHTML(def, cur) {
     def.type === 'typed' && cur.typed
       ? `<div class="muted small">${cur.typed.correct ? (cur.typed.accents ? 'Spot on.' : 'Right, but watch the accents.') : 'Not quite.'}</div>`
       : '';
+  if (def.type === 'spec') {
+    const rows = n.spec
+      .map((l) => `<li><span class="ml num">${esc(l.amount)}</span><span>${esc(l.type)}${l.brand ? ` <span class="brand">${esc(l.brand)}</span>` : ''}${l.extra ? `<span class="muted small"> · ${esc(l.extra)}</span>` : ''}</span></li>`)
+      .join('');
+    const allergens = n.allergens == null ? 'Allergens not on this sheet: check the allergen matrix' : n.allergens.length ? `Allergens: ${n.allergens.join(', ')}` : 'Allergens: none listed';
+    return `<ul class="spec-list">${rows}</ul><div class="muted small spec-allergens">${esc(allergens)}</div>`;
+  }
+  if (def.type === 'serve') {
+    const row = (k, v) => `<dt>${k}</dt><dd>${esc(v)}</dd>`;
+    return `<dl class="serve-list">${row('Glass', n.glass)}${row('Ice', n.ice)}${row('Garnish', n.garnish)}${row('Method', n.method)}</dl>${n.tip ? `<div class="study-note">${esc(n.tip)}</div>` : ''}`;
+  }
   if (def.type === 'qa') return `<div class="study-answer qa-answer">${esc(n.a)}</div>${n.note ? `<div class="study-note">${esc(n.note)}</div>` : ''}`;
   const main =
     def.type === 'recog'

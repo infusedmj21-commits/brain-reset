@@ -773,3 +773,16 @@ input[type=date].field::-webkit-calendar-picker-indicator, input[type=time].fiel
 .place-row[aria-pressed="true"] .tick { background: var(--accent); border-color: var(--accent); color: #fff; }
 .place-row .muted { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .study-answer.qa-answer { font-size: clamp(20px, 5vw, 26px); line-height: 1.3; }
+
+/* Cocktail cards */
+.spec-list { list-style: none; margin: 0 auto; padding: 0; display: grid; gap: 6px; text-align: left; max-width: 360px; width: 100%; }
+.spec-list li { display: grid; grid-template-columns: 68px 1fr; gap: 10px; align-items: baseline; font-size: 16px; line-height: 1.35; }
+.spec-list .ml { font-weight: 700; text-align: right; color: var(--ink); }
+.spec-list .brand { display: inline-block; font-size: 11.5px; padding: 1px 7px; border-radius: 999px; background: rgba(255, 255, 255, 0.6); color: var(--ink-2); vertical-align: 1px; }
+.spec-allergens { margin-top: 10px; }
+.serve-list { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0 auto; text-align: left; max-width: 380px; font-size: 16px; line-height: 1.35; }
+.serve-list dt { color: var(--ink-2); font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; padding-top: 2px; }
+.serve-list dd { margin: 0; }
+
+.import-deck { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; padding: 12px 14px; cursor: pointer; }
+.import-deck > span:first-child { display: grid; gap: 2px; }
