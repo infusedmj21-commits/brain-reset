@@ -1,31 +1,21 @@
 {
  "id": "bar",
- "name": "Bar basics",
- "order": 2,
+ "name": "Bartending basics",
+ "order": 4,
  "lang": "en-GB",
  "icon": "glass",
  "audio": false,
- "newPerDay": "all",
+ "newPerDay": 25,
  "credits": [
-  "Bar basics: general UK bar practice and law, written by Claude. Venue drinks and glassware come from your official sheet."
+  "General bar knowledge and UK law, written by Claude."
  ],
  "stages": [
   {
    "id": 1,
-   "name": "General UK bar rules (venue sheet to come)"
+   "name": "Tools, methods, spirits and the law"
   }
  ],
  "notes": [
-  {
-   "id": "bar:glass-glass-for-a-pint-of-lager-bitter-or-cide",
-   "stage": 1,
-   "q": "Glass for a pint of lager, bitter or cider?",
-   "a": "Pint glass (568 ml)",
-   "cards": [
-    "qa"
-   ],
-   "topic": "Glassware"
-  },
   {
    "id": "bar:glass-glass-for-a-spirit-and-mixer-vodka-coke",
    "stage": 1,
@@ -34,7 +24,6 @@
    "cards": [
     "qa"
    ],
-   "topic": "Glassware",
    "note": "Ice first, then the spirit, then the mixer."
   },
   {
@@ -44,8 +33,7 @@
    "a": "Rocks glass (short tumbler)",
    "cards": [
     "qa"
-   ],
-   "topic": "Glassware"
+   ]
   },
   {
    "id": "bar:glass-glass-for-prosecco-or-champagne",
@@ -55,19 +43,7 @@
    "cards": [
     "qa"
    ],
-   "topic": "Glassware",
    "note": "Tall and narrow so it keeps its bubbles."
-  },
-  {
-   "id": "bar:glass-glass-for-a-g-t-served-fancy",
-   "stage": 1,
-   "q": "Glass for a G&T “served fancy”?",
-   "a": "Copa / balloon glass",
-   "cards": [
-    "qa"
-   ],
-   "topic": "Glassware",
-   "note": "A highball is fine too unless your bar says otherwise."
   },
   {
    "id": "bar:glass-glass-for-red-white-or-ros",
@@ -76,8 +52,7 @@
    "a": "Wine glass, filled to the line for the size ordered",
    "cards": [
     "qa"
-   ],
-   "topic": "Glassware"
+   ]
   },
   {
    "id": "bar:glass-glass-for-a-shot",
@@ -86,8 +61,7 @@
    "a": "Shot glass",
    "cards": [
     "qa"
-   ],
-   "topic": "Glassware"
+   ]
   },
   {
    "id": "bar:glass-before-you-hand-over-any-glass-check",
@@ -97,40 +71,1183 @@
    "cards": [
     "qa"
    ],
-   "topic": "Glassware",
    "note": "A chipped glass goes straight to the bin, not back in the rack."
   },
   {
-   "id": "bar:glass-why-are-most-stadium-drinks-served-in-pl",
+   "id": "bar:glass-nick-nora-glass",
    "stage": 1,
-   "q": "Why are most stadium drinks served in plastic?",
-   "a": "Safety: no glass in crowds",
+   "q": "Nick & Nora glass?",
+   "a": "Small, stemmed, rounded bowl: for short drinks served without ice",
    "cards": [
     "qa"
    ],
-   "topic": "Glassware",
-   "note": "Use what your bar gives you; never carry glass onto the concourse."
+   "note": "Margarita, most martinis, Strawberry Kiss."
   },
   {
-   "id": "bar:measure-how-many-ml-is-a-pint",
+   "id": "bar:glass-coupe-coupette",
    "stage": 1,
-   "q": "How many ml is a pint?",
-   "a": "568 ml",
+   "q": "Coupe (coupette)?",
+   "a": "Stemmed glass with a wide, shallow bowl",
    "cards": [
     "qa"
    ],
-   "topic": "Measures"
+   "note": "Espresso Martini, Pornstar, Clover Club."
   },
   {
-   "id": "bar:measure-sizes-draught-beer-and-cider-can-be-sold",
+   "id": "bar:glass-martini-glass",
    "stage": 1,
-   "q": "Sizes draught beer and cider can be sold in?",
-   "a": "⅓, ½ or ⅔ pint, or multiples of ½ pint",
+   "q": "Martini glass?",
+   "a": "Stemmed V-shaped glass",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:glass-why-do-stemmed-glasses-have-a-stem",
+   "stage": 1,
+   "q": "Why do stemmed glasses have a stem?",
+   "a": "So your hand doesn’t warm a drink served without ice",
    "cards": [
     "qa"
    ],
-   "topic": "Measures",
-   "note": "UK law."
+   "note": "Hold them by the stem."
+  },
+  {
+   "id": "bar:glass-picardie-glass",
+   "stage": 1,
+   "q": "Picardie glass?",
+   "a": "Small, ribbed French tumbler",
+   "cards": [
+    "qa"
+   ],
+   "note": "A Jägerbomb’s Red Bull goes in a small one."
+  },
+  {
+   "id": "bar:order-usual-mixer-for-gin",
+   "stage": 1,
+   "q": "Usual mixer for gin?",
+   "a": "Tonic (slimline if asked)",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:order-usual-mixers-for-vodka",
+   "stage": 1,
+   "q": "Usual mixers for vodka?",
+   "a": "Coke, lemonade, cranberry or orange",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:order-which-wines-are-served-chilled",
+   "stage": 1,
+   "q": "Which wines are served chilled?",
+   "a": "White, rosé and prosecco. Red at room temperature.",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:tool-jigger",
+   "stage": 1,
+   "q": "Jigger?",
+   "a": "The double-ended measure for exact pours (e.g. 25 / 50 ml)",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:tool-boston-shaker",
+   "stage": 1,
+   "q": "Boston shaker?",
+   "a": "Two tins (or a tin and a glass) that seal together for shaking",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:tool-hawthorne-strainer",
+   "stage": 1,
+   "q": "Hawthorne strainer?",
+   "a": "Flat strainer with a spring that fits over the tin to hold back ice",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:tool-fine-strainer",
+   "stage": 1,
+   "q": "Fine strainer?",
+   "a": "Small mesh sieve held under the Hawthorne to catch ice chips, pulp and mint",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:tool-julep-strainer",
+   "stage": 1,
+   "q": "Julep strainer?",
+   "a": "Perforated, spoon-shaped strainer used over a mixing glass",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:tool-mixing-glass",
+   "stage": 1,
+   "q": "Mixing glass?",
+   "a": "Heavy glass that stirred drinks are made in, with ice",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:tool-bar-spoon-is-used-for",
+   "stage": 1,
+   "q": "Bar spoon is used for…",
+   "a": "Stirring, layering and measuring (1 barspoon ≈ 5 ml)",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:tool-muddler",
+   "stage": 1,
+   "q": "Muddler?",
+   "a": "A pestle for crushing fruit, herbs or olives",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:method-build",
+   "stage": 1,
+   "q": "Build?",
+   "a": "Pour the ingredients straight into the serving glass",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:method-build-in-order",
+   "stage": 1,
+   "q": "“Build in order”?",
+   "a": "Add ingredients in exactly the order on the spec",
+   "cards": [
+    "qa"
+   ],
+   "note": "Aperol Spritz: Aperol last."
+  },
+  {
+   "id": "bar:method-stir-and-strain",
+   "stage": 1,
+   "q": "Stir and strain?",
+   "a": "Stir with ice in a mixing glass, then strain into the serving glass",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:method-shake-and-strain",
+   "stage": 1,
+   "q": "Shake and strain?",
+   "a": "Shake hard with ice, then strain through the Hawthorne",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:method-shake-and-fine-strain-double-strain",
+   "stage": 1,
+   "q": "Shake and fine strain (double strain)?",
+   "a": "Strain through the Hawthorne and the fine strainer together",
+   "cards": [
+    "qa"
+   ],
+   "note": "No ice chips or bits in the drink."
+  },
+  {
+   "id": "bar:method-when-do-you-shake-rather-than-stir",
+   "stage": 1,
+   "q": "When do you shake rather than stir?",
+   "a": "Shake when there’s juice, cream, purée or foamer. Stir drinks that are all spirit.",
+   "cards": [
+    "qa"
+   ],
+   "note": "Stirring keeps a Martini or Negroni clear and silky."
+  },
+  {
+   "id": "bar:method-hard-shake",
+   "stage": 1,
+   "q": "Hard shake?",
+   "a": "A longer, harder shake for more air and froth",
+   "cards": [
+    "qa"
+   ],
+   "note": "Espresso Martini, sours."
+  },
+  {
+   "id": "bar:method-dry-shake",
+   "stage": 1,
+   "q": "Dry shake?",
+   "a": "A shake without ice, to build foam",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:method-churn",
+   "stage": 1,
+   "q": "Churn?",
+   "a": "Plunge a bar spoon up and down through crushed ice to mix and chill",
+   "cards": [
+    "qa"
+   ],
+   "note": "Mojito."
+  },
+  {
+   "id": "bar:method-cap",
+   "stage": 1,
+   "q": "Cap?",
+   "a": "Top the drink with a mound of crushed ice",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:method-float",
+   "stage": 1,
+   "q": "Float?",
+   "a": "Pour gently so it sits on top as a separate layer",
+   "cards": [
+    "qa"
+   ],
+   "note": "Shortcut: pour it onto the highest ice cube."
+  },
+  {
+   "id": "bar:method-layer",
+   "stage": 1,
+   "q": "Layer?",
+   "a": "Pour slowly over the back of a bar spoon so each liquid sits on the last",
+   "cards": [
+    "qa"
+   ],
+   "note": "Heaviest goes in first."
+  },
+  {
+   "id": "bar:method-top",
+   "stage": 1,
+   "q": "Top?",
+   "a": "Add the fizzy part last (prosecco, soda)",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:method-rinse",
+   "stage": 1,
+   "q": "Rinse?",
+   "a": "Coat the inside of the glass with a little spirit, then discard it",
+   "cards": [
+    "qa"
+   ],
+   "note": "Sazerac: absinthe rinse."
+  },
+  {
+   "id": "bar:method-throw",
+   "stage": 1,
+   "q": "Throw?",
+   "a": "Pour between two tins from a height to mix and chill without frothing",
+   "cards": [
+    "qa"
+   ],
+   "note": "Bloody Mary."
+  },
+  {
+   "id": "bar:method-shake-and-dump",
+   "stage": 1,
+   "q": "Shake and dump?",
+   "a": "Shake, then tip everything, ice and all, into the glass without straining",
+   "cards": [
+    "qa"
+   ],
+   "note": "Caipirinha."
+  },
+  {
+   "id": "bar:method-chill-the-glass",
+   "stage": 1,
+   "q": "Chill the glass?",
+   "a": "Fill it with crushed ice while you make the drink, then tip the ice out",
+   "cards": [
+    "qa"
+   ],
+   "note": "Every martini."
+  },
+  {
+   "id": "bar:method-muddle",
+   "stage": 1,
+   "q": "Muddle?",
+   "a": "Press fruit, herbs or olives with a muddler to release flavour",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:ice-cubed-vs-crushed-ice",
+   "stage": 1,
+   "q": "Cubed vs crushed ice?",
+   "a": "Cubed melts slowly (most drinks). Crushed chills fast and dilutes more.",
+   "cards": [
+    "qa"
+   ],
+   "note": "Crushed: Mojito, Bramble, Mint Julep."
+  },
+  {
+   "id": "bar:ice-why-fill-a-glass-right-to-the-top-with-i",
+   "stage": 1,
+   "q": "Why fill a glass right to the top with ice?",
+   "a": "More ice melts more slowly, so the drink stays colder and less watery",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:ice-ice-n-a-or-none-on-a-spec-means",
+   "stage": 1,
+   "q": "Ice “N/A” or “none” on a spec means…",
+   "a": "Served “up”: shaken or stirred with ice, strained into a chilled glass with no ice",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:garnish-zest-and-discard",
+   "stage": 1,
+   "q": "Zest and discard?",
+   "a": "Squeeze the peel over the drink to spray its oils, then bin the peel",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:garnish-flamed-orange-coin",
+   "stage": 1,
+   "q": "Flamed orange coin?",
+   "a": "Warm a coin of orange peel, then squeeze its oils through a flame over the drink",
+   "cards": [
+    "qa"
+   ],
+   "note": "Cosmopolitan."
+  },
+  {
+   "id": "bar:garnish-why-only-half-a-salt-or-sugar-rim",
+   "stage": 1,
+   "q": "Why only half a salt or sugar rim?",
+   "a": "So the guest can choose sips with or without it",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:garnish-wheel-vs-wedge",
+   "stage": 1,
+   "q": "Wheel vs wedge?",
+   "a": "Wheel: a thin round slice. Wedge: a segment cut lengthways.",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:prep-sugar-syrup-1-1",
+   "stage": 1,
+   "q": "Sugar syrup 1:1?",
+   "a": "Equal parts sugar and water",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:prep-demerara-sugar-syrup",
+   "stage": 1,
+   "q": "Demerara sugar syrup?",
+   "a": "Syrup made with brown demerara sugar: richer",
+   "cards": [
+    "qa"
+   ],
+   "note": "Old Fashioned, Caipirinha."
+  },
+  {
+   "id": "bar:prep-foamer",
+   "stage": 1,
+   "q": "Foamer?",
+   "a": "Gives a drink a foamy top instead of egg white",
+   "cards": [
+    "qa"
+   ],
+   "note": "Vegan foamer has no egg."
+  },
+  {
+   "id": "bar:prep-orgeat",
+   "stage": 1,
+   "q": "Orgeat?",
+   "a": "Almond syrup: a nut allergen",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:prep-half-and-half",
+   "stage": 1,
+   "q": "Half and half?",
+   "a": "Equal parts milk and cream",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:prep-a-dash",
+   "stage": 1,
+   "q": "A dash?",
+   "a": "A quick flick from a bitters bottle: a tiny amount",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:prep-free-pour-count-to-20",
+   "stage": 1,
+   "q": "Free pour “count to 20”?",
+   "a": "Pour straight from the bottle while counting; it lands on the ml on the spec",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:prep-where-does-opened-vermouth-live",
+   "stage": 1,
+   "q": "Where does opened vermouth live?",
+   "a": "In the fridge: it’s wine-based and goes off",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:spirit-gin-is-flavoured-mainly-with",
+   "stage": 1,
+   "q": "Gin is flavoured mainly with…",
+   "a": "Juniper",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:spirit-tequila-is-made-from",
+   "stage": 1,
+   "q": "Tequila is made from…",
+   "a": "Blue agave",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:spirit-rum-is-made-from",
+   "stage": 1,
+   "q": "Rum is made from…",
+   "a": "Sugar cane: molasses or fresh juice",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:spirit-bourbon",
+   "stage": 1,
+   "q": "Bourbon?",
+   "a": "American whiskey made mostly from corn, aged in new charred oak",
+   "cards": [
+    "qa"
+   ],
+   "note": "Sweeter than rye."
+  },
+  {
+   "id": "bar:spirit-rye-whiskey",
+   "stage": 1,
+   "q": "Rye whiskey?",
+   "a": "Whiskey made mostly from rye: spicier than bourbon",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:spirit-single-malt-vs-blended-scotch",
+   "stage": 1,
+   "q": "Single malt vs blended Scotch?",
+   "a": "Single malt: malted barley from one distillery. Blended: malts mixed with grain whisky.",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:spirit-cognac",
+   "stage": 1,
+   "q": "Cognac?",
+   "a": "Grape brandy from the Cognac region of France",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:spirit-cacha-a",
+   "stage": 1,
+   "q": "Cachaça?",
+   "a": "Brazilian spirit made from fresh sugar cane juice",
+   "cards": [
+    "qa"
+   ],
+   "note": "Caipirinha."
+  },
+  {
+   "id": "bar:spirit-pisco",
+   "stage": 1,
+   "q": "Pisco?",
+   "a": "Grape brandy from Peru or Chile",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:spirit-overproof-rum-wray-nephew",
+   "stage": 1,
+   "q": "Overproof rum (Wray & Nephew)?",
+   "a": "Very strong white rum: 63%",
+   "cards": [
+    "qa"
+   ],
+   "note": "Always measured carefully."
+  },
+  {
+   "id": "bar:spirit-vermouth",
+   "stage": 1,
+   "q": "Vermouth?",
+   "a": "Wine flavoured with herbs and fortified. Dry (white), sweet (red) or bianco (sweet white).",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:spirit-prosecco",
+   "stage": 1,
+   "q": "Prosecco?",
+   "a": "Italian sparkling wine",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:spirit-fino-sherry-vs-pedro-xim-nez",
+   "stage": 1,
+   "q": "Fino sherry vs Pedro Ximénez?",
+   "a": "Fino (e.g. Tio Pepe): dry and pale. PX: very sweet and dark.",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-cointreau",
+   "stage": 1,
+   "q": "Cointreau?",
+   "a": "Orange liqueur (triple sec)",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-campari",
+   "stage": 1,
+   "q": "Campari?",
+   "a": "Bitter red Italian aperitif",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-aperol",
+   "stage": 1,
+   "q": "Aperol?",
+   "a": "Lighter, sweeter orange aperitif",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-kahlua-tia-maria",
+   "stage": 1,
+   "q": "Kahlua / Tia Maria?",
+   "a": "Coffee liqueur",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-chambord",
+   "stage": 1,
+   "q": "Chambord?",
+   "a": "Black raspberry liqueur",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-st-germain",
+   "stage": 1,
+   "q": "St Germain?",
+   "a": "Elderflower liqueur",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-passoa",
+   "stage": 1,
+   "q": "Passoa?",
+   "a": "Passionfruit liqueur",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-midori",
+   "stage": 1,
+   "q": "Midori?",
+   "a": "Melon liqueur",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-amaretto",
+   "stage": 1,
+   "q": "Amaretto?",
+   "a": "Almond-flavoured liqueur",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-maraschino-liqueur",
+   "stage": 1,
+   "q": "Maraschino liqueur?",
+   "a": "Clear cherry liqueur",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-green-chartreuse",
+   "stage": 1,
+   "q": "Green Chartreuse?",
+   "a": "Strong French herbal liqueur",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-b-n-dictine",
+   "stage": 1,
+   "q": "Bénédictine?",
+   "a": "French herbal liqueur with honey",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-lillet-blanc",
+   "stage": 1,
+   "q": "Lillet Blanc?",
+   "a": "French wine-based aperitif",
+   "cards": [
+    "qa"
+   ],
+   "note": "Vesper."
+  },
+  {
+   "id": "bar:liqueur-baileys",
+   "stage": 1,
+   "q": "Baileys?",
+   "a": "Irish cream liqueur",
+   "cards": [
+    "qa"
+   ],
+   "note": "Contains milk."
+  },
+  {
+   "id": "bar:liqueur-j-germeister",
+   "stage": 1,
+   "q": "Jägermeister?",
+   "a": "German herbal liqueur",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-blue-cura-ao",
+   "stage": 1,
+   "q": "Blue curaçao?",
+   "a": "Orange liqueur coloured blue",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-absinthe",
+   "stage": 1,
+   "q": "Absinthe?",
+   "a": "Very strong aniseed spirit, used in rinses and dashes",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-limoncello",
+   "stage": 1,
+   "q": "Limoncello?",
+   "a": "Italian lemon liqueur",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-malibu",
+   "stage": 1,
+   "q": "Malibu?",
+   "a": "Coconut rum",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-cr-me-de-cassis",
+   "stage": 1,
+   "q": "Crème de cassis?",
+   "a": "Blackcurrant liqueur",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-cr-me-de-p-che",
+   "stage": 1,
+   "q": "Crème de pêche?",
+   "a": "Peach liqueur",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-cr-me-de-m-re",
+   "stage": 1,
+   "q": "Crème de mûre?",
+   "a": "Blackberry liqueur",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-cr-me-de-framboise",
+   "stage": 1,
+   "q": "Crème de framboise?",
+   "a": "Raspberry liqueur",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-cr-me-de-cacao",
+   "stage": 1,
+   "q": "Crème de cacao?",
+   "a": "Chocolate liqueur (dark or blanc)",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-cr-me-de-menthe",
+   "stage": 1,
+   "q": "Crème de menthe?",
+   "a": "Mint liqueur",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:liqueur-angostura-vs-peychaud-s",
+   "stage": 1,
+   "q": "Angostura vs Peychaud’s?",
+   "a": "Both bitters. Angostura: aromatic, spicy. Peychaud’s: lighter, red, aniseed.",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:care-how-do-you-hold-a-clean-glass",
+   "stage": 1,
+   "q": "How do you hold a clean glass?",
+   "a": "By the base or stem, never the rim",
+   "cards": [
+    "qa"
+   ],
+   "note": "Fingers on the rim go where the guest’s lips go."
+  },
+  {
+   "id": "bar:care-how-do-you-get-ice-into-a-glass",
+   "stage": 1,
+   "q": "How do you get ice into a glass?",
+   "a": "Always with the ice scoop, never by scooping with the glass",
+   "cards": [
+    "qa"
+   ],
+   "note": "A glass can chip or snap in the ice."
+  },
+  {
+   "id": "bar:care-a-glass-breaks-in-or-near-the-ice-well",
+   "stage": 1,
+   "q": "A glass breaks in or near the ice well?",
+   "a": "Burn the ice: melt it all with hot water, empty the well, clean it, refill",
+   "cards": [
+    "qa"
+   ],
+   "note": "You can’t find every shard, so none of that ice is safe."
+  },
+  {
+   "id": "bar:care-where-does-the-ice-scoop-live",
+   "stage": 1,
+   "q": "Where does the ice scoop live?",
+   "a": "In its holder, never buried in the ice",
+   "cards": [
+    "qa"
+   ],
+   "note": "A handle in the ice means hands in the ice."
+  },
+  {
+   "id": "bar:care-glasses-straight-out-of-the-glasswasher",
+   "stage": 1,
+   "q": "Glasses straight out of the glasswasher?",
+   "a": "Let them cool before using them for cold drinks or ice",
+   "cards": [
+    "qa"
+   ],
+   "note": "Hot glass + ice can crack, and it warms the drink."
+  },
+  {
+   "id": "bar:care-why-not-stack-glasses-inside-each-other",
+   "stage": 1,
+   "q": "Why not stack glasses inside each other?",
+   "a": "They jam together and chip or crack when pulled apart",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:care-polishing-a-glass-what-are-you-looking-f",
+   "stage": 1,
+   "q": "Polishing a glass: what are you looking for?",
+   "a": "Smears, lipstick, water marks and chips",
+   "cards": [
+    "qa"
+   ],
+   "note": "Hold it up to the light."
+  },
+  {
+   "id": "bar:care-putting-a-drink-down-for-a-guest",
+   "stage": 1,
+   "q": "Putting a drink down for a guest?",
+   "a": "On a napkin or coaster, held low, by the base",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:hygiene-garnishes-and-ice-hands-or-tongs",
+   "stage": 1,
+   "q": "Garnishes and ice: hands or tongs?",
+   "a": "Tongs or a scoop, never bare hands",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:hygiene-when-must-you-wash-your-hands",
+   "stage": 1,
+   "q": "When must you wash your hands?",
+   "a": "At the start, after cash, bins, breaks, the toilet, or touching your face or hair",
+   "cards": [
+    "qa"
+   ],
+   "note": "And before handling garnishes."
+  },
+  {
+   "id": "bar:hygiene-what-is-the-hand-wash-sink-for",
+   "stage": 1,
+   "q": "What is the hand-wash sink for?",
+   "a": "Hands only: never glasses, drinks or ice",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:hygiene-cut-your-finger-on-shift",
+   "stage": 1,
+   "q": "Cut your finger on shift?",
+   "a": "Clean it, cover it with a blue plaster, tell your team leader",
+   "cards": [
+    "qa"
+   ],
+   "note": "Blue so it’s easy to spot if it falls in something."
+  },
+  {
+   "id": "bar:hygiene-off-sick-with-vomiting-or-diarrhoea-when",
+   "stage": 1,
+   "q": "Off sick with vomiting or diarrhoea: when can you work?",
+   "a": "48 hours after the symptoms stop",
+   "cards": [
+    "qa"
+   ],
+   "note": "UK food hygiene guidance."
+  },
+  {
+   "id": "bar:hygiene-cut-garnishes-how-are-they-stored",
+   "stage": 1,
+   "q": "Cut garnishes: how are they stored?",
+   "a": "Covered, chilled, and used the same shift",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:hygiene-fridge-temperature-to-aim-for",
+   "stage": 1,
+   "q": "Fridge temperature to aim for?",
+   "a": "5°C or below",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:hygiene-fifo-means",
+   "stage": 1,
+   "q": "FIFO means…",
+   "a": "First in, first out: use older stock before newer",
+   "cards": [
+    "qa"
+   ],
+   "note": "New stock goes to the back."
+  },
+  {
+   "id": "bar:hygiene-cloths-behind-the-bar",
+   "stage": 1,
+   "q": "Cloths behind the bar?",
+   "a": "Separate ones: one for wiping surfaces, a clean dry one for polishing glasses",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:work-walking-behind-someone-on-the-bar",
+   "stage": 1,
+   "q": "Walking behind someone on the bar?",
+   "a": "Say “behind” so they don’t step back into you",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:work-carrying-a-knife-or-something-hot",
+   "stage": 1,
+   "q": "Carrying a knife or something hot?",
+   "a": "Call “sharp” or “hot” as you pass",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:work-using-a-knife-for-garnishes",
+   "stage": 1,
+   "q": "Using a knife for garnishes?",
+   "a": "On a board, cutting away from you; wash it and put it away, never leave it in the sink",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:work-lifting-boxes-or-crates",
+   "stage": 1,
+   "q": "Lifting boxes or crates?",
+   "a": "Bend your knees, keep it close, ask for help if it’s heavy",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:work-drinking-alcohol-on-shift",
+   "stage": 1,
+   "q": "Drinking alcohol on shift?",
+   "a": "Never",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:service-busy-and-someone-s-waiting",
+   "stage": 1,
+   "q": "Busy and someone’s waiting?",
+   "a": "Acknowledge them: eye contact, “I’ll be with you in a sec”",
+   "cards": [
+    "qa"
+   ],
+   "note": "Then serve people in the order they arrived."
+  },
+  {
+   "id": "bar:service-a-big-round-before-you-start",
+   "stage": 1,
+   "q": "A big round: before you start?",
+   "a": "Repeat the order back",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:service-a-round-with-fizzy-or-shaken-drinks-whic",
+   "stage": 1,
+   "q": "A round with fizzy or shaken drinks: which do you make last?",
+   "a": "The ones that go flat or lose their foam: fizzy and shaken drinks",
+   "cards": [
+    "qa"
+   ],
+   "note": "Still drinks first, so everything lands fresh."
+  },
+  {
+   "id": "bar:service-a-guest-says-their-drink-is-wrong",
+   "stage": 1,
+   "q": "A guest says their drink is wrong?",
+   "a": "Apologise, don’t argue, remake it, and log the waste",
+   "cards": [
+    "qa"
+   ],
+   "note": "Get your team leader if it’s a bigger complaint."
+  },
+  {
+   "id": "bar:service-upselling-what-works",
+   "stage": 1,
+   "q": "Upselling: what works?",
+   "a": "Offer a specific upgrade (“with a premium vodka?”) rather than “anything else?”",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:service-before-opening-what-s-set-up-at-your-sta",
+   "stage": 1,
+   "q": "Before opening, what’s set up at your station?",
+   "a": "Ice, garnishes, tools, napkins and straws: everything in reach",
+   "cards": [
+    "qa"
+   ],
+   "note": "Called mise en place."
+  },
+  {
+   "id": "bar:service-closing-down-your-station",
+   "stage": 1,
+   "q": "Closing down your station?",
+   "a": "Wash tools, empty the ice well, cover or bin garnishes, restock, wipe down",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:service-86-means",
+   "stage": 1,
+   "q": "“86” means…",
+   "a": "That item has run out (or come off the menu)",
+   "cards": [
+    "qa"
+   ],
+   "note": "Check what’s 86’d before your shift."
+  },
+  {
+   "id": "bar:till-taking-cash-where-does-the-note-go-while",
+   "stage": 1,
+   "q": "Taking cash: where does the note go while you get change?",
+   "a": "On the till ledge until the change is handed over",
+   "cards": [
+    "qa"
+   ],
+   "note": "It settles any “I gave you a twenty” dispute."
+  },
+  {
+   "id": "bar:till-handing-back-change",
+   "stage": 1,
+   "q": "Handing back change?",
+   "a": "Count it back into the guest’s hand",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:till-walking-away-from-the-till",
+   "stage": 1,
+   "q": "Walking away from the till?",
+   "a": "Close the drawer first, every time",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:till-start-of-shift-with-a-till",
+   "stage": 1,
+   "q": "Start of shift with a till?",
+   "a": "Count the float and check it matches",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:welfare-can-a-guest-ask-for-tap-water-for-free",
+   "stage": 1,
+   "q": "Can a guest ask for tap water for free?",
+   "a": "Yes: free tap water must be available on request",
+   "cards": [
+    "qa"
+   ],
+   "note": "A legal condition for licensed bars."
+  },
+  {
+   "id": "bar:welfare-a-guest-asks-for-angela",
+   "stage": 1,
+   "q": "A guest asks for “Angela”?",
+   "a": "They feel unsafe: tell your manager straight away and help them leave discreetly",
+   "cards": [
+    "qa"
+   ],
+   "note": "The Ask for Angela scheme."
+  },
+  {
+   "id": "bar:welfare-someone-seems-suddenly-very-drunk-after",
+   "stage": 1,
+   "q": "Someone seems suddenly very drunk after very little, or says they’ve been spiked?",
+   "a": "Don’t leave them alone; tell your manager or security straight away",
+   "cards": [
+    "qa"
+   ]
+  },
+  {
+   "id": "bar:welfare-someone-s-been-refused-what-next",
+   "stage": 1,
+   "q": "Someone’s been refused: what next?",
+   "a": "Tell your team leader and the rest of the bar so nobody else serves them",
+   "cards": [
+    "qa"
+   ]
   },
   {
    "id": "bar:measure-legal-single-spirit-measures-gin-vodka-r",
@@ -139,8 +1256,7 @@
    "a": "25 ml or 35 ml: the bar picks one and must display it",
    "cards": [
     "qa"
-   ],
-   "topic": "Measures"
+   ]
   },
   {
    "id": "bar:measure-a-double-at-a-25-ml-bar-is",
@@ -149,8 +1265,7 @@
    "a": "50 ml",
    "cards": [
     "qa"
-   ],
-   "topic": "Measures"
+   ]
   },
   {
    "id": "bar:measure-wine-by-the-glass-legal-sizes",
@@ -160,7 +1275,6 @@
    "cards": [
     "qa"
    ],
-   "topic": "Measures",
    "note": "A 125 ml glass must always be available, and customers told so."
   },
   {
@@ -170,8 +1284,7 @@
    "a": "3",
    "cards": [
     "qa"
-   ],
-   "topic": "Measures"
+   ]
   },
   {
    "id": "bar:measure-how-many-125-ml-glasses-in-a-750-ml-bott",
@@ -180,162 +1293,17 @@
    "a": "6",
    "cards": [
     "qa"
-   ],
-   "topic": "Measures"
+   ]
   },
   {
    "id": "bar:measure-pouring-spirits-how",
    "stage": 1,
    "q": "Pouring spirits: how?",
-   "a": "Always with a measure (optic or jigger), never free-poured",
+   "a": "With a jigger, to the ml on the spec",
    "cards": [
     "qa"
    ],
-   "topic": "Measures"
-  },
-  {
-   "id": "bar:pour-pouring-a-pint-how-do-you-start",
-   "stage": 1,
-   "q": "Pouring a pint: how do you start?",
-   "a": "Glass at about 45°, beer aimed at the side",
-   "cards": [
-    "qa"
-   ],
-   "topic": "Pouring"
-  },
-  {
-   "id": "bar:pour-pouring-a-pint-how-do-you-finish",
-   "stage": 1,
-   "q": "Pouring a pint: how do you finish?",
-   "a": "Straighten the glass as it fills to build a small head",
-   "cards": [
-    "qa"
-   ],
-   "topic": "Pouring"
-  },
-  {
-   "id": "bar:pour-should-the-tap-touch-the-beer-or-the-gla",
-   "stage": 1,
-   "q": "Should the tap touch the beer or the glass?",
-   "a": "No: keep the nozzle out of the drink",
-   "cards": [
-    "qa"
-   ],
-   "topic": "Pouring",
-   "note": "Hygiene, and it stops fobbing."
-  },
-  {
-   "id": "bar:pour-guinness-how-is-it-poured",
-   "stage": 1,
-   "q": "Guinness: how is it poured?",
-   "a": "Two parts: fill about ¾ at 45°, let it settle, then top up",
-   "cards": [
-    "qa"
-   ],
-   "topic": "Pouring",
-   "note": "Don’t hand it over until it’s settled dark."
-  },
-  {
-   "id": "bar:pour-beer-comes-out-as-all-foam-fobbing-likel",
-   "stage": 1,
-   "q": "Beer comes out as all foam (fobbing). Likely causes?",
-   "a": "Keg running out, a warm or dirty glass, or a gas/line problem",
-   "cards": [
-    "qa"
-   ],
-   "topic": "Pouring",
-   "note": "Tell the cellar team; don’t keep pouring foam away."
-  },
-  {
-   "id": "bar:pour-beer-spits-and-sputters-from-the-tap",
-   "stage": 1,
-   "q": "Beer spits and sputters from the tap?",
-   "a": "The keg is probably empty: call cellar to change it",
-   "cards": [
-    "qa"
-   ],
-   "topic": "Pouring"
-  },
-  {
-   "id": "bar:order-a-shandy-is",
-   "stage": 1,
-   "q": "A shandy is…",
-   "a": "Beer topped with lemonade, roughly half and half",
-   "cards": [
-    "qa"
-   ],
-   "topic": "Orders"
-  },
-  {
-   "id": "bar:order-a-lager-top-is",
-   "stage": 1,
-   "q": "A “lager top” is…",
-   "a": "A pint of lager with a splash of lemonade on top",
-   "cards": [
-    "qa"
-   ],
-   "topic": "Orders"
-  },
-  {
-   "id": "bar:order-with-black-e-g-cider-and-black-means",
-   "stage": 1,
-   "q": "“With black” (e.g. cider and black) means…",
-   "a": "A dash of blackcurrant cordial",
-   "cards": [
-    "qa"
-   ],
-   "topic": "Orders"
-  },
-  {
-   "id": "bar:order-lager-vs-ale-vs-stout",
-   "stage": 1,
-   "q": "Lager vs ale vs stout?",
-   "a": "Lager: pale, cold, fizzy. Ale/bitter: amber, less fizzy. Stout: dark and roasted (e.g. Guinness).",
-   "cards": [
-    "qa"
-   ],
-   "topic": "Orders"
-  },
-  {
-   "id": "bar:order-usual-mixer-for-gin",
-   "stage": 1,
-   "q": "Usual mixer for gin?",
-   "a": "Tonic (slimline if asked)",
-   "cards": [
-    "qa"
-   ],
-   "topic": "Orders"
-  },
-  {
-   "id": "bar:order-usual-mixers-for-vodka",
-   "stage": 1,
-   "q": "Usual mixers for vodka?",
-   "a": "Coke, lemonade, cranberry or orange",
-   "cards": [
-    "qa"
-   ],
-   "topic": "Orders"
-  },
-  {
-   "id": "bar:order-which-wines-are-served-chilled",
-   "stage": 1,
-   "q": "Which wines are served chilled?",
-   "a": "White, rosé and prosecco. Red at room temperature.",
-   "cards": [
-    "qa"
-   ],
-   "topic": "Orders"
-  },
-  {
-   "id": "bar:order-premixed-cocktail-what-do-you-do",
-   "stage": 1,
-   "q": "Premixed cocktail: what do you do?",
-   "a": "Shake or stir it if your bar says to, pour into the right glass, garnish",
-   "cards": [
-    "qa"
-   ],
-   "topic": "Orders",
-   "note": "Your training said cocktails are premixed: no measuring needed."
+   "note": "Free pour only where the spec gives a count."
   },
   {
    "id": "bar:law-legal-age-to-buy-alcohol-in-the-uk",
@@ -344,8 +1312,7 @@
    "a": "18",
    "cards": [
     "qa"
-   ],
-   "topic": "ID and the law"
+   ]
   },
   {
    "id": "bar:law-challenge-25-means",
@@ -354,8 +1321,7 @@
    "a": "Ask for ID from anyone who looks under 25",
    "cards": [
     "qa"
-   ],
-   "topic": "ID and the law"
+   ]
   },
   {
    "id": "bar:law-id-usually-accepted",
@@ -365,7 +1331,6 @@
    "cards": [
     "qa"
    ],
-   "topic": "ID and the law",
    "note": "Check your venue’s list; no ID means no alcohol."
   },
   {
@@ -375,8 +1340,7 @@
    "a": "Refuse: that’s a proxy sale and it’s illegal",
    "cards": [
     "qa"
-   ],
-   "topic": "ID and the law"
+   ]
   },
   {
    "id": "bar:law-can-you-serve-someone-who-is-clearly-dru",
@@ -386,7 +1350,6 @@
    "cards": [
     "qa"
    ],
-   "topic": "ID and the law",
    "note": "Refuse calmly, offer water or a soft drink, and tell your team leader."
   },
   {
@@ -396,19 +1359,7 @@
    "a": "Polite, short, no arguing. “Sorry, I can’t serve you.” Get your team leader if it escalates.",
    "cards": [
     "qa"
-   ],
-   "topic": "ID and the law"
-  },
-  {
-   "id": "bar:law-can-fans-take-alcohol-to-their-seats-in",
-   "stage": 1,
-   "q": "Can fans take alcohol to their seats in view of the pitch?",
-   "a": "No: in England and Wales it’s banned in view of the pitch during the match",
-   "cards": [
-    "qa"
-   ],
-   "topic": "ID and the law",
-   "note": "Drinks stay on the concourse."
+   ]
   },
   {
    "id": "bar:safety-a-customer-asks-what-s-in-a-drink-becaus",
@@ -418,8 +1369,7 @@
    "cards": [
     "qa"
    ],
-   "topic": "Safety",
-   "note": "Beer has gluten; wine and many ciders have sulphites."
+   "note": "Prosecco and vermouth contain sulphites; Baileys and cream contain milk; almond syrup is a nut."
   },
   {
    "id": "bar:safety-broken-glass-behind-the-bar",
@@ -428,8 +1378,7 @@
    "a": "Stop serving in that spot, warn others, use a dustpan and brush, never hands",
    "cards": [
     "qa"
-   ],
-   "topic": "Safety"
+   ]
   },
   {
    "id": "bar:safety-spill-on-the-floor",
@@ -438,18 +1387,16 @@
    "a": "Wet floor sign, then clean it straight away",
    "cards": [
     "qa"
-   ],
-   "topic": "Safety"
+   ]
   },
   {
    "id": "bar:safety-quiet-moment-during-service-what-should",
    "stage": 1,
    "q": "Quiet moment during service: what should you do?",
-   "a": "Clean as you go: wipe the bar, empty drip trays, restock",
+   "a": "Clean as you go: wipe the bar, wash tools, restock",
    "cards": [
     "qa"
-   ],
-   "topic": "Safety"
+   ]
   },
   {
    "id": "bar:till-13-40-paid-with-a-20-change",
@@ -459,7 +1406,6 @@
    "cards": [
     "qa"
    ],
-   "topic": "Till",
    "note": "Count up: 13.40 → 14 is 60p, → 20 is £6."
   },
   {
@@ -469,8 +1415,7 @@
    "a": "£1.25",
    "cards": [
     "qa"
-   ],
-   "topic": "Till"
+   ]
   },
   {
    "id": "bar:till-three-drinks-at-5-80-each-total",
@@ -479,8 +1424,7 @@
    "a": "£17.40",
    "cards": [
     "qa"
-   ],
-   "topic": "Till"
+   ]
   }
  ]
 }

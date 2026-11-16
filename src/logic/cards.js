@@ -17,7 +17,9 @@ export const CARD_TYPES = {
   image: 'Picture',
   cloze: 'Fill the gap',
   typed: 'Type it',
-  qa: 'Question'
+  qa: 'Question',
+  spec: 'Recipe',
+  serve: 'Glass & method'
 };
 
 /** Every card a deck defines, in introduction order (stage, then note order, then type order). */
@@ -212,6 +214,12 @@ export function isSettled(row) {
   const c = toFsrs(row);
   if (!c || c.state !== State.Review || !c.last_review) return false;
   return (c.due - c.last_review) / 86400000 >= SETTLED_DAYS - 0.5;
+}
+
+/** Share of a whole deck that is settled: used to hold one deck back until another is learned. */
+export function deckSettled(defs, byId) {
+  const settled = defs.filter((d) => isSettled(byId.get(d.id))).length;
+  return { settled, total: defs.length, need: Math.ceil(defs.length * GATE_SHARE), open: settled >= Math.ceil(defs.length * GATE_SHARE) };
 }
 
 /** Which stages may introduce new cards, and (if one is waiting) how close it is to opening. */
