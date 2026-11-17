@@ -76,3 +76,15 @@ export async function placeNotes(defs, noteIds, existing, now = new Date(), data
   await logCardsDay(date, { placed: (log?.cards?.placed ?? 0) + ids.size }, database);
   return n;
 }
+
+// ---- Card settings (synced) ----
+const CARD_SETTINGS = 'setting:cards';
+export async function getCardSettings(database = db) {
+  const row = await database.checkins.get(CARD_SETTINGS);
+  return { newPerDay: {}, ...(row && !row.deleted ? row.values : {}) };
+}
+export async function setNewPerDay(deckId, n, database = db) {
+  const current = await getCardSettings(database);
+  const values = { ...current, newPerDay: { ...current.newPerDay, [deckId]: n } };
+  return save('checkins', { id: CARD_SETTINGS, kind: 'setting', date: '', values }, database);
+}

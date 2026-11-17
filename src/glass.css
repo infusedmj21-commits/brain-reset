@@ -786,3 +786,7 @@ input[type=date].field::-webkit-calendar-picker-indicator, input[type=time].fiel
 
 .import-deck { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; padding: 12px 14px; cursor: pointer; }
 .import-deck > span:first-child { display: grid; gap: 2px; }
+
+.per-day { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.stepper { display: inline-flex; align-items: center; gap: 10px; }
+.stepper .btn-mini { min-width: 32px; justify-content: center; }

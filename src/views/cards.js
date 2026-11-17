@@ -1,5 +1,5 @@
 import { DECKS, deckById, importDeck, loadImportedDecks } from '../decks/index.js';
-import { answerCard, getDayLog, listReviews, listStates, logCardsDay, placeNotes } from '../data/cards.js';
+import { answerCard, getCardSettings, getDayLog, listReviews, listStates, logCardsDay, placeNotes, setNewPerDay } from '../data/cards.js';
 import { loadDay } from '../data/dayload.js';
 import { pictogram, play } from '../data/media.js';
 import {
@@ -37,6 +37,14 @@ async function planFor(deck, date, now, day) {
   const unlocked = due.fresh.filter((d) => gate.open.has(d.stage));
   due.fresh = introducible(unlocked, states, date);
   const doneToday = states.filter((s) => s.introduced === date).length;
+  // For fixed-allowance decks the allowance counts new drinks (notes), not cards: a drink's
+  // second card (glass & method) arrives the next day without using up a slot.
+  const firstMet = new Map();
+  for (const s of states) if (s.introduced && (!firstMet.has(s.note) || s.introduced < firstMet.get(s.note))) firstMet.set(s.note, s.introduced);
+  const notesToday = [...firstMet.values()].filter((d) => d === date).length;
+  const recipes = deck.notes.some((n) => n.spec);
+  const settings = await getCardSettings();
+  const perDay = settings.newPerDay?.[deck.id] ?? (recipes ? 5 : deck.newPerDay);
   const rate = forgetRate(reviews, now);
   // A deck can wait for another (classics wait for the menu): no new cards until that one is 85% settled.
   let waitingFor = null;
@@ -52,16 +60,29 @@ async function planFor(deck, date, now, day) {
   }
   // Fixed daily allowance (bar decks) or the adaptive one (Spanish).
   const fixed = (n) => {
-    const count = Math.min(due.fresh.length, n === 'all' ? Infinity : Math.max(0, n - doneToday));
+    const met = new Set(states.map((s) => s.note));
+    const siblings = due.fresh.filter((d) => met.has(d.noteId));
+    const brandNew = due.fresh.filter((d) => !met.has(d.noteId));
+    const take = Math.min(brandNew.length, n === 'all' ? Infinity : Math.max(0, n - notesToday));
+    due.fresh = [...siblings, ...brandNew];
+    const count = siblings.length + take;
     const estMinutes = Math.ceil(((due.reviews.length + due.learning.length) * SECONDS_PER_REVIEW + count * SECONDS_PER_NEW) / 60);
     const reasons = waitingFor
       ? [`opens once ${waitingFor.need} of the ${waitingFor.total} ${waitingFor.name} cards are settled (next review a week or more away). ${waitingFor.settled} so far`]
-      : [count ? (n === 'all' ? 'short deck, so everything at once' : `up to ${n} new a day`) : due.fresh.length ? `today’s ${n} done` : 'all cards met'];
-    return { count, total: count + doneToday, estMinutes, reasons };
+      : [
+          count
+            ? n === 'all'
+              ? 'short deck, so everything at once'
+              : `${take} new ${recipes ? 'drink' : 'card'}${take === 1 ? '' : 's'}${siblings.length ? ` + ${siblings.length} glass & method card${siblings.length === 1 ? '' : 's'} from earlier` : ''} (up to ${n} a day)`
+            : due.fresh.length
+              ? `today’s ${n} done`
+              : 'all cards met'
+        ];
+    return { count, total: count + doneToday, estMinutes, reasons, perDay: n };
   };
   const plan =
     deck.newPerDay != null
-      ? fixed(deck.newPerDay)
+      ? fixed(perDay)
       : adaptiveNew({ tier: day.tier, reviewsDue: due.reviews.length, learningDue: due.learning.length, rate: rate.rate, available: due.fresh.length, doneToday });
   const w = gate.waiting;
   if (w && !unlocked.length && plan.count === 0 && w.total) {
@@ -128,6 +149,13 @@ export async function renderCards(el, rerender, ctx) {
         : ''
     }`;
 
+  el.querySelectorAll('.stepper [data-step]').forEach((b) =>
+    b.addEventListener('click', async () => {
+      const n = Math.min(50, Math.max(1, Number(b.dataset.n) + Number(b.dataset.step)));
+      await setNewPerDay(b.dataset.deck, n);
+      rerender();
+    })
+  );
   el.querySelector('#deck-file')?.addEventListener('change', async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -155,6 +183,12 @@ function deckCard(deck, p) {
       <div><b class="num">~${p.plan.estMinutes}</b><span>min</span></div>
     </div>
     <p class="muted small" style="margin:0">${p.plan.count} new today: ${esc(p.plan.reasons.join(', '))}.</p>
+    ${
+      typeof p.plan.perDay === 'number'
+        ? `<div class="per-day"><span class="muted small">New ${deck.notes.some((n) => n.spec) ? 'drinks' : 'cards'} a day</span>
+            <span class="stepper"><button type="button" class="btn-mini" data-step="-1" data-deck="${esc(deck.id)}" data-n="${p.plan.perDay}" aria-label="Fewer">−</button><b class="num">${p.plan.perDay}</b><button type="button" class="btn-mini" data-step="1" data-deck="${esc(deck.id)}" data-n="${p.plan.perDay}" aria-label="More">+</button></span></div>`
+        : ''
+    }
     <div class="stage-bars" aria-label="Stages">${p.stages
       .map((s) => `<span title="${esc(s.name)}: ${s.seen} of ${s.total} seen"><i style="width:${s.total ? (s.seen / s.total) * 100 : 0}%"></i></span>`)
       .join('')}</div>
