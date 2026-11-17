@@ -246,3 +246,32 @@ export function placedState(now, days) {
   const base = scheduler.next(createEmptyCard(now), now, Rating.Easy).card;
   return { ...base, state: State.Review, stability: days, scheduled_days: days, last_review: now, due: new Date(now.getTime() + days * 86400000) };
 }
+
+// ---- Struggling cards and note status (for Browse, Practice and deck cards) ----
+export const KNOWN_DAYS = 21;
+
+/** Cards you keep missing: forgotten after being learned, or "Again" twice in the last 14 days. */
+export function strugglingIds(states, reviews, now = new Date()) {
+  const since = now.getTime() - 14 * 86400000;
+  const agains = new Map();
+  for (const r of reviews) if (r.rating === Rating.Again && Date.parse(r.at) >= since) agains.set(r.card_id, (agains.get(r.card_id) ?? 0) + 1);
+  const out = new Set();
+  for (const s of states) {
+    const c = toFsrs(s);
+    if (!c) continue;
+    const settledNow = c.state === State.Review && c.last_review && (c.due - c.last_review) / 86400000 >= KNOWN_DAYS;
+    if (!settledNow && ((c.lapses ?? 0) >= 1 || (agains.get(s.id) ?? 0) >= 2)) out.add(s.id);
+  }
+  return out;
+}
+
+/** One word for where a note (all its cards) stands. */
+export function noteStatus(noteDefs, byId, struggling) {
+  const rows = noteDefs.map((d) => byId.get(d.id)).filter(Boolean);
+  if (!rows.length) return { key: 'new', label: 'New', nextDue: null };
+  const cards = rows.map(toFsrs).filter(Boolean);
+  const nextDue = cards.length ? new Date(Math.min(...cards.map((c) => c.due.getTime()))) : null;
+  if (noteDefs.some((d) => struggling.has(d.id))) return { key: 'struggling', label: 'Struggling', nextDue };
+  const known = rows.length === noteDefs.length && cards.every((c) => c.state === State.Review && c.last_review && (c.due - c.last_review) / 86400000 >= KNOWN_DAYS);
+  return known ? { key: 'known', label: 'Known', nextDue } : { key: 'learning', label: 'Learning', nextDue };
+}

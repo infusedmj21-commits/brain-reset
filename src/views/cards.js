@@ -1,5 +1,6 @@
 import { DECKS, deckById, importDeck, loadImportedDecks } from '../decks/index.js';
-import { answerCard, getCardSettings, getDayLog, listReviews, listStates, logCardsDay, placeNotes, setNewPerDay } from '../data/cards.js';
+import { answerCard, clearFlag, getCardSettings, getDayLog, listFlags, listReviews, listStates, logCardsDay, placeNotes, setFlag, setNewPerDay, undoAnswer } from '../data/cards.js';
+import { deckExtras, renderBrowse, renderPractice, setPracticePreset } from './cards-tools.js';
 import { loadDay } from '../data/dayload.js';
 import { pictogram, play } from '../data/media.js';
 import {
@@ -106,11 +107,13 @@ export async function renderCards(el, rerender, ctx) {
   await loadImportedDecks();
   if (section === 'study' && deckById(deckId)) return renderStudy(el, rerender, deckById(deckId));
   if (section === 'place' && deckById(deckId)) return renderPlace(el, rerender, deckById(deckId));
+  if (section === 'browse' && deckById(deckId)) return renderBrowse(el, rerender, deckById(deckId));
+  if (section === 'practice' && deckById(deckId)) return renderPractice(el, rerender, deckById(deckId));
 
   const date = today();
   const now = new Date();
   const day = await loadDay(date);
-  const plans = await Promise.all(DECKS.map((d) => planFor(d, date, now, day)));
+  const plans = await Promise.all(DECKS.map(async (d) => ({ ...(await planFor(d, date, now, day)), extras: await deckExtras(d) })));
   const dayLog = await getDayLog(date);
   const reviewsToday = plans.reduce((t, p) => t + p.reviews.filter((r) => r.date === date).length, 0);
 
@@ -193,6 +196,10 @@ function deckCard(deck, p) {
       .map((s) => `<span title="${esc(s.name)}: ${s.seen} of ${s.total} seen"><i style="width:${s.total ? (s.seen / s.total) * 100 : 0}%"></i></span>`)
       .join('')}</div>
     ${todo ? `<a class="btn block" href="#/cards/study/${esc(deck.id)}">Study ${todo} card${todo === 1 ? '' : 's'}</a>` : '<div class="empty-hint">All done for today.</div>'}
+    <div class="deck-links">
+      <a href="#/cards/browse/${esc(deck.id)}">Browse${p.extras.flagged ? ` <span class="b-flag">⚑ ${p.extras.flagged}</span>` : ''}</a>
+      <a href="#/cards/practice/${esc(deck.id)}">Practise${p.extras.struggling ? ` <span class="pill pill-struggling">${p.extras.struggling} struggling</span>` : ''}</a>
+    </div>
     ${p.placeable ? `<a class="place-link small" href="#/cards/place/${esc(deck.id)}">Already know some of these? Mark them</a>` : ''}
   </div>`;
 }
@@ -291,6 +298,10 @@ async function startSession(deck) {
     done: 0,
     newDone: 0,
     again: 0,
+    history: [], // last answers, for undo
+    firstTry: new Map(), // def id -> first rating this session
+    missed: new Map(), // def id -> def, rated Again at least once
+    flagged: new Set((await listFlags(deck.id)).map((f) => f.values.note)),
     started: Date.now(),
     suggested: p.plan.count,
     estMinutes: p.plan.estMinutes,
@@ -333,8 +344,21 @@ async function renderStudy(el, rerender, deck) {
     <div class="study-top">
       <a class="back" href="#/cards">← Cards</a>
       <span class="muted small num">${session.done} done · ${left} left</span>
-      ${deck.audio === false ? '<span></span>' : `<button type="button" class="btn-mini" id="mute" aria-pressed="${muted()}">${muted() ? 'Sound off' : 'Sound on'}</button>`}
+      <span class="study-tools">
+        ${session.history.length ? '<button type="button" class="btn-mini" id="undo" title="Undo last answer (Z)">Undo</button>' : ''}
+        <button type="button" class="btn-mini" id="flag" aria-pressed="${session.flagged.has(n.id)}" title="Something wrong with this card?">${session.flagged.has(n.id) ? 'Flagged' : 'Flag'}</button>
+        ${deck.audio === false ? '' : `<button type="button" class="btn-mini" id="mute" aria-pressed="${muted()}">${muted() ? 'Sound off' : 'Sound on'}</button>`}
+      </span>
     </div>
+    ${
+      cur.flagging
+        ? `<form class="flag-form card" id="flag-form">
+            <input class="field" name="text" maxlength="200" placeholder="What’s wrong? (optional)" value="${esc(cur.flagText ?? '')}">
+            <button class="btn" type="submit">${session.flagged.has(n.id) ? 'Update' : 'Flag it'}</button>
+            ${session.flagged.has(n.id) ? '<button class="btn-mini" type="button" id="unflag">Remove flag</button>' : ''}
+          </form>`
+        : ''
+    }
     <div class="study-card card ${cur.revealed ? 'revealed' : ''}">
       <div class="study-type">${esc(CARD_TYPES[def.type])}${!row ? ' · <b>new</b>' : ''}</div>
       <div class="study-front">${frontHTML(def, cur)}</div>
@@ -404,6 +428,28 @@ async function renderStudy(el, rerender, deck) {
     rerender();
   });
   el.querySelectorAll('[data-rate]').forEach((b) => b.addEventListener('click', () => rate(Number(b.dataset.rate), rerender)));
+  el.querySelector('#undo')?.addEventListener('click', () => undo(rerender));
+  el.querySelector('#flag')?.addEventListener('click', () => {
+    cur.flagging = !cur.flagging;
+    rerender();
+  });
+  el.querySelector('#flag-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = new FormData(e.target).get('text')?.toString().trim() ?? '';
+    await setFlag(deck.id, n, text, today());
+    session.flagged.add(n.id);
+    cur.flagging = false;
+    cur.flagText = text;
+    toast('Flagged. You’ll find it under Browse → Flagged.');
+    rerender();
+  });
+  el.querySelector('#unflag')?.addEventListener('click', async () => {
+    await clearFlag(n.id);
+    session.flagged.delete(n.id);
+    cur.flagging = false;
+    rerender();
+  });
+  if (cur.flagging) setTimeout(() => el.querySelector('#flag-form input')?.focus(), 50);
 
   // Keyboard: space shows, 1–4 rates.
   const onKey = (e) => {
@@ -412,6 +458,7 @@ async function renderStudy(el, rerender, deck) {
       e.preventDefault();
       (el.querySelector('#reveal') ?? el.querySelector('#check'))?.click();
     } else if (cur.revealed && ['1', '2', '3', '4'].includes(e.key)) rate(Number(e.key), rerender);
+    else if ((e.key === 'z' || e.key === 'Z') && !e.metaKey && !e.ctrlKey) undo(rerender);
   };
   document.addEventListener('keydown', onKey);
   const stop = () => document.removeEventListener('keydown', onKey);
@@ -434,7 +481,16 @@ async function rate(rating, rerender) {
     const cur = session.current;
     const row = session.rows.get(cur.def.id) ?? null;
     const ms = Date.now() - cur.shownAt;
-    const next = await answerCard(cur.def, row, rating, ms);
+    const snap = {
+      def: cur.def, prevRow: row, cur: { ...cur },
+      done: session.done, newDone: session.newDone, again: session.again,
+      queue: [...session.queue], learning: [...session.learning],
+      firstTry: new Map(session.firstTry), missed: new Map(session.missed)
+    };
+    const { row: next, reviewId } = await answerCard(cur.def, row, rating, ms);
+    session.history = [...session.history.slice(-9), { ...snap, reviewId }];
+    if (!session.firstTry.has(cur.def.id)) session.firstTry.set(cur.def.id, rating);
+    if (rating === Rating.Again) session.missed.set(cur.def.id, cur.def);
     session.rows.set(cur.def.id, next);
     session.done += 1;
     if (!row) session.newDone += 1;
@@ -461,18 +517,58 @@ async function minutesToday() {
   return (session.minutesBefore ?? before ?? 0) + thisSession;
 }
 
+async function undo(rerender) {
+  if (answering || !session?.history.length) return;
+  answering = true;
+  try {
+    const snap = session.history.pop();
+    await undoAnswer(snap);
+    if (snap.prevRow) session.rows.set(snap.def.id, snap.prevRow);
+    else session.rows.delete(snap.def.id);
+    Object.assign(session, { done: snap.done, newDone: snap.newDone, again: snap.again, queue: snap.queue, learning: snap.learning, firstTry: snap.firstTry, missed: snap.missed });
+    session.current = { ...snap.cur, revealed: true, shownAt: Date.now() };
+    await logCardsDay(session.date, { reviews_done: session.done, new_done: session.newDone });
+    toast('Answer undone');
+  } finally {
+    answering = false;
+  }
+  rerender();
+}
+
 function renderDone(el, deck) {
   const mins = Math.max(1, Math.round((Date.now() - session.started) / 60000));
   logCardsDay(session.date, { minutes_before_session: null });
+  const first = [...session.firstTry.values()];
+  const right = first.filter((r) => r !== Rating.Again).length;
+  const pct = first.length ? Math.round((right / first.length) * 100) : null;
+  const missed = [...session.missed.values()];
+  const label = (d) => d.note.name ?? d.note.es ?? d.note.q;
+  const names = [...new Set(missed.map(label))];
+  if (missed.length) setPracticePreset(deck.id, missed.map((d) => d.id), 'Missed this session');
   el.innerHTML = `
     <a class="back" href="#/cards">← Cards</a>
     <div class="card stack done-card" style="margin-top:16px;text-align:center">
       <span class="chipico" style="margin:0 auto">${ICONS.trophy}</span>
-      <h2 style="margin:0">Done for now</h2>
-      <p class="muted">${session.done} card${session.done === 1 ? '' : 's'} in ${mins} min${session.newDone ? `, ${session.newDone} new` : ''}${session.again ? `. ${session.again} to see again soon.` : '.'}</p>
-      <a class="btn block" href="#/cards">Back to Cards</a>
+      <h2 style="margin:0">${session.done ? 'Done for now' : 'Nothing due right now'}</h2>
+      ${
+        session.done
+          ? `<div class="done-stats">
+              <div><b class="num">${session.done}</b><span>cards</span></div>
+              <div><b class="num">${session.newDone}</b><span>new</span></div>
+              <div><b class="num">${pct ?? '–'}${pct == null ? '' : '%'}</b><span>right first time</span></div>
+              <div><b class="num">${mins}</b><span>min</span></div>
+            </div>`
+          : '<p class="muted">Come back later, or practise without affecting your schedule.</p>'
+      }
+      ${
+        names.length
+          ? `<div class="done-missed"><span class="muted small">Tripped you up</span><div class="miss-list">${names.map((x) => `<span class="miss">${esc(x)}</span>`).join('')}</div></div>
+            <a class="btn block" href="#/cards/practice/${esc(deck.id)}">Practise these ${missed.length}</a>`
+          : ''
+      }
+      <a class="btn ${names.length ? 'secondary ' : ''}block" href="#/cards">Back to Cards</a>
     </div>`;
-  toast(`${deck.name}: ${session.done} cards`);
+  if (session.done) toast(`${deck.name}: ${session.done} cards`);
   session = null;
 }
 
@@ -480,7 +576,7 @@ function renderDone(el, deck) {
 
 const audioBtn = (label = 'Play') => `<button type="button" class="play-btn" data-play aria-label="${label}">${ICONS.speaker}</button>`;
 
-function frontHTML(def, cur) {
+export function frontHTML(def, cur) {
   const n = def.note;
   switch (def.type) {
     case 'qa':
@@ -512,7 +608,7 @@ function frontHTML(def, cur) {
   }
 }
 
-function backHTML(def, cur) {
+export function backHTML(def, cur) {
   const n = def.note;
   const ex = n.example ? `<div class="study-example"><span lang="es">${esc(n.example.es)}</span><span class="muted">${esc(n.example.en)}</span></div>` : '';
   const typedNote =

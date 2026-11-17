@@ -790,3 +790,55 @@ input[type=date].field::-webkit-calendar-picker-indicator, input[type=time].fiel
 .per-day { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .stepper { display: inline-flex; align-items: center; gap: 10px; }
 .stepper .btn-mini { min-width: 32px; justify-content: center; }
+
+/* Study tools, summary */
+.study-tools { display: inline-flex; gap: 6px; align-items: center; }
+.btn-mini[aria-pressed="true"]#flag { background: var(--accent); color: #fff; border-color: var(--accent); }
+.flag-form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 10px 12px; margin: 10px 0 0; }
+.flag-form .field { flex: 1 1 180px; min-width: 0; }
+.done-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 4px 0; }
+.done-stats div { display: grid; gap: 2px; }
+.done-stats b { font-size: 22px; }
+.done-stats span { font-size: 12px; color: var(--ink-2); }
+.done-missed { display: grid; gap: 8px; text-align: left; }
+.miss-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.miss { font-size: 13px; padding: 4px 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255, 255, 255, 0.8); }
+
+/* Browse */
+.link-btn { background: none; border: 0; padding: 0; font: inherit; cursor: pointer; color: inherit; }
+.browse-tools { display: grid; gap: 10px; margin: 12px 0 16px; }
+.filter-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.filter { font: 600 13px var(--body, inherit); padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.75); background: rgba(255, 255, 255, 0.45); color: var(--ink); cursor: pointer; }
+.filter.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.filter .num { opacity: 0.7; margin-left: 2px; }
+.browse-group { display: grid; gap: 6px; margin-bottom: 14px; }
+.browse-h { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-2); margin: 6px 2px 2px; }
+.browse-row { border-radius: 14px; background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(255, 255, 255, 0.7); }
+.browse-row > summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; cursor: pointer; }
+.browse-row > summary::-webkit-details-marker { display: none; }
+.b-main { display: grid; gap: 1px; min-width: 0; }
+.b-main .muted { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.b-side { display: inline-flex; align-items: center; gap: 6px; flex: none; }
+.b-flag { color: var(--accent); }
+.browse-body { padding: 4px 12px 12px; display: grid; gap: 10px; }
+.browse-body .spec-list, .browse-body .serve-list { margin: 0; max-width: none; }
+.browse-answer { font-size: 16px; }
+.b-flagnote { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 14px; color: var(--accent); }
+.pill { font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+.pill-new { background: rgba(255, 255, 255, 0.7); color: var(--ink-2); }
+.pill-learning { background: #F3E3CF; color: #7A4A1E; }
+.pill-known { background: #DCE9DA; color: #2F5A2C; }
+.pill-struggling { background: #F6D5CF; color: #8E2B1C; }
+
+/* Practice */
+.practice-modes { display: grid; gap: 8px; }
+.practice-mode { display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left; padding: 14px 16px; font: inherit; color: var(--ink); cursor: pointer; }
+.practice-mode > span:first-child { display: grid; gap: 2px; }
+.practice-mode .num { font-size: 20px; font-weight: 700; }
+.practice-mode[disabled] { opacity: 0.45; cursor: default; }
+.rate-row.two { grid-template-columns: 1fr 1fr; }
+
+.deck-links { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.deck-links a { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 10px; border-radius: 12px; background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(255, 255, 255, 0.75); color: var(--ink); text-decoration: none; font-weight: 600; font-size: 14px; }
+.browse-group[hidden], .browse-row[hidden] { display: none; }
+.rate-row.two .rate { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; }
