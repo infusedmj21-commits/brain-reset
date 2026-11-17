@@ -1,4 +1,4 @@
-import { db, live, save } from '../db.js';
+import { db, live, remove, save } from '../db.js';
 import { createEmptyCard } from 'ts-fsrs';
 import { fromFsrs, placedState, scheduler, toFsrs } from '../logic/cards.js';
 
@@ -27,10 +27,11 @@ export async function answerCard(def, row, rating, ms, now = new Date(), databas
     fsrs: fromFsrs(card)
   };
   await save('fc_cards', next, database);
+  const reviewId = uid();
   await save(
     'fc_reviews',
     {
-      id: uid(),
+      id: reviewId,
       card_id: def.id,
       deck: def.deck,
       stage: def.stage,
@@ -44,7 +45,7 @@ export async function answerCard(def, row, rating, ms, now = new Date(), databas
     },
     database
   );
-  return next;
+  return { row: next, reviewId };
 }
 
 /** Merge flashcard numbers into the day's tuning row (created by day load). */
@@ -88,3 +89,19 @@ export async function setNewPerDay(deckId, n, database = db) {
   const values = { ...current, newPerDay: { ...current.newPerDay, [deckId]: n } };
   return save('checkins', { id: CARD_SETTINGS, kind: 'setting', date: '', values }, database);
 }
+
+/** Take back the last answer: the card goes back to how it was, and its review log row is removed. */
+export async function undoAnswer({ def, prevRow, reviewId }, database = db) {
+  if (prevRow) await save('fc_cards', prevRow, database);
+  else await remove('fc_cards', def.id, database);
+  if (reviewId) await remove('fc_reviews', reviewId, database);
+}
+
+// ---- Flags: "this card is wrong / unclear" (synced) ----
+const flagId = (noteId) => `flag:${noteId}`;
+export const listFlags = async (deckId, database = db) =>
+  (await live('checkins', database)).filter((r) => r.kind === 'card-flag' && (!deckId || r.values?.deck === deckId));
+export async function setFlag(deckId, note, text, date, database = db) {
+  return save('checkins', { id: flagId(note.id), kind: 'card-flag', date, values: { deck: deckId, note: note.id, name: note.name ?? note.es ?? note.q, text: text || '' } }, database);
+}
+export const clearFlag = (noteId, database = db) => remove('checkins', flagId(noteId), database);

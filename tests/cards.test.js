@@ -128,4 +128,30 @@ describe('shipped decks', () => {
       expect(() => checkDeck('nope')).toThrow();
     });
   });
+
+  describe('struggling and status', () => {
+    const now = new Date('2026-11-17T12:00:00Z');
+    const learned = (lapses = 0) => {
+      let c = preview(null, new Date('2026-11-10T12:00:00Z'))[Rating.Good].card;
+      c = { ...c, lapses };
+      return { id: 'x:a:spec', note: 'x:a', fsrs: fromFsrs(c) };
+    };
+    it('flags lapsed cards and repeated Agains, not one-off slips', async () => {
+      const { strugglingIds } = await import('../src/logic/cards.js');
+      expect(strugglingIds([learned(1)], [], now).has('x:a:spec')).toBe(true);
+      const again = (d) => ({ card_id: 'x:a:spec', rating: Rating.Again, at: d });
+      expect(strugglingIds([learned()], [again('2026-11-16T10:00:00Z')], now).size).toBe(0);
+      expect(strugglingIds([learned()], [again('2026-11-16T10:00:00Z'), again('2026-11-15T10:00:00Z')], now).size).toBe(1);
+      expect(strugglingIds([learned()], [again('2026-10-01T10:00:00Z'), again('2026-10-02T10:00:00Z')], now).size).toBe(0);
+    });
+    it('says new, learning, struggling or known', async () => {
+      const { noteStatus } = await import('../src/logic/cards.js');
+      const defs = [{ id: 'x:a:spec' }, { id: 'x:a:serve' }];
+      expect(noteStatus(defs, new Map(), new Set()).key).toBe('new');
+      expect(noteStatus(defs, new Map([['x:a:spec', learned()]]), new Set()).key).toBe('learning');
+      expect(noteStatus(defs, new Map([['x:a:spec', learned()]]), new Set(['x:a:spec'])).key).toBe('struggling');
+      const placed = { fsrs: fromFsrs(placedState(now, 30)) };
+      expect(noteStatus(defs, new Map([['x:a:spec', placed], ['x:a:serve', placed]]), new Set()).key).toBe('known');
+    });
+  });
 });
