@@ -148,6 +148,9 @@ function importPanel(payees) {
   </div>`;
 }
 
+// The shift being edited in the Log a shift form (its id), or null when logging a new one.
+let editingShift = null;
+
 export async function renderMoney(el, rerender, ctx) {
   if (ctx?.params?.[0] === 'insights') return renderInsights(el, rerender);
   if (ctx?.params?.[0] === 'tax') return renderTax(el, rerender);
@@ -185,6 +188,11 @@ export async function renderMoney(el, rerender, ctx) {
   const upcoming = live.filter((s) => s.status === 'booked' && s.date >= date).sort(byWhen);
   const recent = live.filter((s) => s.status === 'worked').sort((a, b) => byWhen(b, a)).slice(0, 10);
   const venues = [...new Set([...live.map((s) => s.venue), ...VENUE_SUGGESTIONS])];
+  const editing = editingShift ? shifts.find((s) => s.id === editingShift) ?? null : null;
+  if (!editing) editingShift = null;
+  const ev = (k) => (editing ? esc(editing[k] ?? '') : '');
+  const actions = (s, last) =>
+    `<span class="row-actions"><button class="btn-mini" type="button" data-edit="${esc(s.id)}">Edit</button><button class="btn-mini" type="button" data-cancel="${esc(s.id)}">${last}</button></span>`;
   const maxCat = Math.max(1, ...spendCats.map((c) => c.total));
 
   el.innerHTML = `
@@ -206,39 +214,40 @@ export async function renderMoney(el, rerender, ctx) {
             : ''
         }
 
-        <div class="sec" style="--dot:var(--sky)"><span class="dot"></span><h2>Log a shift</h2></div>
-        <form class="card stack" id="shift-form" autocomplete="off">
+        <div class="sec" style="--dot:var(--sky)"><span class="dot"></span><h2>${editing ? 'Edit shift' : 'Log a shift'}</h2></div>
+        <form class="card stack${editing ? ' editing' : ''}" id="shift-form" autocomplete="off">
           <label class="stack" style="gap:4px"><span class="stat-label">Venue</span>
-            <input class="field" name="venue" list="venues" value="" placeholder="Pick or type a venue" required maxlength="40">
+            <input class="field" name="venue" list="venues" value="${ev('venue')}" placeholder="Pick or type a venue" required maxlength="40">
             <datalist id="venues">${venues.map((v) => `<option value="${esc(v)}"></option>`).join('')}</datalist>
           </label>
-          <label class="stack" style="gap:4px"><span class="stat-label">Date</span><input class="field" type="date" name="date" value="${date}" required></label>
+          <label class="stack" style="gap:4px"><span class="stat-label">Date</span><input class="field" type="date" name="date" value="${editing ? ev('date') : date}" required></label>
           <div class="grid2">
-            <label class="stack" style="gap:4px"><span class="stat-label">Start</span><input class="field" type="time" name="start" value="" required></label>
-            <label class="stack" style="gap:4px"><span class="stat-label">End</span><input class="field" type="time" name="end" value="" required></label>
+            <label class="stack" style="gap:4px"><span class="stat-label">Start</span><input class="field" type="time" name="start" value="${ev('start')}" required></label>
+            <label class="stack" style="gap:4px"><span class="stat-label">End</span><input class="field" type="time" name="end" value="${ev('end')}" required></label>
           </div>
           <label class="stack" style="gap:4px"><span class="stat-label">Role</span>
-            <select class="field" name="role" required><option value="" selected disabled>Choose a role</option>${ordered.map((r) => `<option value="${esc(r.id)}">${esc(r.name)} · ${gbp(r.rate)}/h</option>`).join('')}</select>
+            <select class="field" name="role" required><option value="" ${editing ? '' : 'selected'} disabled>Choose a role</option>${ordered.map((r) => `<option value="${esc(r.id)}" ${editing?.role_id === r.id ? 'selected' : ''}>${esc(r.name)} · ${gbp(r.rate)}/h</option>`).join('')}</select>
           </label>
           <div class="grid2">
-            <label class="stack" style="gap:4px"><span class="stat-label">Paid hours</span><input class="field" type="number" name="hours" min="0.25" max="24" step="0.01" required></label>
+            <label class="stack" style="gap:4px"><span class="stat-label">Paid hours</span><input class="field" type="number" name="hours" min="0.25" max="24" step="0.01" value="${editing ? ev('hours') : ''}" required></label>
             <div class="stack" style="gap:4px"><span class="stat-label">Breakdown</span><span class="muted small" id="shift-note" style="padding-top:8px"></span></div>
           </div>
           <div class="chips small two" role="group" aria-label="Status">
-            <button type="button" class="chip" data-status="booked" aria-pressed="true">Booked</button>
-            <button type="button" class="chip" data-status="worked" aria-pressed="false">Worked</button>
+            <button type="button" class="chip" data-status="booked" aria-pressed="${editing?.status !== 'worked'}">Booked</button>
+            <button type="button" class="chip" data-status="worked" aria-pressed="${editing?.status === 'worked'}">Worked</button>
           </div>
-          <button class="btn block" type="submit">Save shift <span class="num" id="shift-pay"></span></button>
+          <button class="btn block" type="submit">${editing ? 'Save changes' : 'Save shift'} <span class="num" id="shift-pay"></span></button>
+          ${editing ? '<button class="btn secondary block" type="button" id="edit-cancel">Cancel editing</button>' : ''}
         </form>
 
         <div class="sec" style="--dot:var(--mint)"><span class="dot"></span><h2>Coming up</h2><span class="aside num">${upcoming.length ? gbp(upcoming.reduce((t, s) => t + shiftPay(s), 0)) : ''}</span></div>
         ${
           upcoming.length
-            ? `<ul class="vlist">${upcoming.slice(0, 5).map((s) => shiftRow(s, roles, `<button class="btn-mini" type="button" data-cancel="${esc(s.id)}">Cancel</button>`)).join('')}</ul>
+            ? `<ul class="vlist">${upcoming.slice(0, 5).map((s) => shiftRow(s, roles, actions(s, 'Cancel'))).join('')}</ul>
                ${
                  upcoming.length > 5
                    ? `<details class="manual" style="margin-top:12px"><summary>${upcoming.length - 5} more booked</summary>
-                       <ul class="vlist" style="margin-top:10px">${upcoming.slice(5).map((s) => shiftRow(s, roles, `<button class="btn-mini" type="button" data-cancel="${esc(s.id)}">Cancel</button>`)).join('')}</ul></details>`
+                       <ul class="vlist" style="margin-top:10px">${upcoming.slice(5).map((s) => shiftRow(s, roles, actions(s, 'Cancel'))).join('')}</ul></details>`
                    : ''
                }`
             : '<div class="empty-hint">No booked shifts. Log one above as Booked.</div>'
@@ -253,7 +262,7 @@ export async function renderMoney(el, rerender, ctx) {
         ${
           recent.length
             ? `<details class="manual" style="margin-top:14px"><summary>Recent shifts worked (${recent.length})</summary>
-                <ul class="vlist" style="margin-top:10px">${recent.map((s) => shiftRow(s, roles, `<button class="btn-mini" type="button" data-cancel="${esc(s.id)}">Remove</button>`)).join('')}</ul></details>`
+                <ul class="vlist" style="margin-top:10px">${recent.map((s) => shiftRow(s, roles, actions(s, 'Remove'))).join('')}</ul></details>`
             : ''
         }
       </section>
@@ -284,13 +293,17 @@ export async function renderMoney(el, rerender, ctx) {
 
   // ---- Shift form: paid hours follow the times (minus unpaid breaks) until edited by hand ----
   const form = el.querySelector('#shift-form');
-  let status = 'booked';
-  let hoursEdited = false;
+  let status = editing?.status === 'worked' ? 'worked' : 'booked';
+  // When editing, hours only follow the times if they matched the times before (not typed by hand).
+  const t0 = editing && shiftTimes(editing.start, editing.end);
+  let hoursEdited = Boolean(editing) && (!t0 || Math.abs(t0.paidHours - Number(editing.hours)) > 0.01);
   const payOut = el.querySelector('#shift-pay');
   const note = el.querySelector('#shift-note');
   const current = () => {
     const role = roles.find((r) => r.id === form.role.value);
     const premium = isPremiumDay(form.date.value);
+    // An edited shift keeps the rate it was booked at unless its role or date changes.
+    if (editing && role?.id === editing.role_id && form.date.value === editing.date) return { role, premium: Boolean(editing.premium), rate: Number(editing.rate) };
     return { role, premium, rate: Math.round((role?.rate ?? 0) * (premium ? PREMIUM : 1) * 10000) / 10000 };
   };
   const update = () => {
@@ -332,10 +345,28 @@ export async function renderMoney(el, rerender, ctx) {
     const shiftDate = form.date.value;
     const finalStatus = status === 'booked' && shiftDate < date ? 'worked' : status;
     const hours = Number(form.hours.value);
-    await saveShift({ date: shiftDate, venue: form.venue.value.trim(), role_id: role.id, rate, premium, start: form.start.value, end: form.end.value, hours, status: finalStatus, confirmed: finalStatus === 'worked' });
-    toast(`${finalStatus === 'worked' ? 'Logged' : 'Booked'} · ${gbp(shiftPay({ hours, rate }))}`);
+    const fields = { date: shiftDate, venue: form.venue.value.trim(), role_id: role.id, rate, premium, start: form.start.value, end: form.end.value, hours, status: finalStatus, confirmed: finalStatus === 'worked' };
+    if (editing) {
+      await saveShift({ ...editing, ...fields });
+      editingShift = null;
+      toast(`Shift updated · ${gbp(shiftPay({ hours, rate }))}`);
+    } else {
+      await saveShift(fields);
+      toast(`${finalStatus === 'worked' ? 'Logged' : 'Booked'} · ${gbp(shiftPay({ hours, rate }))}`);
+    }
     rerender();
   });
+  el.querySelector('#edit-cancel')?.addEventListener('click', () => {
+    editingShift = null;
+    rerender();
+  });
+  el.querySelectorAll('[data-edit]').forEach((b) =>
+    b.addEventListener('click', () => {
+      editingShift = b.dataset.edit;
+      rerender();
+      requestAnimationFrame(() => document.getElementById('shift-form')?.previousElementSibling?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    })
+  );
 
   const byId = (id) => shifts.find((s) => s.id === id);
   el.querySelectorAll('[data-worked]').forEach((b) =>
@@ -347,6 +378,7 @@ export async function renderMoney(el, rerender, ctx) {
   el.querySelectorAll('[data-cancel]').forEach((b) =>
     b.addEventListener('click', async () => {
       await saveShift({ ...byId(b.dataset.cancel), status: 'cancelled' });
+      if (editingShift === b.dataset.cancel) editingShift = null;
       toast('Removed');
       rerender();
     })

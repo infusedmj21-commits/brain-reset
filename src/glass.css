@@ -842,3 +842,7 @@ input[type=date].field::-webkit-calendar-picker-indicator, input[type=time].fiel
 .deck-links a { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 10px; border-radius: 12px; background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(255, 255, 255, 0.75); color: var(--ink); text-decoration: none; font-weight: 600; font-size: 14px; }
 .browse-group[hidden], .browse-row[hidden] { display: none; }
 .rate-row.two .rate { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; }
+
+/* Shift rows: Edit + Cancel side by side */
+.row-actions { display: inline-flex; gap: 6px; }
+#shift-form.editing { box-shadow: 0 0 0 2px var(--accent), var(--shadow, 0 8px 24px rgba(0,0,0,.08)); }
